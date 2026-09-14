@@ -1,0 +1,67 @@
+{
+  "id": "SCbU4oRaRxCyGfZp",
+  "name": "查詢資料夾",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-09T01:18:24.043Z",
+  "updatedAt": "2026-09-09T01:38:48.481Z",
+  "isArchived": true,
+  "versionId": "2b72b03c-eda0-4183-8f44-e55c10504996",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "folder_id",
+              "type": "any"
+            },
+            {
+              "name": "replyToken_firstItem",
+              "type": "any"
+            },
+            {
+              "name": "body_firstItem",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "53b1aa77-97bc-4eb7-97b8-5dfeea2bbbcc",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -4400,
+        3936
+      ]
+    }
+  ],
+  "connections": {
+    "Start": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": null,
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "SCbU4oRaRxCyGfZp",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-09-09T01:18:24.043Z",
+      "updatedAt": "2026-09-09T01:18:24.043Z"
+    }
+  ],
+  "activeVersion": null
+}
