@@ -1,0 +1,1126 @@
+{
+  "id": "0DNS4iEMIUZS7WlR",
+  "name": "我要通話",
+  "active": true,
+  "activeVersionId": "a790492f-ac03-4970-b599-adf7e67bae6c",
+  "createdAt": "2026-09-09T00:27:09.371Z",
+  "updatedAt": "2026-09-12T14:58:23.378Z",
+  "isArchived": false,
+  "versionId": "a790492f-ac03-4970-b599-adf7e67bae6c",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {
+        "replyToken": "={{ $('Start').first().json.replyToken_firstItem }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "通話選單",
+              "flexJson": "={{ $json.flexJsonString }}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        4496,
+        3696
+      ],
+      "id": "e4269cfc-7f7a-411e-b028-b24b253fc68a",
+      "name": "Line Messaging4",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "K9g1r0HHEsT1u4XW",
+          "name": "KSCPB OA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得資料並處理成陣列\nlet staffList = items[0].json[\"帳務人員\"];\nlet lineLinks = items[0].json[\"LINE官方通話\"];\n\nif (!Array.isArray(staffList)) staffList = [staffList];\nif (!Array.isArray(lineLinks)) lineLinks = [lineLinks];\n\n// 2. 資料清洗\nconst allStaff = [];\nconst seenStaff = new Set();\n\nstaffList.forEach((name, index) => {\n  const staffName = String(name || \"\");\n  if (staffName && !seenStaff.has(staffName)) {\n    seenStaff.add(staffName);\n    allStaff.push({\n      name: staffName,\n      link: String(lineLinks[index] || \"https://line.me/\")\n    });\n  }\n});\n\n// 3. 準確分組邏輯 (1, 2, 2, 2)\nconst findByExts = (extArray) => {\n  return allStaff.filter(p => extArray.some(ext => p.name.includes(ext)));\n};\n\nconst group1 = findByExts([\"122\"]);\nconst group2 = findByExts([\"111\", \"112\"]);\nconst group3 = findByExts([\"113\", \"117\"]);\nconst group4 = findByExts([\"115\", \"116\"]);\n\n// 4. 生成泡泡函數\nfunction createBubble(title, staffArray, isSpecial = false) {\n  if (staffArray.length === 0) return null;\n\n  const contents = [];\n  staffArray.forEach((person, idx) => {\n    // 帳務泡泡中，兩個人名之間的分隔線\n    if (idx > 0) {\n      contents.push({ \"type\": \"separator\", \"margin\": \"xl\" });\n    }\n    \n    const personBox = {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"margin\": \"md\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": person.name,\n          \"size\": \"lg\",\n          \"weight\": \"bold\",\n          \"color\": \"#333333\",\n          \"align\": \"start\",\n          \"wrap\": true\n        },\n        {\n          \"type\": \"button\",\n          \"action\": {\n            \"type\": \"uri\",\n            \"label\": \"LINE 通話\",\n            \"uri\": person.link.startsWith('http') ? person.link : \"https://line.me/\"\n          },\n          \"style\": \"primary\",\n          \"color\": \"#00B900\",\n          \"height\": \"sm\",\n          \"margin\": \"sm\"\n        }\n      ]\n    };\n\n    // 如果是第一組 (設立變更)，在按鈕下方加入分隔線與三行詳細資訊\n    if (isSpecial) {\n      // 1. 加入跟其他泡泡一樣的分隔線\n      contents.push(personBox); // 先放入人名與按鈕\n      contents.push({ \"type\": \"separator\", \"margin\": \"xl\" }); // 中間加分隔線\n      \n      // 2. 建立下方的公司資訊區塊\n      contents.push({\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"xs\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": \"🕒 營業時間 08:00~17:00\",\n            \"size\": \"xs\",\n            \"color\": \"#666666\",\n            \"align\": \"start\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"📞 電話：03-4550678\",\n            \"size\": \"xs\",\n            \"color\": \"#666666\",\n            \"align\": \"start\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"📍 桃園市中壢區元化路271巷28號5樓\",\n            \"size\": \"xs\",\n            \"color\": \"#666666\",\n            \"align\": \"start\",\n            \"wrap\": true\n          }\n        ]\n      });\n    } else {\n      // 一般帳務泡泡直接放入內容\n      contents.push(personBox);\n    }\n  });\n\n  return {\n    \"type\": \"bubble\",\n    \"size\": \"hecto\",\n    \"header\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": title,\n          \"weight\": \"bold\",\n          \"size\": \"lg\",\n          \"color\": isSpecial ? \"#0367D3\" : \"#1DB446\",\n          \"align\": \"start\"\n        }\n      ]\n    },\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"paddingAll\": \"12px\",\n      \"paddingBottom\": isSpecial ? \"12px\" : \"40px\", \n      \"contents\": contents\n    }\n  };\n}\n\n// 5. 組合最終四個泡泡\nconst finalBubbles = [\n  createBubble(\"🏢 公司商業設立變更\", group1, true),\n  createBubble(\"📞 帳務專員 (一)\", group2),\n  createBubble(\"📞 帳務專員 (二)\", group3),\n  createBubble(\"📞 帳務專員 (三)\", group4)\n].filter(b => b !== null);\n\nconst finalFlex = {\n  \"type\": \"carousel\",\n  \"contents\": finalBubbles\n};\n\nreturn {\n  flexJsonString: JSON.stringify(finalFlex)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4272,
+        3696
+      ],
+      "id": "4ed0a3db-cd57-4bf1-ad5c-bcb373c42cac",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "帳務人員"
+            },
+            {
+              "fieldToAggregate": "LINE官方通話"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        4048,
+        3696
+      ],
+      "id": "dc8b152d-ad30-489a-915b-7895b2655cc4",
+      "name": "Aggregate3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f75f7bff-09ab-40fb-81dd-e434a438cefe",
+              "leftValue": "={{ $('If3').all().length }}\n",
+              "rightValue": "={{ $('Get row(s) in sheet1').all().length }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        3824,
+        3696
+      ],
+      "id": "2d021825-6551-41db-b1a2-e938a1f009c2",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 30429075,
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "Y1:AC600"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3376,
+        3536
+      ],
+      "id": "04ad87ba-c830-42f3-b2a8-e43c40fd55a0",
+      "name": "Get row(s) in sheet1",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0cbad640-c8ff-404d-a68f-b287a0dff6b6",
+              "leftValue": "={{ $json['ID合併'] }}",
+              "rightValue": "={{ $('Start').item.json.source_userId }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3600,
+        3536
+      ],
+      "id": "2ad522ba-d0a3-4f4d-86a2-9cb649b326a3",
+      "name": "If3",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "replyToken": "={{ $('Start').item.json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "通話選單",
+              "flexJson": "={{ $json.flexJsonString }}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        4272,
+        3504
+      ],
+      "id": "928033fa-fdf9-40a1-8eeb-517002404267",
+      "name": "Line Messaging1",
+      "executeOnce": true,
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "K9g1r0HHEsT1u4XW",
+          "name": "KSCPB OA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "帳務人員"
+            },
+            {
+              "fieldToAggregate": "LINE官方通話"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3824,
+        3504
+      ],
+      "id": "2d7e27fa-95a9-46da-9fd0-10d208494872",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得資料並處理成陣列\nlet staffList = items[0].json[\"帳務人員\"];\nlet lineLinks = items[0].json[\"LINE官方通話\"];\n\nif (!Array.isArray(staffList)) staffList = [staffList];\nif (!Array.isArray(lineLinks)) lineLinks = [lineLinks];\n\n// 2. 資料清洗：移除重複\nconst uniqueData = [];\nconst seenStaff = new Set();\n\nstaffList.forEach((name, index) => {\n  if (name && !seenStaff.has(name)) {\n    const staffName = String(name);\n    seenStaff.add(staffName);\n    uniqueData.push({\n      name: staffName,\n      link: String(lineLinks[index] || \"https://line.me/\")\n    });\n  }\n});\n\n// --- 強制輸出邏輯 ---\nconst targetName = \"黃鈞煜 分機122\";\nconst targetLink = \"https://g.kscpb.com/ks122\";\n\n// 如果目前的清單中找不到黃鈞煜，就強行加入一筆\nif (!seenStaff.has(targetName)) {\n  uniqueData.push({\n    name: targetName,\n    link: targetLink\n  });\n}\n// ------------------\n\n// 3. 生成 Bubbles (垂直上下佈局)\nconst bubbles = uniqueData.slice(0, 10).map((person) => {\n  \n  let serviceType = \"帳務處理、發票查詢\";\n  // 包含 \"黃鈞煜\" 即切換服務類型\n  if (person.name.includes(\"黃鈞煜\")) {\n    serviceType = \"設立、變更登記\";\n  }\n\n  return {\n    \"type\": \"bubble\",\n    \"size\": \"kilo\", \n    \"header\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"📞 聯絡專員\",\n          \"weight\": \"bold\",\n          \"size\": \"lg\",\n          \"color\": \"#1DB446\"\n        }\n      ]\n    },\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"spacing\": \"xl\",\n      \"contents\": [\n        {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"服務項目\",\n              \"size\": \"sm\",\n              \"color\": \"#aaaaaa\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": serviceType,\n              \"size\": \"lg\",\n              \"color\": \"#1DB446\",\n              \"weight\": \"bold\",\n              \"wrap\": true,\n              \"margin\": \"sm\"\n            }\n          ]\n        },\n        {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"負責人員\",\n              \"size\": \"sm\",\n              \"color\": \"#aaaaaa\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": person.name,\n              \"size\": \"xl\",\n              \"color\": \"#333333\",\n              \"weight\": \"bold\",\n              \"wrap\": true,\n              \"margin\": \"sm\"\n            }\n          ]\n        },\n        {\n          \"type\": \"button\",\n          \"action\": {\n            \"type\": \"uri\",\n            \"label\": \"立即 LINE 通話\",\n            \"uri\": person.link.startsWith('http') ? person.link : \"https://line.me/\"\n          },\n          \"style\": \"primary\",\n          \"color\": \"#00B900\",\n          \"height\": \"md\"\n        }\n      ]\n    }\n  };\n});\n\n// 4. 判斷輸出格式\nconst finalFlex = bubbles.length === 1 ? bubbles[0] : {\n  \"type\": \"carousel\",\n  \"contents\": bubbles\n};\n\nreturn {\n  flexJsonString: JSON.stringify(finalFlex)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        4048,
+        3504
+      ],
+      "id": "d1f401d5-1a6c-4bec-bf3f-6f94b03e30c3",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "04cd9614-a39f-4267-be31-9b5b289132be",
+              "leftValue": "={{ $json.id_merge }}",
+              "rightValue": "={{ $('Start').item.json.source_userId }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3152,
+        3440
+      ],
+      "id": "a04b24eb-538d-434f-b5ae-45cefb946c41",
+      "name": "If11"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "aNDXFDtm7mHmuHDj",
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/aNDXFDtm7mHmuHDj"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id_merge",
+              "condition": "ilike",
+              "keyValue": "={{ $('Start').item.json.source_userId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2928,
+        3440
+      ],
+      "id": "51c0bb18-1857-42b6-bd48-e73e043d5ae9",
+      "name": "我要通話",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "replyToken": "={{ $('Start').item.json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "通話選單",
+              "flexJson": "={{ $json.flexJsonString }}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        3824,
+        3312
+      ],
+      "id": "ff25bf92-809b-47be-a926-1129af4c9abc",
+      "name": "Line Messaging13",
+      "executeOnce": true,
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "K9g1r0HHEsT1u4XW",
+          "name": "KSCPB OA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "accounting_staff"
+            },
+            {
+              "fieldToAggregate": "line_official_call"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        3376,
+        3312
+      ],
+      "id": "d7432fa8-dfbf-40f3-b2ec-e87725867247",
+      "name": "Aggregate11"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得資料並確保其為陣列格式\nlet staffData = items[0].json[\"accounting_staff\"];\nlet lineData = items[0].json[\"line_official_call\"];\n\nlet staffList = Array.isArray(staffData) ? staffData : [staffData];\nlet lineLinks = Array.isArray(lineData) ? lineData : [lineData];\n\n// 2. 資料清洗與去重\nconst uniqueData = [];\nconst seenStaff = new Set();\n\nstaffList.forEach((name, index) => {\n  if (name && !seenStaff.has(name)) {\n    const staffName = String(name).trim();\n    seenStaff.add(staffName);\n    uniqueData.push({\n      name: staffName,\n      link: String(lineLinks[index] || \"https://line.me/\").trim()\n    });\n  }\n});\n\n// 強制補入預設專員\nconst targetName = \"黃鈞煜 分機122\";\nconst targetLink = \"https://g.kscpb.com/ks122\";\nif (!seenStaff.has(targetName)) {\n  uniqueData.push({ name: targetName, link: targetLink });\n}\n\n// ==========================================\n// 3. 生成「單一泡泡」內的專員清單列\n// ==========================================\n\nconst maxStaffToShow = 15;\nconst staffDataToRender = uniqueData.slice(0, maxStaffToShow);\n\nconst staffRowsContents = [];\n\nstaffDataToRender.forEach((person, index) => {\n  \n  // 完整服務項目文字\n  let serviceType = \"帳務處理、發票查詢\";\n  if (person.name.includes(\"黃鈞煜\")) {\n    serviceType = \"設立、變更登記\";\n  }\n\n  // --- 專員資料列結構 (Horizontal Layout) ---\n  const row = {\n    \"type\": \"box\",\n    \"layout\": \"horizontal\",\n    \"spacing\": \"md\",\n    \"contents\": [\n      // 左側與中間區域（垂直排列：上為服務項目，下為人名與分機）\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"flex\": 1,\n        \"spacing\": \"xs\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": serviceType,\n            \"size\": \"md\",\n            \"color\": \"#1DB446\",\n            \"weight\": \"bold\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": person.name,\n            \"size\": \"lg\",\n            \"weight\": \"bold\",\n            \"color\": \"#333333\",\n            \"wrap\": true\n          }\n        ]\n      },\n      // 右側通話按鈕（固定右側並垂直置中）\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"flex\": 0,\n        \"justifyContent\": \"center\",\n        \"contents\": [\n          {\n            \"type\": \"button\",\n            \"action\": {\n              \"type\": \"uri\",\n              \"label\": \"免費通話\",\n              \"uri\": person.link.startsWith('http') ? person.link : \"https://line.me/\"\n            },\n            \"style\": \"primary\",\n            \"color\": \"#00B900\",\n            \"height\": \"sm\"\n          }\n        ]\n      }\n    ]\n  };\n\n  staffRowsContents.push(row);\n\n  // --- 加上分隔線 (Separator) ---\n  if (index < staffDataToRender.length - 1) {\n    staffRowsContents.push({\n      \"type\": \"separator\",\n      \"margin\": \"md\",\n      \"color\": \"#eeeeee\"\n    });\n  }\n});\n\n// ==========================================\n// 4. 組裝最終的單一 Bubble JSON (純文字顯示總機資訊)\n// ==========================================\nconst finalFlex = {\n  \"type\": \"bubble\",\n  \"size\": \"mega\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"xs\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📞 事務所聯絡專員\",\n        \"weight\": \"bold\",\n        \"size\": \"lg\",\n        \"color\": \"#1DB446\"\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"☎️ 公司總機：03-4550678\",\n        \"size\": \"md\",\n        \"color\": \"#555555\",\n        \"margin\": \"xs\"\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"⏱️ 服務時間：08:00 ~ 17:00\",\n        \"size\": \"md\",\n        \"color\": \"#555555\",\n        \"margin\": \"xs\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"md\",\n    \"contents\": staffRowsContents\n  }\n};\n\n// ==========================================\n// 5. 輸出 JSON 字串\n// ==========================================\nreturn {\n  flexJsonString: JSON.stringify(finalFlex)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3600,
+        3312
+      ],
+      "id": "c664ba7b-c6ea-4784-a9a3-8b653483bb93",
+      "name": "Code in JavaScript19"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "replyToken",
+              "type": "any"
+            },
+            {
+              "name": "source_userId",
+              "type": "any"
+            },
+            {
+              "name": "replyToken_firstItem",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "a4844a4e-1fcc-4ed3-8c4f-9933af26bea8",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        2720,
+        3440
+      ]
+    }
+  ],
+  "connections": {
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If11": {
+      "main": [
+        [
+          {
+            "node": "Aggregate11",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate11": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript19",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript19": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "我要通話": {
+      "main": [
+        [
+          {
+            "node": "If11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "我要通話",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": null,
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "0DNS4iEMIUZS7WlR",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-09-09T00:27:09.371Z",
+      "updatedAt": "2026-09-09T00:27:09.371Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "a790492f-ac03-4970-b599-adf7e67bae6c",
+    "workflowId": "0DNS4iEMIUZS7WlR",
+    "nodes": [
+      {
+        "parameters": {
+          "replyToken": "={{ $('Start').first().json.replyToken_firstItem }}",
+          "messages": {
+            "values": [
+              {
+                "altText": "通話選單",
+                "flexJson": "={{ $json.flexJsonString }}",
+                "type": "flex"
+              }
+            ]
+          }
+        },
+        "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+        "typeVersion": 1,
+        "position": [
+          4496,
+          3696
+        ],
+        "id": "e4269cfc-7f7a-411e-b028-b24b253fc68a",
+        "name": "Line Messaging4",
+        "credentials": {
+          "lineMessagingApi": {
+            "id": "K9g1r0HHEsT1u4XW",
+            "name": "KSCPB OA"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. 取得資料並處理成陣列\nlet staffList = items[0].json[\"帳務人員\"];\nlet lineLinks = items[0].json[\"LINE官方通話\"];\n\nif (!Array.isArray(staffList)) staffList = [staffList];\nif (!Array.isArray(lineLinks)) lineLinks = [lineLinks];\n\n// 2. 資料清洗\nconst allStaff = [];\nconst seenStaff = new Set();\n\nstaffList.forEach((name, index) => {\n  const staffName = String(name || \"\");\n  if (staffName && !seenStaff.has(staffName)) {\n    seenStaff.add(staffName);\n    allStaff.push({\n      name: staffName,\n      link: String(lineLinks[index] || \"https://line.me/\")\n    });\n  }\n});\n\n// 3. 準確分組邏輯 (1, 2, 2, 2)\nconst findByExts = (extArray) => {\n  return allStaff.filter(p => extArray.some(ext => p.name.includes(ext)));\n};\n\nconst group1 = findByExts([\"122\"]);\nconst group2 = findByExts([\"111\", \"112\"]);\nconst group3 = findByExts([\"113\", \"117\"]);\nconst group4 = findByExts([\"115\", \"116\"]);\n\n// 4. 生成泡泡函數\nfunction createBubble(title, staffArray, isSpecial = false) {\n  if (staffArray.length === 0) return null;\n\n  const contents = [];\n  staffArray.forEach((person, idx) => {\n    // 帳務泡泡中，兩個人名之間的分隔線\n    if (idx > 0) {\n      contents.push({ \"type\": \"separator\", \"margin\": \"xl\" });\n    }\n    \n    const personBox = {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"margin\": \"md\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": person.name,\n          \"size\": \"lg\",\n          \"weight\": \"bold\",\n          \"color\": \"#333333\",\n          \"align\": \"start\",\n          \"wrap\": true\n        },\n        {\n          \"type\": \"button\",\n          \"action\": {\n            \"type\": \"uri\",\n            \"label\": \"LINE 通話\",\n            \"uri\": person.link.startsWith('http') ? person.link : \"https://line.me/\"\n          },\n          \"style\": \"primary\",\n          \"color\": \"#00B900\",\n          \"height\": \"sm\",\n          \"margin\": \"sm\"\n        }\n      ]\n    };\n\n    // 如果是第一組 (設立變更)，在按鈕下方加入分隔線與三行詳細資訊\n    if (isSpecial) {\n      // 1. 加入跟其他泡泡一樣的分隔線\n      contents.push(personBox); // 先放入人名與按鈕\n      contents.push({ \"type\": \"separator\", \"margin\": \"xl\" }); // 中間加分隔線\n      \n      // 2. 建立下方的公司資訊區塊\n      contents.push({\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"xs\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": \"🕒 營業時間 08:00~17:00\",\n            \"size\": \"xs\",\n            \"color\": \"#666666\",\n            \"align\": \"start\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"📞 電話：03-4550678\",\n            \"size\": \"xs\",\n            \"color\": \"#666666\",\n            \"align\": \"start\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"📍 桃園市中壢區元化路271巷28號5樓\",\n            \"size\": \"xs\",\n            \"color\": \"#666666\",\n            \"align\": \"start\",\n            \"wrap\": true\n          }\n        ]\n      });\n    } else {\n      // 一般帳務泡泡直接放入內容\n      contents.push(personBox);\n    }\n  });\n\n  return {\n    \"type\": \"bubble\",\n    \"size\": \"hecto\",\n    \"header\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": title,\n          \"weight\": \"bold\",\n          \"size\": \"lg\",\n          \"color\": isSpecial ? \"#0367D3\" : \"#1DB446\",\n          \"align\": \"start\"\n        }\n      ]\n    },\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"paddingAll\": \"12px\",\n      \"paddingBottom\": isSpecial ? \"12px\" : \"40px\", \n      \"contents\": contents\n    }\n  };\n}\n\n// 5. 組合最終四個泡泡\nconst finalBubbles = [\n  createBubble(\"🏢 公司商業設立變更\", group1, true),\n  createBubble(\"📞 帳務專員 (一)\", group2),\n  createBubble(\"📞 帳務專員 (二)\", group3),\n  createBubble(\"📞 帳務專員 (三)\", group4)\n].filter(b => b !== null);\n\nconst finalFlex = {\n  \"type\": \"carousel\",\n  \"contents\": finalBubbles\n};\n\nreturn {\n  flexJsonString: JSON.stringify(finalFlex)\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4272,
+          3696
+        ],
+        "id": "4ed0a3db-cd57-4bf1-ad5c-bcb373c42cac",
+        "name": "Code in JavaScript3"
+      },
+      {
+        "parameters": {
+          "fieldsToAggregate": {
+            "fieldToAggregate": [
+              {
+                "fieldToAggregate": "帳務人員"
+              },
+              {
+                "fieldToAggregate": "LINE官方通話"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          4048,
+          3696
+        ],
+        "id": "dc8b152d-ad30-489a-915b-7895b2655cc4",
+        "name": "Aggregate3"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "f75f7bff-09ab-40fb-81dd-e434a438cefe",
+                "leftValue": "={{ $('If3').all().length }}\n",
+                "rightValue": "={{ $('Get row(s) in sheet1').all().length }}",
+                "operator": {
+                  "type": "number",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          3824,
+          3696
+        ],
+        "id": "2d021825-6551-41db-b1a2-e938a1f009c2",
+        "name": "Filter2"
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 30429075,
+            "mode": "list",
+            "cachedResultName": "自動回傳帳單",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRangeA1",
+                "range": "Y1:AC600"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          3376,
+          3536
+        ],
+        "id": "04ad87ba-c830-42f3-b2a8-e43c40fd55a0",
+        "name": "Get row(s) in sheet1",
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "0cbad640-c8ff-404d-a68f-b287a0dff6b6",
+                "leftValue": "={{ $json['ID合併'] }}",
+                "rightValue": "={{ $('Start').item.json.source_userId }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          3600,
+          3536
+        ],
+        "id": "2ad522ba-d0a3-4f4d-86a2-9cb649b326a3",
+        "name": "If3",
+        "executeOnce": false
+      },
+      {
+        "parameters": {
+          "replyToken": "={{ $('Start').item.json.replyToken }}",
+          "messages": {
+            "values": [
+              {
+                "altText": "通話選單",
+                "flexJson": "={{ $json.flexJsonString }}",
+                "type": "flex"
+              }
+            ]
+          }
+        },
+        "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+        "typeVersion": 1,
+        "position": [
+          4272,
+          3504
+        ],
+        "id": "928033fa-fdf9-40a1-8eeb-517002404267",
+        "name": "Line Messaging1",
+        "executeOnce": true,
+        "credentials": {
+          "lineMessagingApi": {
+            "id": "K9g1r0HHEsT1u4XW",
+            "name": "KSCPB OA"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fieldsToAggregate": {
+            "fieldToAggregate": [
+              {
+                "fieldToAggregate": "帳務人員"
+              },
+              {
+                "fieldToAggregate": "LINE官方通話"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          3824,
+          3504
+        ],
+        "id": "2d7e27fa-95a9-46da-9fd0-10d208494872",
+        "name": "Aggregate2"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. 取得資料並處理成陣列\nlet staffList = items[0].json[\"帳務人員\"];\nlet lineLinks = items[0].json[\"LINE官方通話\"];\n\nif (!Array.isArray(staffList)) staffList = [staffList];\nif (!Array.isArray(lineLinks)) lineLinks = [lineLinks];\n\n// 2. 資料清洗：移除重複\nconst uniqueData = [];\nconst seenStaff = new Set();\n\nstaffList.forEach((name, index) => {\n  if (name && !seenStaff.has(name)) {\n    const staffName = String(name);\n    seenStaff.add(staffName);\n    uniqueData.push({\n      name: staffName,\n      link: String(lineLinks[index] || \"https://line.me/\")\n    });\n  }\n});\n\n// --- 強制輸出邏輯 ---\nconst targetName = \"黃鈞煜 分機122\";\nconst targetLink = \"https://g.kscpb.com/ks122\";\n\n// 如果目前的清單中找不到黃鈞煜，就強行加入一筆\nif (!seenStaff.has(targetName)) {\n  uniqueData.push({\n    name: targetName,\n    link: targetLink\n  });\n}\n// ------------------\n\n// 3. 生成 Bubbles (垂直上下佈局)\nconst bubbles = uniqueData.slice(0, 10).map((person) => {\n  \n  let serviceType = \"帳務處理、發票查詢\";\n  // 包含 \"黃鈞煜\" 即切換服務類型\n  if (person.name.includes(\"黃鈞煜\")) {\n    serviceType = \"設立、變更登記\";\n  }\n\n  return {\n    \"type\": \"bubble\",\n    \"size\": \"kilo\", \n    \"header\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"📞 聯絡專員\",\n          \"weight\": \"bold\",\n          \"size\": \"lg\",\n          \"color\": \"#1DB446\"\n        }\n      ]\n    },\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"spacing\": \"xl\",\n      \"contents\": [\n        {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"服務項目\",\n              \"size\": \"sm\",\n              \"color\": \"#aaaaaa\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": serviceType,\n              \"size\": \"lg\",\n              \"color\": \"#1DB446\",\n              \"weight\": \"bold\",\n              \"wrap\": true,\n              \"margin\": \"sm\"\n            }\n          ]\n        },\n        {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"負責人員\",\n              \"size\": \"sm\",\n              \"color\": \"#aaaaaa\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": person.name,\n              \"size\": \"xl\",\n              \"color\": \"#333333\",\n              \"weight\": \"bold\",\n              \"wrap\": true,\n              \"margin\": \"sm\"\n            }\n          ]\n        },\n        {\n          \"type\": \"button\",\n          \"action\": {\n            \"type\": \"uri\",\n            \"label\": \"立即 LINE 通話\",\n            \"uri\": person.link.startsWith('http') ? person.link : \"https://line.me/\"\n          },\n          \"style\": \"primary\",\n          \"color\": \"#00B900\",\n          \"height\": \"md\"\n        }\n      ]\n    }\n  };\n});\n\n// 4. 判斷輸出格式\nconst finalFlex = bubbles.length === 1 ? bubbles[0] : {\n  \"type\": \"carousel\",\n  \"contents\": bubbles\n};\n\nreturn {\n  flexJsonString: JSON.stringify(finalFlex)\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          4048,
+          3504
+        ],
+        "id": "d1f401d5-1a6c-4bec-bf3f-6f94b03e30c3",
+        "name": "Code in JavaScript2"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "04cd9614-a39f-4267-be31-9b5b289132be",
+                "leftValue": "={{ $json.id_merge }}",
+                "rightValue": "={{ $('Start').item.json.source_userId }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          3152,
+          3440
+        ],
+        "id": "a04b24eb-538d-434f-b5ae-45cefb946c41",
+        "name": "If11"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "value": "aNDXFDtm7mHmuHDj",
+            "mode": "list",
+            "cachedResultName": "自動回傳帳單",
+            "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/aNDXFDtm7mHmuHDj"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "id_merge",
+                "condition": "ilike",
+                "keyValue": "={{ $('Start').item.json.source_userId }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          2928,
+          3440
+        ],
+        "id": "51c0bb18-1857-42b6-bd48-e73e043d5ae9",
+        "name": "我要通話",
+        "alwaysOutputData": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "replyToken": "={{ $('Start').item.json.replyToken }}",
+          "messages": {
+            "values": [
+              {
+                "altText": "通話選單",
+                "flexJson": "={{ $json.flexJsonString }}",
+                "type": "flex"
+              }
+            ]
+          }
+        },
+        "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+        "typeVersion": 1,
+        "position": [
+          3824,
+          3312
+        ],
+        "id": "ff25bf92-809b-47be-a926-1129af4c9abc",
+        "name": "Line Messaging13",
+        "executeOnce": true,
+        "credentials": {
+          "lineMessagingApi": {
+            "id": "K9g1r0HHEsT1u4XW",
+            "name": "KSCPB OA"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "fieldsToAggregate": {
+            "fieldToAggregate": [
+              {
+                "fieldToAggregate": "accounting_staff"
+              },
+              {
+                "fieldToAggregate": "line_official_call"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          3376,
+          3312
+        ],
+        "id": "d7432fa8-dfbf-40f3-b2ec-e87725867247",
+        "name": "Aggregate11"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. 取得資料並確保其為陣列格式\nlet staffData = items[0].json[\"accounting_staff\"];\nlet lineData = items[0].json[\"line_official_call\"];\n\nlet staffList = Array.isArray(staffData) ? staffData : [staffData];\nlet lineLinks = Array.isArray(lineData) ? lineData : [lineData];\n\n// 2. 資料清洗與去重\nconst uniqueData = [];\nconst seenStaff = new Set();\n\nstaffList.forEach((name, index) => {\n  if (name && !seenStaff.has(name)) {\n    const staffName = String(name).trim();\n    seenStaff.add(staffName);\n    uniqueData.push({\n      name: staffName,\n      link: String(lineLinks[index] || \"https://line.me/\").trim()\n    });\n  }\n});\n\n// 強制補入預設專員\nconst targetName = \"黃鈞煜 分機122\";\nconst targetLink = \"https://g.kscpb.com/ks122\";\nif (!seenStaff.has(targetName)) {\n  uniqueData.push({ name: targetName, link: targetLink });\n}\n\n// ==========================================\n// 3. 生成「單一泡泡」內的專員清單列\n// ==========================================\n\nconst maxStaffToShow = 15;\nconst staffDataToRender = uniqueData.slice(0, maxStaffToShow);\n\nconst staffRowsContents = [];\n\nstaffDataToRender.forEach((person, index) => {\n  \n  // 完整服務項目文字\n  let serviceType = \"帳務處理、發票查詢\";\n  if (person.name.includes(\"黃鈞煜\")) {\n    serviceType = \"設立、變更登記\";\n  }\n\n  // --- 專員資料列結構 (Horizontal Layout) ---\n  const row = {\n    \"type\": \"box\",\n    \"layout\": \"horizontal\",\n    \"spacing\": \"md\",\n    \"contents\": [\n      // 左側與中間區域（垂直排列：上為服務項目，下為人名與分機）\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"flex\": 1,\n        \"spacing\": \"xs\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": serviceType,\n            \"size\": \"md\",\n            \"color\": \"#1DB446\",\n            \"weight\": \"bold\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": person.name,\n            \"size\": \"lg\",\n            \"weight\": \"bold\",\n            \"color\": \"#333333\",\n            \"wrap\": true\n          }\n        ]\n      },\n      // 右側通話按鈕（固定右側並垂直置中）\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"flex\": 0,\n        \"justifyContent\": \"center\",\n        \"contents\": [\n          {\n            \"type\": \"button\",\n            \"action\": {\n              \"type\": \"uri\",\n              \"label\": \"免費通話\",\n              \"uri\": person.link.startsWith('http') ? person.link : \"https://line.me/\"\n            },\n            \"style\": \"primary\",\n            \"color\": \"#00B900\",\n            \"height\": \"sm\"\n          }\n        ]\n      }\n    ]\n  };\n\n  staffRowsContents.push(row);\n\n  // --- 加上分隔線 (Separator) ---\n  if (index < staffDataToRender.length - 1) {\n    staffRowsContents.push({\n      \"type\": \"separator\",\n      \"margin\": \"md\",\n      \"color\": \"#eeeeee\"\n    });\n  }\n});\n\n// ==========================================\n// 4. 組裝最終的單一 Bubble JSON (純文字顯示總機資訊)\n// ==========================================\nconst finalFlex = {\n  \"type\": \"bubble\",\n  \"size\": \"mega\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"xs\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📞 事務所聯絡專員\",\n        \"weight\": \"bold\",\n        \"size\": \"lg\",\n        \"color\": \"#1DB446\"\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"☎️ 公司總機：03-4550678\",\n        \"size\": \"md\",\n        \"color\": \"#555555\",\n        \"margin\": \"xs\"\n      },\n      {\n        \"type\": \"text\",\n        \"text\": \"⏱️ 服務時間：08:00 ~ 17:00\",\n        \"size\": \"md\",\n        \"color\": \"#555555\",\n        \"margin\": \"xs\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"md\",\n    \"contents\": staffRowsContents\n  }\n};\n\n// ==========================================\n// 5. 輸出 JSON 字串\n// ==========================================\nreturn {\n  flexJsonString: JSON.stringify(finalFlex)\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3600,
+          3312
+        ],
+        "id": "c664ba7b-c6ea-4784-a9a3-8b653483bb93",
+        "name": "Code in JavaScript19"
+      },
+      {
+        "parameters": {
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "replyToken",
+                "type": "any"
+              },
+              {
+                "name": "source_userId",
+                "type": "any"
+              },
+              {
+                "name": "replyToken_firstItem",
+                "type": "any"
+              }
+            ]
+          }
+        },
+        "id": "a4844a4e-1fcc-4ed3-8c4f-9933af26bea8",
+        "typeVersion": 1.1,
+        "name": "Start",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "position": [
+          2720,
+          3440
+        ]
+      }
+    ],
+    "connections": {
+      "Get row(s) in sheet1": {
+        "main": [
+          [
+            {
+              "node": "If3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate2": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript2": {
+        "main": [
+          [
+            {
+              "node": "Line Messaging1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If3": {
+        "main": [
+          [
+            {
+              "node": "Aggregate2",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Filter2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript3": {
+        "main": [
+          [
+            {
+              "node": "Line Messaging4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate3": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter2": {
+        "main": [
+          [
+            {
+              "node": "Aggregate3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If11": {
+        "main": [
+          [
+            {
+              "node": "Aggregate11",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get row(s) in sheet1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate11": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript19",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript19": {
+        "main": [
+          [
+            {
+              "node": "Line Messaging13",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "我要通話": {
+        "main": [
+          [
+            {
+              "node": "If11",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "我要通話",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "鈞煜 黃",
+    "name": "Version a790492f",
+    "description": "",
+    "autosaved": true,
+    "createdAt": "2026-09-12T14:58:23.380Z",
+    "updatedAt": "2026-09-12T14:58:24.545Z"
+  }
+}
