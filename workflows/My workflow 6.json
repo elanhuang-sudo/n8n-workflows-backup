@@ -1,0 +1,133 @@
+{
+  "id": "NqO5JBbc84LvLrh4",
+  "name": "My workflow 6",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-08-08T05:16:20.266Z",
+  "updatedAt": "2026-08-08T05:41:55.784Z",
+  "isArchived": true,
+  "versionId": "51a24bfa-27f3-42f7-a1d8-cc086a861e0e",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -256,
+        -16
+      ],
+      "id": "a9558ab6-1f60-4664-8cda-7f47cebf4e9b",
+      "name": "When chat message received",
+      "webhookId": "test-chat-webhook-id"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -48,
+        -16
+      ],
+      "id": "6134e483-dc68-414c-b9b7-f0f8c3371e3d",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "deepseek-v4-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        192
+      ],
+      "id": "b84ab240-c188-418a-ad85-36471d022b5e",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "kHOGLK72aI2f6acT",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -48,
+        192
+      ],
+      "id": "7a8ba032-26b9-45b5-9726-d49d09947c95",
+      "name": "Simple Memory"
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "NqO5JBbc84LvLrh4",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-08-08T05:16:20.266Z",
+      "updatedAt": "2026-08-08T05:16:20.266Z"
+    }
+  ],
+  "activeVersion": null
+}
