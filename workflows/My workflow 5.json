@@ -1,0 +1,91 @@
+{
+  "id": "8w9ghPMyMcAJuOPj",
+  "name": "My workflow 5",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-08-08T02:56:10.826Z",
+  "updatedAt": "2026-08-08T05:07:03.839Z",
+  "isArchived": true,
+  "versionId": "863a5b8c-da1c-435c-8e03-0cd1d6968ffc",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        560
+      ],
+      "id": "459319d1-5cab-4298-86f0-59dbc108a6ab",
+      "name": "When chat message received",
+      "webhookId": "test-chat-webhook-id"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "messages": {
+          "values": [
+            {}
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        560
+      ],
+      "id": "f48fb2b8-3ec5-4858-b281-18dd421e1fef",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "eQk351TIjg6E1BHr",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "8w9ghPMyMcAJuOPj",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-08-08T02:56:10.826Z",
+      "updatedAt": "2026-08-08T02:56:10.826Z"
+    }
+  ],
+  "activeVersion": null
+}
