@@ -1,0 +1,2708 @@
+{
+  "id": "3KmRk6IJOB1up3MO",
+  "name": "LINE 按摩店 師傅版",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-08-06T03:19:50.739Z",
+  "updatedAt": "2026-08-10T23:46:39.646Z",
+  "isArchived": false,
+  "versionId": "9ec57137-98d9-41c1-a599-0e3446a6075b",
+  "triggerCount": 2,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-ai-booking",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4064,
+        3088
+      ],
+      "id": "78cda5ac-0422-4128-bc53-f306c1a88444",
+      "name": "LINE Webhook",
+      "webhookId": "cacc050c-52c9-400a-88f9-63ee24948dc3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "線上預約",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "df790d4b-8546-4617-a130-0e417b9cf07c"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "線上預約"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3345e782-3862-4b27-b44a-6134374f2c4e",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "動作:增加",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "動作:增加"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "預約師傅:",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "a73e1b07-e76f-4f16-8b91-27a3000940fe"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "選擇預約師傅"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "預約項目:",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "c68937eb-11b9-45d7-9576-f60a570b0df3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "選擇預約項目"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "預約日期:",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "a0f2c08a-0ceb-48c8-a5f5-b39e4b166e26"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "選擇預約日期"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "預約時間:",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "fac94bd3-b551-4afc-846e-aff7342ce22d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "選擇預約時間"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8d7bc15c-d457-44cf-b503-819c2a63d8dc",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "查詢預約",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "查詢預約"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "8ff83a51-f387-404e-a0f4-f933d4cbfe08",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "動作:取消",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "動作:取消"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c2b49c72-c5a9-432d-b078-9521452ef388",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "動作:全部取消",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "全部取消"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ce19f029-664a-47f4-aca3-6268332697c8",
+                    "leftValue": "={{ $json.body.events[0].message.text }}",
+                    "rightValue": "查詢班表",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -3616,
+        3056
+      ],
+      "id": "ce7ab66c-7907-4bff-b896-ae5ed8f49705",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Staff_Schedule",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2720,
+        2064
+      ],
+      "id": "25042c25-7960-41a8-84a1-59df28cd18e2",
+      "name": "讀取 Staff_Schedule",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\nconst text = webhookItem ? webhookItem.json.body.events[0].message.text : '';\nconst isAddMode = text.includes('|加人') ? '|加人' : '';\n\nconst items = $input.all();\nconst staffSet = new Set();\n\nitems.forEach(item => {\n  const row = item.json;\n  for (const colName of Object.keys(row)) {\n    if (colName === '日期' || colName === 'row_number') continue;\n    const colStr = String(colName).trim();\n    if (colStr.includes('男') || colStr.includes('女') || colStr.includes('號')) {\n      const staffNum = colStr.replace('男', '').replace('女', '').replace('號', '').trim();\n      if (staffNum) {\n        staffSet.add(`${staffNum}號師傅`);\n      }\n    }\n  }\n});\n\nconst availableStaff = Array.from(staffSet).sort((a, b) => {\n  const numA = parseInt(a.replace('號師傅', ''), 10) || 0;\n  const numB = parseInt(b.replace('號師傅', ''), 10) || 0;\n  return numA - numB;\n});\n\nconst staffList = ['不指定', ...availableStaff];\nconst chunkSize = 5;\nconst bubbles = [];\n\nfor (let i = 0; i < staffList.length; i += chunkSize) {\n  const chunkStaff = staffList.slice(i, i + chunkSize);\n  const staffBoxes = [];\n\n  chunkStaff.forEach(s => {\n    const isUnspecified = (s === '不指定');\n    const emoji = isUnspecified ? '⭐' : '👨‍⚕️';\n\n    staffBoxes.push({\n      \"type\": \"box\",\n      \"layout\": \"horizontal\",\n      \"backgroundColor\": \"#f0f0f0\",\n      \"cornerRadius\": \"sm\",\n      \"paddingAll\": \"sm\",\n      \"margin\": \"xs\",\n      \"action\": {\n        \"type\": \"message\",\n        \"label\": s,\n        \"text\": `預約師傅:${s}|ts:${Date.now()}${isAddMode}`\n      },\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": `${emoji} ${s}`,\n          \"size\": \"md\",\n          \"align\": \"center\",\n          \"color\": \"#333333\",\n          \"weight\": \"bold\"\n        }\n      ]\n    });\n  });\n\n  const pageIndex = Math.floor(i / chunkSize) + 1;\n  bubbles.push({\n    \"type\": \"bubble\",\n    \"size\": \"micro\",\n    \"header\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"backgroundColor\": \"#1DB446\",\n      \"paddingAll\": \"sm\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": `步驟 1：選擇指定師傅 (${pageIndex})`,\n          \"weight\": \"bold\",\n          \"size\": \"sm\",\n          \"color\": \"#FFFFFF\",\n          \"align\": \"center\"\n        }\n      ]\n    },\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"paddingAll\": \"sm\",\n      \"contents\": staffBoxes\n    }\n  });\n}\n\nreturn {\n  json: {\n    \"replyToken\": replyToken,\n    \"messages\": [\n      {\n        \"type\": \"flex\",\n        \"altText\": \"請選擇預約師傅\",\n        \"contents\": {\n          \"type\": \"carousel\",\n          \"contents\": bubbles\n        }\n      }\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2496,
+        2064
+      ],
+      "id": "c7f08323-23d8-4e4c-b8fa-0b876f5c3619",
+      "name": "步驟 1：產出師傅選單"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Services",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2720,
+        2896
+      ],
+      "id": "8d666093-e9c7-42a3-be9a-bfa5ab6ff3af",
+      "name": "讀取 Services",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst text = webhookItem ? webhookItem.json.body.events[0].message.text : '';\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\n\nconst isAddMode = text.includes('|加人') ? '|加人' : '';\nconst staffStr = text.replace('預約師傅:', '').replace(/\\|ts:\\d+/, '').replace('|加人', '').trim();\n\nconst items = $input.all();\nconst groups = {};\nconst categoryOrder = {};\n\nitems.forEach(item => {\n  const row = item.json;\n  const category = row['服務分類'] || row['服務項目'] || '其他';\n  const serviceName = String(row['服務項目'] || '');\n  const duration = row['時長 (分鐘)'] || row['時長(分鐘)'] || '';\n  const priceRaw = String(row['價格'] || '');\n  const orderRaw = row['排序'];\n\n  if (!serviceName) return;\n\n  const numericPrice = parseInt(priceRaw.replace(/[^\\d]/g, ''), 10) || 0;\n  const categorySortNum = (orderRaw !== undefined && orderRaw !== '' && !isNaN(orderRaw)) ? Number(orderRaw) : 999;\n  if (categoryOrder[category] === undefined || categorySortNum < categoryOrder[category]) {\n    categoryOrder[category] = categorySortNum;\n  }\n\n  const lines = serviceName.split('\\n').map(s => s.trim()).filter(Boolean);\n  const isMultiLine = lines.length > 1;\n  const isPerCount = priceRaw.includes('/次');\n\n  let line1 = lines[0] || '';\n  let line2 = '';\n\n  if (isMultiLine) {\n    line2 = lines[1] || '';\n  } else if (!isPerCount) {\n    line2 = `(${duration}分鐘)`;\n  }\n\n  const buttonLabel = priceRaw.startsWith('$') ? `預約 ${priceRaw}` : `預約 $${priceRaw}`;\n  const cleanServiceName = serviceName.replace(/\\n/g, ' ');\n\n  if (!groups[category]) groups[category] = [];\n  groups[category].push({\n    line1: line1,\n    line2: line2,\n    duration: duration,\n    numericPrice: numericPrice,\n    buttonLabel: buttonLabel,\n    actionText: `預約項目:${staffStr}|${cleanServiceName}|${duration}|ts:${Date.now()}${isAddMode}`\n  });\n});\n\nconst sortedCategories = Object.keys(groups).sort((a, b) => categoryOrder[a] - categoryOrder[b]);\n\nconst bubbles = sortedCategories.map(category => {\n  groups[category].sort((a, b) => a.numericPrice - b.numericPrice);\n\n  const serviceBlocks = [];\n  groups[category].forEach((svc, index) => {\n    if (index > 0) {\n      serviceBlocks.push({\n        \"type\": \"separator\",\n        \"margin\": \"sm\"\n      });\n    }\n\n    const textContents = [\n      {\n        \"type\": \"text\",\n        \"text\": svc.line1,\n        \"size\": \"sm\",\n        \"color\": \"#333333\",\n        \"weight\": \"bold\",\n        \"align\": \"center\",\n        \"wrap\": true\n      }\n    ];\n\n    if (svc.line2) {\n      textContents.push({\n        \"type\": \"text\",\n        \"text\": svc.line2,\n        \"size\": \"sm\",\n        \"color\": svc.line2.startsWith('(') ? \"#666666\" : \"#333333\",\n        \"weight\": \"bold\",\n        \"align\": \"center\",\n        \"wrap\": true\n      });\n    }\n\n    serviceBlocks.push({\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"margin\": \"sm\",\n      \"spacing\": \"xs\",\n      \"contents\": [\n        ...textContents,\n        {\n          \"type\": \"button\",\n          \"style\": \"secondary\",\n          \"height\": \"sm\",\n          \"margin\": \"xs\",\n          \"action\": {\n            \"type\": \"message\",\n            \"label\": svc.buttonLabel,\n            \"text\": svc.actionText\n          }\n        }\n      ]\n    });\n  });\n\n  return {\n    \"type\": \"bubble\",\n    \"size\": \"micro\",\n    \"header\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"backgroundColor\": \"#1DB446\",\n      \"paddingAll\": \"sm\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": category,\n          \"weight\": \"bold\",\n          \"size\": \"md\",\n          \"color\": \"#FFFFFF\",\n          \"align\": \"center\"\n        }\n      ]\n    },\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"paddingAll\": \"sm\",\n      \"contents\": serviceBlocks\n    }\n  };\n});\n\nreturn {\n  json: {\n    \"replyToken\": replyToken,\n    \"messages\": [\n      {\n        \"type\": \"flex\",\n        \"altText\": \"請選擇預約項目\",\n        \"contents\": {\n          \"type\": \"carousel\",\n          \"contents\": bubbles\n        }\n      }\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2496,
+        2896
+      ],
+      "id": "181ede55-7ab1-4027-a05f-e3e858f137d9",
+      "name": "步驟 2：選擇服務項目"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\nconst text = webhookItem ? webhookItem.json.body.events[0].message.text : '';\n\nconst isAddMode = text.includes('|加人') ? '|加人' : '';\nconst parts = text.replace('預約項目:', '').replace('|加人', '').split('|');\nconst staffStr = parts[0] ? parts[0].trim() : '不指定';\nconst serviceName = parts[1] || '按摩';\nconst duration = parts[2] || '60';\n\n// 提取師傅號碼 (如 \"1號師傅\" -> \"1\")\nconst staffNumMatch = staffStr.match(/\\d+/);\nconst targetStaffNum = staffNumMatch ? staffNumMatch[0] : '';\n\n// 讀取班表與預約資料 (請確保前置節點名稱與工作流一致)\nlet scheduleRows = [];\nlet existingAppointments = [];\n\ntry {\n  scheduleRows = $('讀取班表 Staff_Schedule1').all().map(i => i.json);\n} catch (e) {\n  scheduleRows = [];\n}\n\ntry {\n  existingAppointments = $('讀取預約 Bookings3').all().map(i => i.json);\n} catch (e) {\n  existingAppointments = [];\n}\n\n// 輔助函式：時間轉分鐘數\nconst parseTimeToMinutes = (tStr) => {\n  if (!tStr) return 0;\n  const cleanT = String(tStr).replace(' (次日)', '').trim();\n  const [h, m] = cleanT.split(':').map(Number);\n  let totalM = (h || 0) * 60 + (m || 0);\n  if (String(tStr).includes('次日') || (h || 0) < 6) totalM += 24 * 60;\n  return totalM;\n};\n\n// 店家營業開放時間清單 (可依實際經營時段調整)\nconst rawTimes = [];\nfor (let hour = 11; hour <= 23; hour++) {\n  rawTimes.push(`${String(hour).padStart(2, '0')}:00`);\n  rawTimes.push(`${String(hour).padStart(2, '0')}:30`);\n}\nrawTimes.push('00:00', '00:30', '01:00');\n\n// 比對每日排班與剩餘空檔\nconst scheduleMap = {};\n\nscheduleRows.forEach(row => {\n  const dateKey = String(row['日期'] || '').trim().substring(0, 10);\n  if (!dateKey) return;\n\n  let workTimeStr = '';\n  for (const [colName, val] of Object.entries(row)) {\n    if (colName === '日期' || colName === 'row_number') continue;\n    const cleanCol = colName.replace('男', '').replace('女', '').replace('號', '').trim();\n    if (staffStr === '不指定' || cleanCol === targetStaffNum) {\n      if (val && String(val).trim() !== '') {\n        workTimeStr = String(val).trim();\n        break;\n      }\n    }\n  }\n\n  // 無班表或格式不符算作休假 (OFF)\n  if (!workTimeStr || !workTimeStr.includes('-')) {\n    scheduleMap[dateKey] = 'OFF';\n    return;\n  }\n\n  // 解析上班時間區間\n  const [startPart, endPart] = workTimeStr.split('-').map(s => s.trim());\n  const parseWorkTime = (p) => {\n    if (p.includes(':')) {\n      const [h, m] = p.split(':').map(Number);\n      return h * 60 + (m || 0);\n    } else {\n      const h = Math.floor(parseInt(p, 10) / 100);\n      const m = parseInt(p, 10) % 100;\n      return h * 60 + m;\n    }\n  };\n\n  const workStartM = parseWorkTime(startPart);\n  let workEndM = parseWorkTime(endPart);\n  if (workEndM <= workStartM) workEndM += 24 * 60;\n\n  // 檢查當日是否至少有一個未被預約的空檔\n  const hasAvailableSlot = rawTimes.some(timeStr => {\n    const targetStartM = parseTimeToMinutes(timeStr);\n    const targetEndM = targetStartM + 60;\n\n    if (targetStartM < workStartM || targetEndM > workEndM) return false;\n\n    let isConflict = false;\n    existingAppointments.forEach(appt => {\n      const apptDate = String(appt['預約日期'] || '').trim().substring(0, 10);\n      const apptStaff = String(appt['指定師傅'] || appt['師傅姓名'] || '').trim();\n      const apptStatus = String(appt['Status'] || appt['狀態'] || '').trim();\n\n      if (apptDate === dateKey && apptStatus !== '已取消') {\n        if (staffStr === '不指定' || apptStaff.includes(targetStaffNum)) {\n          const apptStartStr = String(appt['開始時間'] || '').trim();\n          const apptEndStr = String(appt['結束時間'] || '').trim();\n          if (apptStartStr && apptEndStr) {\n            const apptStartM = parseTimeToMinutes(apptStartStr);\n            const apptEndM = parseTimeToMinutes(apptEndStr);\n            if (Math.max(targetStartM, apptStartM) < Math.min(targetEndM, apptEndM)) {\n              isConflict = true;\n            }\n          }\n        }\n      }\n    });\n\n    return !isConflict;\n  });\n\n  scheduleMap[dateKey] = hasAvailableSlot ? 'AVAILABLE' : 'FULL';\n});\n\n// 時區計算：台灣標準時間 UTC+8\nconst now = new Date();\nconst twNow = new Date(now.getTime() + (8 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));\nconst currentDay = twNow.getUTCDate();\nlet totalDays = currentDay >= 25 ? 28 : new Date(twNow.getUTCFullYear(), twNow.getUTCMonth() + 1, 0).getDate() - currentDay + 1;\n\nconst totalWeeks = Math.ceil(totalDays / 7);\nconst oneDayTime = 24 * 60 * 60 * 1000;\n\nconst getTaiwanDateStr = (offsetDays = 0) => {\n  const d = new Date(twNow.getTime() + (offsetDays * oneDayTime));\n  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;\n};\n\nconst weekdays = ['日', '一', '二', '三', '四', '五', '六'];\nconst bubbles = [];\n\nfor (let week = 0; week < totalWeeks; week++) {\n  const dateBoxes = [];\n\n  for (let i = 0; i < 7; i++) {\n    const dayIndex = week * 7 + i;\n    if (dayIndex >= totalDays) break;\n\n    const dateStr = getTaiwanDateStr(dayIndex);\n    const targetDate = new Date(twNow.getTime() + (dayIndex * oneDayTime));\n    const dayOfWeek = targetDate.getUTCDay(); \n    const isWeekend = (dayOfWeek === 0 || dayOfWeek === 6);\n    const monthDay = `${targetDate.getUTCMonth() + 1}/${targetDate.getUTCDate()}`;\n    const weekStr = `(週${weekdays[dayOfWeek]})`;\n    \n    const status = scheduleMap[dateStr] || 'OFF';\n\n    if (status === 'AVAILABLE') {\n      dateBoxes.push({\n        \"type\": \"box\",\n        \"layout\": \"horizontal\",\n        \"backgroundColor\": \"#f0f0f0\",\n        \"cornerRadius\": \"sm\",\n        \"paddingAll\": \"sm\",\n        \"margin\": \"xs\",\n        \"action\": {\n          \"type\": \"message\",\n          \"label\": `${monthDay} ${weekStr}`,\n          \"text\": `預約日期:${staffStr}|${serviceName}|${duration}|${dateStr}|ts:${Date.now()}${isAddMode}`\n        },\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": `${monthDay} ${weekStr}`,\n            \"size\": \"md\",\n            \"align\": \"center\",\n            \"color\": isWeekend ? '#FF4b4b' : '#333333',\n            \"weight\": isWeekend ? \"bold\" : \"regular\"\n          }\n        ]\n      });\n    } else {\n      const tagText = status === 'FULL' ? '(滿)' : '(休)';\n      dateBoxes.push({\n        \"type\": \"box\",\n        \"layout\": \"horizontal\",\n        \"backgroundColor\": \"#E0E0E0\",\n        \"cornerRadius\": \"sm\",\n        \"paddingAll\": \"sm\",\n        \"margin\": \"xs\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": `${monthDay} ${weekStr} ${tagText}`,\n            \"size\": \"md\",\n            \"align\": \"center\",\n            \"color\": \"#999999\",\n            \"weight\": \"regular\"\n          }\n        ]\n      });\n    }\n  }\n\n  const startDateStr = getTaiwanDateStr(week * 7);\n  const actualEndIndex = Math.min((week * 7 + 6), totalDays - 1);\n  const endDateStr = getTaiwanDateStr(actualEndIndex);\n  const subTitle = `(${startDateStr.slice(5)} ~ ${endDateStr.slice(5)})`;\n  const mainTitle = week === 0 ? '本週可預約日期' : `第 ${week + 1} 週`;\n\n  bubbles.push({\n    \"type\": \"bubble\",\n    \"size\": \"micro\",\n    \"header\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"backgroundColor\": \"#1DB446\",\n      \"paddingAll\": \"sm\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": mainTitle,\n          \"weight\": \"bold\",\n          \"size\": \"sm\",\n          \"color\": \"#FFFFFF\",\n          \"align\": \"center\"\n        },\n        {\n          \"type\": \"text\",\n          \"text\": subTitle,\n          \"size\": \"xs\",\n          \"color\": \"#FFFFFFCC\",\n          \"align\": \"center\",\n          \"margin\": \"xs\"\n        }\n      ]\n    },\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"paddingAll\": \"sm\",\n      \"contents\": dateBoxes\n    }\n  });\n}\n\nreturn {\n  json: {\n    \"replyToken\": replyToken,\n    \"messages\": [\n      {\n        \"type\": \"flex\",\n        \"altText\": \"請選擇預約日期\",\n        \"contents\": {\n          \"type\": \"carousel\",\n          \"contents\": bubbles\n        }\n      }\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2272,
+        3136
+      ],
+      "id": "fa8ef88d-fec6-479b-abda-3f48677ed0cb",
+      "name": "步驟 3：詢問日期"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Staff_Schedule",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2720,
+        3328
+      ],
+      "id": "688a7a49-083d-4703-97c0-872a940a05ee",
+      "name": "讀取班表 Staff_Schedule",
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst text = webhookItem ? webhookItem.json.body.events[0].message.text : '';\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\nconst isAddMode = text.includes('|加人') ? '|加人' : '';\n\nlet cleanText = text.replace('預約日期:', '').replace('|加人', '');\nconst parts = cleanText.split('|');\n\nconst staffStr = parts[0] ? parts[0].trim() : '不指定';\nconst serviceName = parts[1] || '按摩';\nconst duration = parseInt(parts[2] || '60', 10);\nconst dateStr = parts[3] ? parts[3].trim() : '';\n\nlet scheduleRows = [];\nlet existingAppointments = [];\n\ntry {\n  scheduleRows = $('讀取班表 Staff_Schedule').all().map(i => i.json);\n} catch (e) {\n  scheduleRows = [];\n}\n\ntry {\n  existingAppointments = $('讀取預約 Bookings').all().map(i => i.json);\n} catch (e) {\n  existingAppointments = [];\n}\n\nconst now = new Date();\nconst twNow = new Date(now.getTime() + (8 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));\nconst todayStr = `${twNow.getUTCFullYear()}-${String(twNow.getUTCMonth() + 1).padStart(2, '0')}-${String(twNow.getUTCDate()).padStart(2, '0')}`;\nconst currentHour = twNow.getUTCHours();\nconst currentMinute = twNow.getUTCMinutes();\n\nconst parseTimeToMinutes = (tStr) => {\n  if (!tStr) return 0;\n  const cleanT = String(tStr).replace(' (次日)', '').trim();\n  const [h, m] = cleanT.split(':').map(Number);\n  let totalM = (h || 0) * 60 + (m || 0);\n  if (String(tStr).includes('次日') || (h || 0) < 6) {\n    totalM += 24 * 60;\n  }\n  return totalM;\n};\n\nconst rawTimes = [];\nfor (let hour = 11; hour <= 23; hour++) {\n  rawTimes.push(`${String(hour).padStart(2, '0')}:00`);\n  rawTimes.push(`${String(hour).padStart(2, '0')}:30`);\n}\nrawTimes.push('00:00');\nrawTimes.push('00:30');\nrawTimes.push('01:00');\n\nconst availableTimes = rawTimes.filter(timeStr => {\n  if (dateStr === todayStr) {\n    const [tHour, tMinute] = timeStr.split(':').map(Number);\n    if (tHour >= 0 && tHour <= 3) return false;\n    if (tHour < currentHour || (tHour === currentHour && tMinute <= currentMinute)) return false;\n  }\n\n  const targetStartM = parseTimeToMinutes(timeStr);\n  const targetEndM = targetStartM + duration;\n\n  const targetRow = scheduleRows.find(row => String(row['日期'] || '').trim().substring(0, 10) === dateStr);\n  if (!targetRow) return false;\n\n  let activeStaffList = [];\n  for (const [colName, workTime] of Object.entries(targetRow)) {\n    if (colName === '日期' || colName === 'row_number') continue;\n    if (!workTime || String(workTime).trim() === '') continue;\n\n    const workStr = String(workTime).trim();\n    if (workStr.includes('-')) {\n      const [startPart, endPart] = workStr.split('-').map(s => s.trim());\n      const parseWorkTime = (p) => {\n        if (p.includes(':')) {\n          const [h, m] = p.split(':').map(Number);\n          return h * 60 + (m || 0);\n        } else {\n          const h = Math.floor(parseInt(p, 10) / 100);\n          const m = parseInt(p, 10) % 100;\n          return h * 60 + m;\n        }\n      };\n\n      const workStartM = parseWorkTime(startPart);\n      let workEndM = parseWorkTime(endPart);\n      if (workEndM <= workStartM) workEndM += 24 * 60;\n\n      if (targetStartM >= workStartM && targetEndM <= workEndM) {\n        const colStr = String(colName).trim();\n        let staffNum = colStr.replace('男', '').replace('女', '').replace('號', '').trim();\n        let staffName = `${staffNum}號師傅`;\n\n        if (staffStr !== '不指定' && staffStr !== staffName) continue;\n\n        let isConflict = false;\n        existingAppointments.forEach(appt => {\n          const apptDate = String(appt['預約日期'] || '').trim().substring(0, 10);\n          const apptStaff = String(appt['指定師傅'] || appt['師傅姓名'] || '').trim();\n          const apptStatus = String(appt['Status'] || appt['狀態'] || '').trim();\n\n          if (apptDate === dateStr && apptStaff.includes(staffNum) && apptStatus !== '已取消') {\n            const apptStartStr = String(appt['開始時間'] || '').trim();\n            const apptEndStr = String(appt['結束時間'] || '').trim();\n            if (apptStartStr && apptEndStr) {\n              const apptStartM = parseTimeToMinutes(apptStartStr);\n              const apptEndM = parseTimeToMinutes(apptEndStr);\n              if (Math.max(targetStartM, apptStartM) < Math.min(targetEndM, apptEndM)) {\n                isConflict = true;\n              }\n            }\n          }\n        });\n\n        if (!isConflict) {\n          activeStaffList.push(staffName);\n        }\n      }\n    }\n  }\n\n  return activeStaffList.length > 0;\n});\n\nif (availableTimes.length === 0) {\n  return {\n    json: {\n      replyToken: replyToken,\n      messages: [\n        {\n          \"type\": \"text\",\n          \"text\": `⚠️ 此日期（${dateStr}）該師傅無可預約的空閒時段，請更換日期或選取其他師傅！`\n        }\n      ]\n    }\n  };\n}\n\n// 修正重點：設定每頁固定幾筆（例如一頁 5 個按鈕），並動態計算實際需要的頁數\nconst itemsPerPage = 5;\nconst totalPages = Math.ceil(availableTimes.length / itemsPerPage);\nconst bubbles = [];\n\nfor (let page = 0; page < totalPages; page++) {\n  const chunkTimes = availableTimes.slice(page * itemsPerPage, (page + 1) * itemsPerPage);\n  const timeBoxes = [];\n\n  chunkTimes.forEach(t => {\n    const isNextDay = t === '00:00' || t === '00:30' || t === '01:00';\n    const labelDisplay = isNextDay ? `⏰ ${t} (次日)` : `⏰ ${t}`;\n\n    timeBoxes.push({\n      \"type\": \"box\",\n      \"layout\": \"horizontal\",\n      \"backgroundColor\": \"#f0f0f0\",\n      \"cornerRadius\": \"sm\",\n      \"paddingAll\": \"sm\",\n      \"margin\": \"xs\",\n      \"action\": {\n        \"type\": \"message\",\n        \"label\": `${t}${isNextDay ? ' (次日)' : ''}`,\n        \"text\": `預約時間:${dateStr}|${t}|${serviceName}|${duration}|${staffStr}|ts:${Date.now()}${isAddMode}`\n      },\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": labelDisplay,\n          \"size\": \"md\",\n          \"align\": \"center\",\n          \"color\": isNextDay ? \"#d9534f\" : \"#333333\",\n          \"weight\": \"bold\"\n        }\n      ]\n    });\n  });\n\n  bubbles.push({\n    \"type\": \"bubble\",\n    \"size\": \"micro\",\n    \"header\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"backgroundColor\": \"#1DB446\",\n      \"paddingAll\": \"sm\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": totalPages > 1 ? `選擇預約時間 (${page + 1}/${totalPages})` : '選擇預約時間',\n          \"weight\": \"bold\",\n          \"size\": \"sm\",\n          \"color\": \"#FFFFFF\",\n          \"align\": \"center\"\n        },\n        {\n          \"type\": \"text\",\n          \"text\": `📅 ${dateStr} (${staffStr})`,\n          \"size\": \"xs\",\n          \"color\": \"#FFFFFFCC\",\n          \"align\": \"center\",\n          \"margin\": \"xs\"\n        }\n      ]\n    },\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"paddingAll\": \"sm\",\n      \"contents\": timeBoxes\n    }\n  });\n}\n\nreturn {\n  json: {\n    \"replyToken\": replyToken,\n    \"messages\": [\n      {\n        \"type\": \"flex\",\n        \"altText\": \"請選擇預約時間\",\n        \"contents\": {\n          \"type\": \"carousel\",\n          \"contents\": bubbles\n        }\n      }\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2272,
+        3328
+      ],
+      "id": "2ce4d679-b2a1-4f1a-87d4-ce8142e56143",
+      "name": "步驟 4：選擇時間點"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2048,
+        3392
+      ],
+      "id": "56eb5918-9946-45b1-b47e-227a1b50a0a8",
+      "name": "發送 LINE 回覆",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "kZ32dUHEtSLnWZkz",
+          "name": "奧德彪Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Bookings",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "顧客姓名",
+              "lookupValue": "={{ $('LINE Webhook').item.json.body.events[0].source.userId }}"
+            },
+            {
+              "lookupColumn": "狀態",
+              "lookupValue": "已預約"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2496,
+        3520
+      ],
+      "id": "6d826342-3f00-4056-94b7-a70a89e7305b",
+      "name": "查詢預約",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2496,
+        3328
+      ],
+      "id": "9a40fa93-afc1-47b2-97f2-f98bd7811389",
+      "name": "讀取預約 Bookings",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "顧客姓名",
+              "lookupValue": "={{ $('LINE Webhook').item.json.body.events[0].source.userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -3392,
+        1968
+      ],
+      "id": "cd7623a0-3c99-4159-8477-cd884f994c1f",
+      "name": "讀取預約 Bookings1",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all().map(i => i.json);\nconst webhookEvent = $('LINE Webhook').item.json.body.events[0];\nconst replyToken = webhookEvent.replyToken;\n\nconst now = new Date();\nconst getTaiwanDate = (offsetDays = 0) => {\n  const d = new Date(now.getTime() + (offsetDays * 24 * 60 * 60 * 1000));\n  const formatter = new Intl.DateTimeFormat('en-CA', {\n    timeZone: 'Asia/Taipei',\n    year: 'numeric',\n    month: '2-digit',\n    day: '2-digit'\n  });\n  return formatter.format(d);\n};\n\nconst todayStr = getTaiwanDate(0);\nconst limitDateStr = getTaiwanDate(7);\n\nconst userBookings = items.filter(appt => {\n  const apptStatus = String(appt['狀態'] || appt['Status'] || '已預約').trim();\n  const apptDate = String(appt['預約日期'] || '').trim().substring(0, 10);\n  return (apptStatus !== '已取消') && (apptDate >= todayStr && apptDate <= limitDateStr);\n});\n\nif (userBookings.length > 0) {\n  return [{\n    json: {\n      hasBooking: true,\n      bookingCount: userBookings.length,\n      replyToken: replyToken,\n      userBookings: userBookings\n    }\n  }];\n} else {\n  return [{\n    json: {\n      hasBooking: false,\n      bookingCount: 0,\n      replyToken: replyToken,\n      userBookings: []\n    }\n  }];\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3168,
+        1968
+      ],
+      "id": "88d8261e-98fa-424c-aaf7-b150de5ede8a",
+      "name": "查詢重複預約"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "04708102-1d31-40d2-a9bf-ac4c4fc39836",
+              "leftValue": "={{ $json.hasBooking }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2944,
+        1968
+      ],
+      "id": "214aa102-0ee8-4ab0-b00f-ec30ad370ac6",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Bookings",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "預約日期": "={{ $('LINE Webhook').first().json.body.events[0].message.text.split('|')[0].replace('預約時間:', '') }}",
+            "開始時間": "={{ $('LINE Webhook').first().json.body.events[0].message.text.split('|')[1] }}",
+            "結束時間": "={{ $now.setZone('Asia/Taipei').set({ hour: Number($('LINE Webhook').first().json.body.events[0].message.text.split('|')[1].split(':')[0]), minute: Number($('LINE Webhook').first().json.body.events[0].message.text.split('|')[1].split(':')[1]) }).plus({ minutes: Number($('LINE Webhook').first().json.body.events[0].message.text.split('|')[3] || 60) }).toFormat('HH:mm') }}",
+            "指定師傅": "={{ $('LINE Webhook').first().json.body.events[0].message.text.split('|')[4] }}",
+            "顧客姓名": "={{ $('LINE Webhook').first().json.body.events[0].source.userId }}",
+            "狀態": "已預約",
+            "建立時間": "={{ $now.setZone('Asia/Taipei').toFormat('yyyy-MM-dd HH:mm:ss') }}",
+            "服務項目": "={{ $('LINE Webhook').first().json.body.events[0].message.text.split('|')[2] }}"
+          },
+          "matchingColumns": [
+            "顧客姓名"
+          ],
+          "schema": [
+            {
+              "id": "預約日期",
+              "displayName": "預約日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "開始時間",
+              "displayName": "開始時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "結束時間",
+              "displayName": "結束時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "指定師傅",
+              "displayName": "指定師傅",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "顧客姓名",
+              "displayName": "顧客姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "顧客電話",
+              "displayName": "顧客電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "狀態",
+              "displayName": "狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "建立時間",
+              "displayName": "建立時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "服務項目",
+              "displayName": "服務項目",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "姓名",
+              "displayName": "姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "電話",
+              "displayName": "電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2720,
+        2672
+      ],
+      "id": "11db8b55-cb95-4050-b4b2-e32c81f3cc86",
+      "name": "寫入 Bookings 工作表2",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "狀態": "已取消"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "預約日期",
+              "displayName": "預約日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "開始時間",
+              "displayName": "開始時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "結束時間",
+              "displayName": "結束時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "指定師傅",
+              "displayName": "指定師傅",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "顧客姓名",
+              "displayName": "顧客姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "顧客電話",
+              "displayName": "顧客電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "狀態",
+              "displayName": "狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "建立時間",
+              "displayName": "建立時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "服務項目",
+              "displayName": "服務項目",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "姓名",
+              "displayName": "姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電話",
+              "displayName": "電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2496,
+        3712
+      ],
+      "id": "3efd1f9f-bd06-45f9-a8b7-fe16630e0881",
+      "name": "寫入 Bookings 工作表3",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Bookings",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "顧客姓名",
+              "lookupValue": "={{ $('LINE Webhook').item.json.body.events[0].source.userId }}"
+            },
+            {
+              "lookupColumn": "預約日期",
+              "lookupValue": "={{ $('LINE Webhook').item.json.body.events[0].message.text.split('|')[1] }}"
+            },
+            {
+              "lookupColumn": "開始時間",
+              "lookupValue": "={{ $('LINE Webhook').item.json.body.events[0].message.text.split('|')[2] }}"
+            },
+            {
+              "lookupColumn": "指定師傅",
+              "lookupValue": "={{ $('LINE Webhook').item.json.body.events[0].message.text.split('|')[3] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2720,
+        3712
+      ],
+      "id": "c7b1f4fd-20b7-4f18-9ca8-8fa41394a6a7",
+      "name": "查詢預約2",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.item.json;\nconst replyToken = inputData.replyToken || \"\";\nconst userBookings = inputData.userBookings || [];\nconst bookingCount = inputData.bookingCount || userBookings.length;\n\nconst latestBooking = userBookings.length > 0 ? userBookings[userBookings.length - 1] : null;\nconst latestDate = latestBooking ? latestBooking['預約日期'] : '近期';\nconst latestTime = latestBooking ? latestBooking['開始時間'] : '';\nconst latestStaff = latestBooking ? latestBooking['指定師傅'] : '未指定';\n\n// 明確標示「7天內」\nconst alertText = bookingCount > 1\n  ? `您在未來 7 天內共有 ${bookingCount} 筆預約！最近一筆為 ${latestDate} ${latestTime}（師傅：${latestStaff}）。\\n\\n請問您要如何處理？`\n  : `您在未來 7 天內（${latestDate} ${latestTime}）已經有一筆預約（師傅：${latestStaff}）。\\n\\n請問您要如何處理？`;\n\nconst flexMessage = {\n  type: \"flex\",\n  altText: \"重複預約提醒\",\n  contents: {\n    type: \"bubble\",\n    body: {\n      type: \"box\",\n      layout: \"vertical\",\n      contents: [\n        {\n          type: \"text\",\n          text: \"⚠️ 提醒您\",\n          weight: \"bold\",\n          size: \"xl\",\n          color: \"#FF5722\"\n        },\n        {\n          type: \"text\",\n          text: alertText,\n          wrap: true,\n          margin: \"md\",\n          size: \"md\"\n        },\n        {\n          type: \"separator\",\n          margin: \"md\"\n        },\n        {\n          type: \"button\",\n          action: {\n            type: \"message\",\n            label: \"取消原有預約\",\n            text: \"查詢預約\"\n          },\n          style: \"primary\",\n          color: \"#FF5722\",\n          margin: \"md\"\n        },\n        {\n          type: \"button\",\n          action: {\n            type: \"message\",\n            label: \"新增額外預約\",\n            text: \"動作:增加|加人\"\n          },\n          style: \"primary\",\n          color: \"#1DB446\",\n          margin: \"sm\"\n        }\n      ]\n    }\n  }\n};\n\nreturn {\n  json: {\n    replyToken: replyToken,\n    messages: [\n      flexMessage\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2720,
+        1872
+      ],
+      "id": "6810df60-9b37-453f-9433-4644d32d42de",
+      "name": "步驟0：產生重複預約詢問卡片"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all().map(i => i.json);\nconst webhookItem = $('LINE Webhook').first();\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\n\nconst now = new Date();\nconst twNow = new Date(now.getTime() + (8 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));\nconst todayStr = `${twNow.getUTCFullYear()}-${String(twNow.getUTCMonth() + 1).padStart(2, '0')}-${String(twNow.getUTCDate()).padStart(2, '0')}`;\nconst currentHour = twNow.getUTCHours();\nconst currentMinute = twNow.getUTCMinutes();\nconst currentTotalM = currentHour * 60 + currentMinute;\n\nconst activeBookings = items.filter(appt => {\n  const status = String(appt['狀態'] || appt['Status'] || '').trim();\n  if (status === '已取消' || status === '') return false;\n\n  const dateStr = String(appt['預約日期'] || '').trim().substring(0, 10);\n  const timeStr = String(appt['開始時間'] || '').trim();\n\n  if (dateStr < todayStr) return false;\n  if (dateStr === todayStr && timeStr) {\n    const [tH, tM] = timeStr.split(':').map(Number);\n    const apptTotalM = (tH || 0) * 60 + (tM || 0);\n    if (apptTotalM <= currentTotalM) return false;\n  }\n  return true;\n});\n\nif (activeBookings.length === 0) {\n  return {\n    json: {\n      replyToken: replyToken,\n      messages: [\n        {\n          \"type\": \"flex\",\n          \"altText\": \"查無預約紀錄\",\n          \"contents\": {\n            \"type\": \"bubble\",\n            \"body\": {\n              \"type\": \"box\",\n              \"layout\": \"vertical\",\n              \"contents\": [\n                {\n                  \"type\": \"text\",\n                  \"text\": \"ℹ️ 查無預約紀錄\",\n                  \"weight\": \"bold\",\n                  \"size\": \"md\",\n                  \"color\": \"#888888\"\n                },\n                {\n                  \"type\": \"separator\",\n                  \"margin\": \"md\"\n                },\n                {\n                  \"type\": \"text\",\n                  \"text\": \"您好，目前查無您生效中的預約紀錄喔！\\n點擊下方主選單即可開始預約。\",\n                  \"wrap\": true,\n                  \"size\": \"sm\",\n                  \"color\": \"#333333\",\n                  \"margin\": \"md\"\n                }\n              ]\n            }\n          }\n        }\n      ]\n    }\n  };\n}\n\nconst bookingContents = [];\nactiveBookings.forEach((booking, index) => {\n  if (index > 0) {\n    bookingContents.push({ type: 'separator', margin: 'md' });\n  }\n  \n  const dateStr = booking['預約日期'] || '';\n  const timeStr = booking['開始時間'] || '';\n  const endTimeStr = booking['結束時間'] || '';\n  const staffStr = booking['指定師傅'] || '不指定';\n  const serviceStr = booking['服務項目'] || '未指定';\n\n  bookingContents.push({\n    type: 'box',\n    layout: 'vertical',\n    margin: 'md',\n    spacing: 'sm',\n    contents: [\n      // 1. 上半部：師傅與項目（獨占完整寬度，支援長文字換行）\n      {\n        type: 'text',\n        text: `👨‍⚕️ 師傅：${staffStr}`,\n        size: 'sm',\n        color: '#666666'\n      },\n      {\n        type: 'text',\n        text: `🔹 項目：${serviceStr}`,\n        size: 'sm',\n        weight: 'bold',\n        color: '#1DB446',\n        wrap: true // 關鍵：讓項目長文字自然換行，不上推或遮擋其他組件\n      },\n      // 2. 下半部：左邊 (日期與時間) 與 右邊 (取消按鈕)\n      {\n        type: 'box',\n        layout: 'horizontal',\n        alignItems: 'center',\n        margin: 'xs',\n        contents: [\n          // 左側：日期 & 時間 (固定 flex 比例)\n          {\n            type: 'box',\n            layout: 'vertical',\n            flex: 3,\n            spacing: 'xs',\n            contents: [\n              { type: 'text', text: `📅 日期：${dateStr}`, size: 'sm', color: '#333333' },\n              { type: 'text', text: `⏰ 時間：${timeStr} ~ ${endTimeStr}`, size: 'sm', color: '#666666', wrap: true }\n            ]\n          },\n          // 右側：取消按鈕 (固定 flex 比例，靠右置中對齊)\n          {\n            type: 'box',\n            layout: 'vertical',\n            flex: 1,\n            justifyContent: 'center',\n            margin: 'sm',\n            contents: [\n              {\n                type: 'button',\n                style: 'primary',\n                color: '#1DB446',\n                height: 'sm',\n                action: {\n                  type: 'message',\n                  label: '取消',\n                  text: `動作:取消|${dateStr}|${timeStr}|${staffStr}`\n                }\n              }\n            ]\n          }\n        ]\n      }\n    ]\n  });\n});\n\nconst bubbleContent = {\n  type: 'bubble',\n  body: {\n    type: 'box',\n    layout: 'vertical',\n    contents: [\n      { \n        type: 'text', \n        text: `📅 您的預約清單 (共 ${activeBookings.length} 筆)`, \n        weight: 'bold', \n        size: 'lg', \n        color: '#1DB446' \n      },\n      { \n        type: 'separator', \n        margin: 'md' \n      },\n      {\n        type: 'box',\n        layout: 'vertical',\n        margin: 'md',\n        contents: bookingContents\n      }\n    ]\n  }\n};\n\nif (activeBookings.length > 1) {\n  bubbleContent.footer = {\n    type: 'box',\n    layout: 'vertical',\n    spacing: 'sm',\n    contents: [\n      {\n        type: 'button',\n        style: 'primary',\n        color: '#1DB446',\n        height: 'sm',\n        action: {\n          type: 'message',\n          label: '❌ 全部取消預約',\n          text: '動作:全部取消'\n        }\n      }\n    ]\n  };\n}\n\nreturn {\n  json: {\n    replyToken: replyToken,\n    messages: [{ type: 'flex', altText: '您的預約查詢與取消', contents: bubbleContent }]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2272,
+        3520
+      ],
+      "id": "6e054e4b-d9fd-44d4-a2f1-a4dd91c75f13",
+      "name": "步驟6：預約查詢"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\n\nlet bookingData = null;\ntry {\n  const items = $input.all();\n  if (items && items.length > 0 && items[0].json) {\n    bookingData = items[0].json;\n  }\n} catch (e) {\n  bookingData = null;\n}\n\nconst userText = webhookItem ? webhookItem.json.body.events[0].message.text : '';\nconst parts = userText.replace('動作:取消', '').split('|').filter(Boolean);\n\nconst dateStr = bookingData?.['預約日期'] || bookingData?.['日期'] || parts[0] || '';\nconst startTime = bookingData?.['開始時間'] || parts[1] || '';\nlet endTime = bookingData?.['結束時間'] || '';\n\nif (!endTime && startTime && startTime.includes(':')) {\n  const [h, m] = startTime.split(':').map(Number);\n  const duration = 120;\n  const totalM = h * 60 + m + duration;\n  const endH = Math.floor(totalM / 60) % 24;\n  const endM = totalM % 60;\n  endTime = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;\n}\n\nconst timeStr = startTime ? (endTime ? `${startTime} ~ ${endTime}` : startTime) : '';\nconst staffStr = bookingData?.['指定師傅'] || bookingData?.['師傅'] || parts[2] || '不指定';\nconst serviceStr = bookingData?.['服務項目'] || bookingData?.['項目'] || '全身指壓 / 油壓';\n\nconst flexPayload = {\n  type: \"bubble\",\n  body: {\n    type: \"box\",\n    layout: \"vertical\",\n    contents: [\n      {\n        type: \"text\",\n        text: \"🗑️ 預約已成功取消\",\n        weight: \"bold\",\n        size: \"lg\",\n        color: \"#FF5722\"\n      },\n      {\n        type: \"separator\",\n        margin: \"md\"\n      },\n      {\n        type: \"box\",\n        layout: \"vertical\",\n        margin: \"md\",\n        spacing: \"xs\",\n        contents: [\n          {\n            type: \"text\",\n            text: `👨‍⚕️ 師傅：${staffStr}`,\n            size: \"sm\",\n            color: \"#666666\"\n          },\n          {\n            type: \"text\",\n            text: `🔹 項目：${serviceStr}`,\n            size: \"sm\",\n            weight: \"bold\",\n            color: \"#1DB446\",\n            wrap: true\n          },\n          {\n            type: \"text\",\n            text: `📅 日期：${dateStr}`,\n            size: \"sm\",\n            color: \"#333333\"\n          },\n          {\n            type: \"text\",\n            text: `⏰ 時間：${timeStr}`,\n            size: \"sm\",\n            color: \"#666666\"\n          }\n        ]\n      },\n      {\n        type: \"text\",\n        text: \"該筆預約已為您從系統中移除。\",\n        size: \"xs\",\n        color: \"#888888\",\n        margin: \"md\"\n      }\n    ]\n  },\n  footer: {\n    type: \"box\",\n    layout: \"vertical\",\n    spacing: \"sm\",\n    contents: [\n      {\n        type: \"button\",\n        style: \"primary\",\n        color: \"#1DB446\", // 綠底白字\n        height: \"sm\",\n        action: {\n          type: \"message\",\n          label: \"📅 重新線上預約\",\n          text: \"線上預約\"\n        }\n      },\n      {\n        type: \"button\",\n        style: \"primary\", // 改用 primary 確保文字自動為白色\n        color: \"#777777\", // 指定灰底背景（可依喜好改 #666666 或 #888888）\n        height: \"sm\",\n        action: {\n          type: \"message\",\n          label: \"🔍 查詢目前預約\",\n          text: \"查詢預約\"\n        }\n      }\n    ]\n  }\n};\n\nreturn {\n  json: {\n    replyToken: replyToken,\n    messages: [\n      {\n        type: \"flex\",\n        altText: \"預約已成功取消\",\n        contents: flexPayload\n      }\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2272,
+        3712
+      ],
+      "id": "3ae0aade-c182-4966-88db-18fa9b89639b",
+      "name": "步驟7：取消預約"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "狀態": "已取消"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "預約日期",
+              "displayName": "預約日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "開始時間",
+              "displayName": "開始時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "結束時間",
+              "displayName": "結束時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "指定師傅",
+              "displayName": "指定師傅",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "顧客姓名",
+              "displayName": "顧客姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "顧客電話",
+              "displayName": "顧客電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "狀態",
+              "displayName": "狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "建立時間",
+              "displayName": "建立時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "服務項目",
+              "displayName": "服務項目",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "姓名",
+              "displayName": "姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電話",
+              "displayName": "電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2496,
+        3904
+      ],
+      "id": "c447caac-d4aa-4b87-88d4-6891a0be0f2a",
+      "name": "寫入 Bookings 工作表4",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Bookings",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "顧客姓名",
+              "lookupValue": "={{ $('LINE Webhook').item.json.body.events[0].source.userId }}"
+            },
+            {
+              "lookupColumn": "狀態",
+              "lookupValue": "已預約"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2720,
+        3904
+      ],
+      "id": "894619f3-5a73-4a68-ab6d-cbfed4db43f9",
+      "name": "查詢預約3",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "預約日期",
+              "lookupValue": "={{ $('LINE Webhook').first().json.body.events[0].message.text.split('|')[0].replace('預約時間:', '') }}"
+            },
+            {
+              "lookupColumn": "開始時間",
+              "lookupValue": "={{ $('LINE Webhook').first().json.body.events[0].message.text.split('|')[1] }}"
+            },
+            {
+              "lookupColumn": "結束時間",
+              "lookupValue": "={{ $json[\"結束時間\"] }}"
+            },
+            {
+              "lookupColumn": "指定師傅",
+              "lookupValue": "={{ $('LINE Webhook').first().json.body.events[0].message.text.split('|')[4] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2496,
+        2704
+      ],
+      "id": "3a4b8845-1da6-4d25-9495-22ade449dcf0",
+      "name": "讀取預約是否成功",
+      "executeOnce": false,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\n\nreturn {\n  json: {\n    replyToken: replyToken,\n    messages: [\n      {\n        type: 'flex',\n        altText: '全部預約取消通知',\n        contents: {\n          type: 'bubble',\n          body: {\n            type: 'box',\n            layout: 'vertical',\n            contents: [\n              {\n                type: 'text',\n                text: '🗑️ 全部預約已取消',\n                weight: 'bold',\n                size: 'lg',\n                color: '#FF5722'\n              },\n              {\n                type: 'separator',\n                margin: 'md'\n              },\n              {\n                type: 'box',\n                layout: 'vertical',\n                margin: 'md',\n                spacing: 'sm',\n                contents: [\n                  {\n                    type: 'text',\n                    text: '您名下所有生效中的預約已全數清空。',\n                    size: 'sm',\n                    wrap: true,\n                    color: '#333333'\n                  }\n                ]\n              },\n              {\n                type: 'text',\n                text: '期待下次為您服務！',\n                size: 'xs',\n                color: '#888888',\n                margin: 'lg'\n              }\n            ]\n          }\n        }\n      }\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2272,
+        3904
+      ],
+      "id": "c58d13db-860d-4243-af33-4597a80c04fc",
+      "name": "步驟8：全部取消"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1355571546,
+          "mode": "list",
+          "cachedResultName": "Staff_No",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=1355571546"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "USERID",
+              "lookupValue": "={{ $json.body.events[0].source.userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2720,
+        4096
+      ],
+      "id": "7607f68b-b388-46fe-8130-077164d0bb30",
+      "name": "比對USERID",
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2496,
+        4096
+      ],
+      "id": "7f6701d1-65c2-42da-8786-f6f0d95aea46",
+      "name": "讀取預約 Bookings2",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookNodeName = 'LINE Webhook';\nlet replyToken = \"\";\ntry {\n  const webhookData = $(webhookNodeName).first()?.json;\n  replyToken = webhookData?.body?.events?.[0]?.replyToken || \"\";\n} catch (e) {\n  replyToken = \"\";\n}\n\nlet rawCode = \"\";\ntry {\n  rawCode = $('比對USERID').first()?.json?.['編號'] || \"\";\n} catch (e) {\n  rawCode = \"\";\n}\n\nconst numMatch = rawCode.match(/\\d+/);\nconst staffNum = numMatch ? numMatch[0] : '';\nconst targetStaffName = `${staffNum}號師傅`;\n\nconst today = new Date();\ntoday.setHours(0, 0, 0, 0);\n\nconst next7Days = new Date(today);\nnext7Days.setDate(today.getDate() + 7);\n\nconst allBookings = $input.all();\nconst matchedBookings = allBookings\n  .map(item => item.json)\n  .filter(b => {\n    const isStaff = (b['指定師傅'] === targetStaffName || b['指定師傅'] === rawCode);\n    if (!isStaff || !b['預約日期']) return false;\n    \n    const bookingDate = new Date(b['預約日期']);\n    bookingDate.setHours(0, 0, 0, 0);\n    \n    return bookingDate >= today && bookingDate < next7Days;\n  })\n  .sort((a, b) => new Date(`${a['預約日期']} ${a['開始時間']}`) - new Date(`${b['預約日期']} ${b['開始時間']}`));\n\nconst contents = [];\nif (matchedBookings.length === 0) {\n  contents.push({\n    type: \"box\",\n    layout: \"vertical\",\n    margin: \"md\",\n    contents: [\n      {\n        type: \"text\",\n        text: \"未來 7 天內尚無任何預約。\",\n        size: \"md\",\n        color: \"#888888\",\n        align: \"center\"\n      }\n    ]\n  });\n} else {\n  matchedBookings.forEach((b, index) => {\n    const displayName = b['姓名'] || '未填寫';\n    let durationText = \"\";\n    if (b['開始時間'] && b['結束時間']) {\n      const [startH, startM] = b['開始時間'].split(':').map(Number);\n      const [endH, endM] = b['結束時間'].split(':').map(Number);\n      const durationMinutes = (endH * 60 + endM) - (startH * 60 + startM);\n      if (durationMinutes > 0) {\n        durationText = ` (${durationMinutes}分鐘)`;\n      }\n    }\n\n    contents.push({\n      type: \"box\",\n      layout: \"vertical\",\n      margin: index === 0 ? \"none\" : \"md\",\n      spacing: \"xs\",\n      contents: [\n        { type: \"box\", layout: \"baseline\", contents: [{ type: \"text\", text: `📅 ${b['預約日期']}`, weight: \"bold\", size: \"md\", color: \"#1DB446\" }] },\n        { type: \"box\", layout: \"baseline\", margin: \"xs\", contents: [{ type: \"text\", text: `⏰ ${b['開始時間']} ~ ${b['結束時間']}${durationText}`, size: \"md\", color: \"#333333\", weight: \"bold\" }] },\n        { type: \"box\", layout: \"baseline\", margin: \"xs\", contents: [{ type: \"text\", text: `💆 ${b['服務項目'] || '未指定'}`, size: \"md\", color: \"#555555\", weight: \"bold\" }] },\n        { type: \"box\", layout: \"baseline\", margin: \"xs\", contents: [{ type: \"text\", text: `👤 ${displayName}`, size: \"md\", color: \"#555555\", weight: \"bold\" }] }\n      ]\n    });\n\n    if (index < matchedBookings.length - 1) {\n      contents.push({ type: \"separator\", margin: \"md\" });\n    }\n  });\n}\n\nconst flexMessage = {\n  type: \"flex\",\n  altText: `${targetStaffName} 近7日客戶預約表`,\n  contents: {\n    type: \"bubble\",\n    size: \"kilo\",\n    header: {\n      type: \"box\",\n      layout: \"vertical\",\n      backgroundColor: \"#0F2537\",\n      contents: [\n        { type: \"text\", text: `📋 ${targetStaffName}`, weight: \"bold\", size: \"md\", color: \"#FFFFFF\" },\n        { type: \"text\", text: \"近 7 日客戶預約表\", weight: \"bold\", size: \"md\", color: \"#FFFFFF\", margin: \"xs\" }\n      ]\n    },\n    body: {\n      type: \"box\",\n      layout: \"vertical\",\n      contents: contents\n    }\n  }\n};\n\nreturn [{ json: { replyToken: replyToken, messages: [flexMessage] } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2272,
+        4096
+      ],
+      "id": "48337217-6f95-414e-afd0-5753af602a5a",
+      "name": "班表查詢"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/chat/loading/start",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"chatId\": \"{{ $json.body.events[0].source.userId }}\",\n  \"loadingSeconds\": 15\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3840,
+        2992
+      ],
+      "id": "549c08be-0c02-4ce2-9530-c4d3f56657f7",
+      "name": "發送 LINE 動畫",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "kZ32dUHEtSLnWZkz",
+          "name": "奧德彪Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Staff_Schedule",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2720,
+        3136
+      ],
+      "id": "9f676287-78d5-48cb-b25d-4d20e2ad52db",
+      "name": "讀取班表 Staff_Schedule1",
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2496,
+        3136
+      ],
+      "id": "b0a75b77-d186-465f-8368-15f3cce6e459",
+      "name": "讀取預約 Bookings3",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://onesignal.com/api/v1/notifications",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"app_id\": \"9bfdc0f5-4e9d-43ce-abcc-4effeb7b7a98\",\n  \"included_segments\": [\"All\"],\n  \"headings\": {\n    \"en\": \"New Reservation\",\n    \"zh-Hant\": \"🔔 收到新預約通知！\"\n  },\n  \"contents\": {\n    \"en\": \"New Booking: {{ $json['預約日期'] }} {{ $json['開始時間'] }}\",\n    \"zh-Hant\": \"📅 日期：{{ $json['預約日期'] }}\\n⏰ 時間：{{ $json['開始時間'] }} ~ {{ $json['結束時間'] }}\\n💆 項目：{{ $json['服務項目'] }}\\n👨‍⚕️ 師傅：{{ $json['指定師傅'] }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2496,
+        2512
+      ],
+      "id": "60331316-f11a-43fa-a91f-e63a536a14cb",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ELUxgK2ND4GITXpG",
+          "name": "PWA-1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst currentUserId = webhookItem ? webhookItem.json.body.events[0]?.source?.userId : '';\nconst replyToken = webhookItem ? webhookItem.json.body.events[0]?.replyToken : '';\nconst text = webhookItem ? webhookItem.json.body.events[0]?.message?.text : '';\n\n// 解析預約請求字串\nconst parts = text.replace('預約時間:', '').split('|');\nconst dateStr = parts[0] || '';\nconst timeStr = parts[1] || '';\nconst serviceStr = parts[2] || '';\nconst duration = parseInt(parts[3] || '60', 10);\nconst staffStr = parts[4] || '不指定';\n\nlet endTimeStr = '';\nif (timeStr) {\n  const [h, m] = timeStr.split(':').map(Number);\n  const totalM = h * 60 + m + duration;\n  const endH = Math.floor(totalM / 60) % 24;\n  const endM = totalM % 60;\n  endTimeStr = `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;\n}\n\n// 讀取「讀取預約是否成功」節點傳過來的試算表資料\nconst items = $input.all().map(i => i.json);\n\n// 精準過濾出：與本次請求的「預約日期、開始時間、指定師傅」完全一致，且「狀態不等於已取消」的紀錄\nconst matchedBookings = items.filter(b => {\n  const bDate = String(b['預約日期'] || '').trim().substring(0, 10);\n  const bTime = String(b['開始時間'] || '').trim();\n  const bStaff = String(b['指定師傅'] || '').trim();\n  const bStatus = String(b['狀態'] || b['Status'] || '').trim();\n\n  return bDate === dateStr && bTime === timeStr && bStaff === staffStr && bStatus !== '已取消';\n});\n\n// 將符合條件的紀錄按 row_number 嚴格升冪排序（最先寫入試算表的人排第一個）\nmatchedBookings.sort((a, b) => (Number(a.row_number) || 0) - (Number(b.row_number) || 0));\n\n// 取得最先寫入試算表的勝出者\nconst winner = matchedBookings[0] || null;\n\n// 只有最先寫入（row_number 最小）且 顧客姓名 等於當前使用者，才是唯一成功者！\nconst isSuccess = winner && (String(winner['顧客姓名']).trim() === String(currentUserId).trim());\n\nconst footerButtons = [\n  {\n    \"type\": \"button\",\n    \"style\": \"primary\",\n    \"color\": \"#1DB446\",\n    \"height\": \"sm\",\n    \"action\": {\n      \"type\": \"message\",\n      \"label\": \"🔍 查詢預約\",\n      \"text\": \"查詢預約\"\n    }\n  }\n];\n\nlet flexMessageContent;\n\nif (isSuccess) {\n  flexMessageContent = {\n    \"type\": \"bubble\",\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"🎉 預約成功！\",\n          \"weight\": \"bold\",\n          \"size\": \"lg\",\n          \"color\": \"#1DB446\"\n        },\n        {\n          \"type\": \"separator\",\n          \"margin\": \"md\"\n        },\n        {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"margin\": \"md\",\n          \"spacing\": \"sm\",\n          \"contents\": [\n            { \"type\": \"text\", \"text\": `👨‍⚕️ 師傅：${staffStr}`, \"size\": \"sm\", \"color\": \"#666666\", \"wrap\": true },\n            { \"type\": \"text\", \"text\": `🔹 項目：${serviceStr}`, \"size\": \"sm\", \"weight\": \"bold\", \"color\": \"#1DB446\", \"wrap\": true },\n            { \"type\": \"text\", \"text\": `📅 日期：${dateStr}`, \"size\": \"sm\", \"color\": \"#333333\", \"wrap\": true },\n            { \"type\": \"text\", \"text\": `⏰ 時間：${timeStr} ~ ${endTimeStr}`, \"size\": \"sm\", \"color\": \"#666666\", \"wrap\": true }\n          ]\n        },\n        {\n          \"type\": \"separator\",\n          \"margin\": \"lg\"\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"⚠️ 請注意：請務必點擊下方按鈕確認「預約是否成功」。\\n\\n本店所有預約記錄均以點擊後顯示的查詢畫面為準，期待您的光臨！\",\n          \"size\": \"xs\",\n          \"color\": \"#888888\",\n          \"wrap\": true,\n          \"margin\": \"md\"\n        }\n      ]\n    },\n    \"footer\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"spacing\": \"sm\",\n      \"contents\": footerButtons\n    }\n  };\n} else {\n  // 比對後發現自己不是 Row 號碼最小的，顯示失敗訊息\n  flexMessageContent = {\n    \"type\": \"bubble\",\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"⚠️ 預約未成功（時段已被搶先）\",\n          \"weight\": \"bold\",\n          \"size\": \"md\",\n          \"color\": \"#E53935\"\n        },\n        {\n          \"type\": \"separator\",\n          \"margin\": \"md\"\n        },\n        {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"margin\": \"md\",\n          \"spacing\": \"sm\",\n          \"contents\": [\n            { \"type\": \"text\", \"text\": `👨‍⚕️ 欲約師傅：${staffStr}`, \"size\": \"sm\", \"color\": \"#666666\", \"wrap\": true },\n            { \"type\": \"text\", \"text\": `🔹 欲約項目：${serviceStr}`, \"size\": \"sm\", \"color\": \"#666666\", \"wrap\": true },\n            { \"type\": \"text\", \"text\": `📅 欲約日期：${dateStr}`, \"size\": \"sm\", \"color\": \"#666666\", \"wrap\": true },\n            { \"type\": \"text\", \"text\": `⏰ 欲約時間：${timeStr} ~ ${endTimeStr}`, \"size\": \"sm\", \"color\": \"#666666\", \"wrap\": true }\n          ]\n        },\n        {\n          \"type\": \"separator\",\n          \"margin\": \"md\"\n        },\n        {\n          \"type\": \"text\",\n          \"text\": \"非常抱歉！幾乎在同一瞬間有其他顧客搶先完成了該時段的預約。\\n\\n請點擊下方按鈕重新選擇其他時段，謝謝您的體諒！\",\n          \"size\": \"xs\",\n          \"color\": \"#888888\",\n          \"wrap\": true,\n          \"margin\": \"md\"\n        }\n      ]\n    },\n    \"footer\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"spacing\": \"sm\",\n      \"contents\": [\n        {\n          \"type\": \"button\",\n          \"style\": \"primary\",\n          \"color\": \"#1DB446\",\n          \"height\": \"sm\",\n          \"action\": {\n            \"type\": \"message\",\n            \"label\": \"🔄 重新選擇時段\",\n            \"text\": \"線上預約\"\n          }\n        }\n      ]\n    }\n  };\n}\n\nreturn {\n  json: {\n    replyToken: replyToken,\n    messages: [\n      {\n        \"type\": \"flex\",\n        \"altText\": isSuccess ? \"預約成功通知\" : \"預約未成功通知\",\n        \"contents\": flexMessageContent\n      }\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2272,
+        2704
+      ],
+      "id": "38b67d50-e56b-4970-a9df-8c3006a9b5a6",
+      "name": "步驟 5：發送預約成功訊息"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 共用設定：按鈕從產生到被點擊，最多允許經過幾分鐘仍視為有效\n// 之後每一步驟收到按鈕點擊時，都會用這裡的設定來比對，想調整時間只要改這裡就好\nreturn {\n  json: {\n    ...$input.first().json,\n    buttonValidMinutes: 1\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3840,
+        3184
+      ],
+      "id": "cc301bea-d3e9-4e9c-a4df-562b3155dea1",
+      "name": "按鈕有效期設定"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst text = webhookItem ? webhookItem.json.body.events[0].message.text : '';\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\n\nlet buttonValidMinutes = 30;\ntry {\n  buttonValidMinutes = $('按鈕有效期設定').first().json.buttonValidMinutes;\n} catch (e) {}\n\n// 從文字中撈出上一步驟按鈕產生時蓋上的時間戳記 |ts:數字\nconst tsMatch = text.match(/\\|ts:(\\d+)/);\nlet valid = false;\n\nif (tsMatch) {\n  const issuedAt = parseInt(tsMatch[1], 10);\n  const elapsedMinutes = (Date.now() - issuedAt) / 60000;\n  valid = elapsedMinutes <= buttonValidMinutes;\n} else {\n  // 找不到時間戳記（例如改版前的舊按鈕），一律視為逾期\n  valid = false;\n}\n\nreturn { json: { valid: valid, replyToken: replyToken } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3168,
+        2816
+      ],
+      "id": "94132849-60d2-41c3-8a3c-cf89d767c4ab",
+      "name": "驗證1：師傅選擇時效"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst text = webhookItem ? webhookItem.json.body.events[0].message.text : '';\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\n\nlet buttonValidMinutes = 30;\ntry {\n  buttonValidMinutes = $('按鈕有效期設定').first().json.buttonValidMinutes;\n} catch (e) {}\n\n// 從文字中撈出上一步驟按鈕產生時蓋上的時間戳記 |ts:數字\nconst tsMatch = text.match(/\\|ts:(\\d+)/);\nlet valid = false;\n\nif (tsMatch) {\n  const issuedAt = parseInt(tsMatch[1], 10);\n  const elapsedMinutes = (Date.now() - issuedAt) / 60000;\n  valid = elapsedMinutes <= buttonValidMinutes;\n} else {\n  // 找不到時間戳記（例如改版前的舊按鈕），一律視為逾期\n  valid = false;\n}\n\nreturn { json: { valid: valid, replyToken: replyToken } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3168,
+        3088
+      ],
+      "id": "e25c0353-6100-4468-a9b2-973163be8069",
+      "name": "驗證2：項目選擇時效"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst text = webhookItem ? webhookItem.json.body.events[0].message.text : '';\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\n\nlet buttonValidMinutes = 30;\ntry {\n  buttonValidMinutes = $('按鈕有效期設定').first().json.buttonValidMinutes;\n} catch (e) {}\n\n// 從文字中撈出上一步驟按鈕產生時蓋上的時間戳記 |ts:數字\nconst tsMatch = text.match(/\\|ts:(\\d+)/);\nlet valid = false;\n\nif (tsMatch) {\n  const issuedAt = parseInt(tsMatch[1], 10);\n  const elapsedMinutes = (Date.now() - issuedAt) / 60000;\n  valid = elapsedMinutes <= buttonValidMinutes;\n} else {\n  // 找不到時間戳記（例如改版前的舊按鈕），一律視為逾期\n  valid = false;\n}\n\nreturn { json: { valid: valid, replyToken: replyToken } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3168,
+        3328
+      ],
+      "id": "3838de58-45f0-4c75-90ea-903c5abb0afe",
+      "name": "驗證3：日期選擇時效"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c0000005-aaaa-bbbb-cccc-000000000005-c1",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2944,
+        2816
+      ],
+      "id": "a5676e66-aecf-4315-8f6f-c257d7c0d82c",
+      "name": "IF1：師傅選擇時效判斷"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c0000006-aaaa-bbbb-cccc-000000000006-c1",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2944,
+        3088
+      ],
+      "id": "364573f4-d28b-442f-bb2e-f8498aaa9f96",
+      "name": "IF2：項目選擇時效判斷"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c0000007-aaaa-bbbb-cccc-000000000007-c1",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2944,
+        3328
+      ],
+      "id": "acf6f381-e3d3-4e49-898c-93e699c978f6",
+      "name": "IF3：日期選擇時效判斷"
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : ($json.replyToken || '');\n\nreturn {\n  json: {\n    replyToken: replyToken,\n    messages: [\n      {\n        type: 'flex',\n        altText: '此按鈕已逾時',\n        contents: {\n          type: 'bubble',\n          body: {\n            type: 'box',\n            layout: 'vertical',\n            contents: [\n              { type: 'text', text: '⚠️ 操作已逾時', weight: 'bold', size: 'md', color: '#E53935' },\n              { type: 'separator', margin: 'md' },\n              {\n                type: 'text',\n                text: '您點擊的是非即時產生的按鈕。\\n\\n為了確保預約資料正確，請重新開始預約流程喔！',\n                size: 'md',\n                color: '#666666',\n                wrap: true,\n                margin: 'md'\n              }\n            ]\n          },\n          footer: {\n            type: 'box',\n            layout: 'vertical',\n            contents: [\n              {\n                type: 'button',\n                style: 'primary',\n                color: '#1DB446',\n                height: 'sm',\n                action: { type: 'message', label: '📅 重新線上預約', text: '線上預約' }\n              }\n            ]\n          }\n        }\n      }\n    ]\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2720,
+        2336
+      ],
+      "id": "2c8164d6-0ace-4253-bc7a-e9ed82fcd49e",
+      "name": "操作已逾時通知"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "顧客姓名",
+              "lookupValue": "={{ $('LINE Webhook').item.json.body.events[0].source.userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -3392,
+        2320
+      ],
+      "id": "4148883d-0707-4313-8dfa-aeab7a0fc734",
+      "name": "讀取預約 Bookings4",
+      "executeOnce": false,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const webhookItem = $('LINE Webhook').first();\nconst replyToken = webhookItem ? webhookItem.json.body.events[0].replyToken : '';\nconst text = webhookItem ? webhookItem.json.body.events[0].message.text : '';\nconst isAddMode = text.includes('|加人');\n\nlet buttonValidMinutes = 30;\ntry {\n  buttonValidMinutes = $('按鈕有效期設定').first().json.buttonValidMinutes;\n} catch (e) {}\n\n// ① 按鈕時效判斷：從文字中撈出 ts:數字\nconst tsMatch = text.match(/\\|ts:(\\d+)/);\nlet isExpired = true; // 找不到時間戳記，一律視為逾期\nif (tsMatch) {\n  const issuedAt = parseInt(tsMatch[1], 10);\n  const elapsedMinutes = (Date.now() - issuedAt) / 60000;\n  isExpired = elapsedMinutes > buttonValidMinutes;\n}\n\nif (isExpired) {\n  return { json: { status: 'EXPIRED', replyToken } };\n}\n\n// ② 重複預約判斷（若是「動作:增加|加人」的加人流程，代表使用者已經確認要新增，跳過此檢查）\nif (!isAddMode) {\n  const now = new Date();\n  const twNow = new Date(now.getTime() + (8 * 60 * 60 * 1000) + (now.getTimezoneOffset() * 60 * 1000));\n  const todayStr = `${twNow.getUTCFullYear()}-${String(twNow.getUTCMonth() + 1).padStart(2, '0')}-${String(twNow.getUTCDate()).padStart(2, '0')}`;\n  const limitDate = new Date(twNow.getTime() + 7 * 24 * 60 * 60 * 1000);\n  const limitDateStr = `${limitDate.getUTCFullYear()}-${String(limitDate.getUTCMonth() + 1).padStart(2, '0')}-${String(limitDate.getUTCDate()).padStart(2, '0')}`;\n\n  const items = $input.all().map(i => i.json);\n  const userBookings = items.filter(appt => {\n    const status = String(appt['狀態'] || appt['Status'] || '已預約').trim();\n    const apptDate = String(appt['預約日期'] || '').trim().substring(0, 10);\n    return status !== '已取消' && apptDate >= todayStr && apptDate <= limitDateStr;\n  });\n\n  if (userBookings.length > 0) {\n    return {\n      json: {\n        status: 'DUPLICATE',\n        replyToken: replyToken,\n        hasBooking: true,\n        bookingCount: userBookings.length,\n        userBookings: userBookings\n      }\n    };\n  }\n}\n\nreturn { json: { status: 'OK' } };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3168,
+        2320
+      ],
+      "id": "d5dcd7fe-603c-4ed8-b1da-0d9b362dfbcb",
+      "name": "步驟4.5：驗證預約有效性"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "s2-1",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "EXPIRED",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "已逾期"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "s2-2",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "DUPLICATE",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "重複預約"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "s2-3",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "OK",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "正常寫入"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2944,
+        2304
+      ],
+      "id": "eb19622f-8b38-40ba-b03a-f8e506ebc9d0",
+      "name": "驗證結果分流"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -4064,
+        4320
+      ],
+      "id": "b5991d2f-5367-489c-bd1e-7ebf7a4cd9f4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "狀態",
+              "lookupValue": "=已預約"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -3840,
+        4320
+      ],
+      "id": "18396254-4e8e-4a01-996a-2ec0fad038ab",
+      "name": "讀取預約清單",
+      "executeOnce": false,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\n\n// 篩選出已經結束且狀態還是「已預約」的資料\nconst expiredRows = $input.all().filter(item => {\n  const row = item.json;\n  if (row['狀態'] !== '已預約') return false;\n\n  // 組合預約結束日期與時間 (例如 \"2026-08-09 13:20\")\n  const endDateTime = new Date(`${row['預約日期']} ${row['結束時間']}`);\n  \n  return endDateTime < now;\n});\n\n// 將需要更新的列回傳，並將狀態改為「已完成」\nreturn expiredRows.map(item => {\n  return {\n    json: {\n      row_number: item.json.row_number, // 用於 Google Sheets 定位更新\n      狀態: '已完成'\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3616,
+        4320
+      ],
+      "id": "7dc9cbed-d862-4cbf-8b1b-e6a61787e31e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $json.row_number }}",
+            "狀態": "={{ $json[\"狀態\"] }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "預約日期",
+              "displayName": "預約日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "開始時間",
+              "displayName": "開始時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "結束時間",
+              "displayName": "結束時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "指定師傅",
+              "displayName": "指定師傅",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "顧客姓名",
+              "displayName": "顧客姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "顧客電話",
+              "displayName": "顧客電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "狀態",
+              "displayName": "狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "建立時間",
+              "displayName": "建立時間",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "服務項目",
+              "displayName": "服務項目",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "姓名",
+              "displayName": "姓名",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "電話",
+              "displayName": "電話",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -3392,
+        4320
+      ],
+      "id": "1adc67be-d912-48ae-a777-7801e2927fb0",
+      "name": "讀取預約清單1",
+      "executeOnce": false,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "LINE Webhook": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 動畫",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "按鈕有效期設定",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取 Staff_Schedule": {
+      "main": [
+        [
+          {
+            "node": "步驟 1：產出師傅選單",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟 1：產出師傅選單": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取 Services": {
+      "main": [
+        [
+          {
+            "node": "步驟 2：選擇服務項目",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟 2：選擇服務項目": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟 3：詢問日期": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取班表 Staff_Schedule": {
+      "main": [
+        [
+          {
+            "node": "讀取預約 Bookings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟 4：選擇時間點": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "讀取預約 Bookings1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "讀取 Staff_Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "驗證1：師傅選擇時效",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "驗證2：項目選擇時效",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "驗證3：日期選擇時效",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "讀取預約 Bookings4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "查詢預約",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "查詢預約2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "查詢預約3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "比對USERID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢預約": {
+      "main": [
+        [
+          {
+            "node": "步驟6：預約查詢",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取預約 Bookings": {
+      "main": [
+        [
+          {
+            "node": "步驟 4：選擇時間點",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取預約 Bookings1": {
+      "main": [
+        [
+          {
+            "node": "查詢重複預約",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢重複預約": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "步驟0：產生重複預約詢問卡片",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "讀取 Staff_Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫入 Bookings 工作表2": {
+      "main": [
+        [
+          {
+            "node": "讀取預約是否成功",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢預約2": {
+      "main": [
+        [
+          {
+            "node": "寫入 Bookings 工作表3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫入 Bookings 工作表3": {
+      "main": [
+        [
+          {
+            "node": "步驟7：取消預約",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟0：產生重複預約詢問卡片": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟6：預約查詢": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟7：取消預約": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "寫入 Bookings 工作表4": {
+      "main": [
+        [
+          {
+            "node": "步驟8：全部取消",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢預約3": {
+      "main": [
+        [
+          {
+            "node": "寫入 Bookings 工作表4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取預約是否成功": {
+      "main": [
+        [
+          {
+            "node": "步驟 5：發送預約成功訊息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟8：全部取消": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "比對USERID": {
+      "main": [
+        [
+          {
+            "node": "讀取預約 Bookings2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取預約 Bookings2": {
+      "main": [
+        [
+          {
+            "node": "班表查詢",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "班表查詢": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取班表 Staff_Schedule1": {
+      "main": [
+        [
+          {
+            "node": "讀取預約 Bookings3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取預約 Bookings3": {
+      "main": [
+        [
+          {
+            "node": "步驟 3：詢問日期",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟 5：發送預約成功訊息": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "按鈕有效期設定": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "驗證1：師傅選擇時效": {
+      "main": [
+        [
+          {
+            "node": "IF1：師傅選擇時效判斷",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "驗證2：項目選擇時效": {
+      "main": [
+        [
+          {
+            "node": "IF2：項目選擇時效判斷",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "驗證3：日期選擇時效": {
+      "main": [
+        [
+          {
+            "node": "IF3：日期選擇時效判斷",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF1：師傅選擇時效判斷": {
+      "main": [
+        [
+          {
+            "node": "讀取 Services",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "操作已逾時通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF2：項目選擇時效判斷": {
+      "main": [
+        [
+          {
+            "node": "讀取班表 Staff_Schedule1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "操作已逾時通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF3：日期選擇時效判斷": {
+      "main": [
+        [
+          {
+            "node": "讀取班表 Staff_Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "操作已逾時通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "操作已逾時通知": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回覆",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取預約 Bookings4": {
+      "main": [
+        [
+          {
+            "node": "步驟4.5：驗證預約有效性",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "步驟4.5：驗證預約有效性": {
+      "main": [
+        [
+          {
+            "node": "驗證結果分流",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "驗證結果分流": {
+      "main": [
+        [
+          {
+            "node": "操作已逾時通知",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "步驟0：產生重複預約詢問卡片",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "寫入 Bookings 工作表2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "讀取預約清單",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取預約清單": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "讀取預約清單1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Schedule Trigger": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": null,
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "3KmRk6IJOB1up3MO",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-08-06T03:19:50.739Z",
+      "updatedAt": "2026-08-06T03:19:50.739Z"
+    }
+  ],
+  "activeVersion": null
+}
