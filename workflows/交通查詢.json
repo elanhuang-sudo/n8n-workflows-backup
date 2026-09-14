@@ -1,0 +1,1028 @@
+{
+  "id": "0fFYZ9csrNOSWy9R",
+  "name": "交通查詢",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-01-30T01:54:37.422Z",
+  "updatedAt": "2026-03-03T02:13:03.157Z",
+  "isArchived": true,
+  "versionId": "0e638faf-1a48-4930-8119-3c1d586cad90",
+  "triggerCount": 2,
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "// 1. 直接從 Line Messaging Trigger 取得原始文字\n// 使用 .first() 確保抓到第一筆資料\nconst rawInput = $(\"Line Messaging Trigger\").first().json.message.text;\n\nif (!rawInput) {\n    throw new Error(\"找不到輸入文字，請確認 Line Trigger 節點連線正確。\");\n}\n\n// 2. 清理字串：轉大寫、移除「飛機」關鍵字、移除所有空格\n// 例如：「飛機 EK366」 -> 「EK366」\nconst flightRaw = rawInput\n    .toUpperCase()\n    .replace(/[飛機]/g, \"\") // 這裡會過濾掉「飛」和「機」這兩個字\n    .replace(/\\s+/g, \"\");   // 移除所有空格\n\n// 3. 拆分代碼 (前2碼為航空公司，例如 EK; 後面為數字，例如 366)\nconst airlineID = flightRaw.substring(0, 2);\nconst flightNumber = flightRaw.substring(2);\n\n// 4. 安全檢查：如果拆分後長度不足 (至少要 2碼ID + 1碼數字)，則噴錯\nif (flightRaw.length < 3 || !airlineID || !flightNumber) {\n    throw new Error(`無法解析航班號碼，原始輸入：${rawInput}`);\n}\n\nreturn {\n    airline_id: airlineID,\n    flight_number: flightNumber,\n    // 準備好 TDX 的過濾語法\n    tdx_filter: `AirlineID eq '${airlineID}' and FlightNumber eq '${flightNumber}'`,\n    original_text: rawInput\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        -48
+      ],
+      "id": "1d7edf08-2fb3-402b-8573-e01fdb597663",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "elanhuang-939327d2-13b0-43e2"
+            },
+            {
+              "name": "client_secret",
+              "value": "702e519d-6bdf-4ca3-9e5f-72376b3c84b7"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1280,
+        -48
+      ],
+      "id": "ea1406fb-a270-46e2-be20-4d33f36ed4c6",
+      "name": "Get TDX Token1"
+    },
+    {
+      "parameters": {
+        "url": "=https://tdx.transportdata.tw/api/basic/v2/Air/FIDS/Airport/Departure/TPE",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "$filter",
+              "value": "=AirlineID eq '{{ $node[\"Code in JavaScript1\"].json.airline_id }}' and FlightNumber eq '{{ $node[\"Code in JavaScript1\"].json.flight_number }}'"
+            },
+            {
+              "name": "$top",
+              "value": "2"
+            },
+            {
+              "name": "$format",
+              "value": "JSON"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1504,
+        -144
+      ],
+      "id": "e6d8907e-edc0-45a9-95ff-a2f1abdaa081",
+      "name": "Query TDX Status1"
+    },
+    {
+      "parameters": {
+        "url": "=https://tdx.transportdata.tw/api/basic/v2/Air/FIDS/Airport/Arrival/TPE",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "$filter",
+              "value": "=AirlineID eq '{{ $node[\"Code in JavaScript1\"].json.airline_id }}' and FlightNumber eq '{{ $node[\"Code in JavaScript1\"].json.flight_number }}'"
+            },
+            {
+              "name": "$top",
+              "value": "2"
+            },
+            {
+              "name": "$format",
+              "value": "JSON"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1504,
+        48
+      ],
+      "id": "6105c129-db9d-4a70-bb99-bc487e69020d",
+      "name": "Query TDX Status"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1728,
+        -48
+      ],
+      "id": "62ba9abc-a799-4a6e-8f54-e011ce7a90c9",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "events": [
+          "message"
+        ]
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessagingTrigger",
+      "typeVersion": 1,
+      "position": [
+        384,
+        336
+      ],
+      "id": "54968d98-9b96-4875-9c5a-01cbfddfe267",
+      "name": "Line Messaging Trigger",
+      "webhookId": "64afa4a0-9450-4489-8ce5-cd682137b36d",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "MwwGVxeoC4XfTPag",
+          "name": "奧德彪"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "replyToken": "={{ $json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "=自動回應",
+              "flexJson": "={{ $json.flexContentsString }}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        -48
+      ],
+      "id": "332da907-531a-4b20-992c-ff00b4bf6acf",
+      "name": "Line Messaging",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "MwwGVxeoC4XfTPag",
+          "name": "奧德彪"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "cb051656-645b-4295-b78e-f12d77e41d5d",
+              "leftValue": "={{ $json.FlightNumber }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1952,
+        -48
+      ],
+      "id": "3900bdb8-be02-44e3-b3da-ae15163ea9dd",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// 1. 取得 Reply Token\nlet replyToken = \"\";\ntry {\n  replyToken = $('Line Messaging Trigger').item.json.replyToken;\n} catch (e) {\n  replyToken = $json.replyToken || \"\";\n}\n\n// --- 基礎資料對照表 ---\nconst airlineMap = { \n  'EK': '阿聯酋航空', 'JX': '星宇航空', 'CI': '中華航空', \n  'BR': '長榮航空', 'CX': '國泰航空', 'JL': '日本航空', \n  'NH': '全日空', 'IT': '台灣虎航', 'TR': '酷航' \n};\nconst airportMap = { \n  'TPE': '桃園', 'HKG': '香港', 'DXB': '杜拜', \n  'NRT': '成田', 'NGO': '名古屋', 'KIX': '關西', \n  'SIN': '新加坡', 'ICN': '首爾' \n};\n\n// 2. 查無航班處理\nif (items.length === 0 || !items[0].json.FlightNumber) {\n  return {\n    replyToken: replyToken,\n    flexMessage: {\n      type: \"flex\",\n      altText: \"查無航班資訊\",\n      contents: {\n        type: \"bubble\",\n        body: {\n          type: \"box\", layout: \"vertical\", contents: [\n            { type: \"text\", text: \"⚠️ 查無此航班資訊\", weight: \"bold\", size: \"xl\", color: \"#ff4444\" }\n          ]\n        }\n      }\n    }\n  };\n}\n\n// 3. 處理邏輯\nconst dailyGroups = new Map();\nconst airlineID = items[0].json.AirlineID;\nconst flightNum = items[0].json.FlightNumber;\nconst mainAirlineName = airlineMap[airlineID] || items[0].json.AirlineName?.Zh_tw || airlineID;\n\nfor (const item of items) {\n  const f = item.json;\n  const isArrival = f.ArrivalAirportID === 'TPE';\n  \n  const depName = airportMap[f.DepartureAirportID] || f.DepartureAirportID;\n  const arrName = airportMap[f.ArrivalAirportID] || f.ArrivalAirportID;\n  const scheduleStr = isArrival ? f.ScheduleArrivalTime : f.ScheduleDepartureTime;\n  const schedDate = (scheduleStr || \"\").substring(5, 10).replace('-', '/');\n  \n  let timeStr = isArrival \n    ? (f.ActualArrivalTime || f.EstimatedArrivalTime || f.ScheduleArrivalTime)\n    : (f.ActualDepartureTime || f.EstimatedDepartureTime || f.ScheduleDepartureTime);\n  \n  let statusColor = \"#17c06b\"; \n  let statusLabel = \"表定\";\n  const remark = f.ArrivalRemark || f.DepartureRemark || '正常';\n\n  if (remark.includes(\"取消\") || remark.includes(\"延遲\") || remark.includes(\"DELAY\")) {\n    statusColor = \"#ef4d4d\"; \n  } else if (remark.includes(\"出發\") || remark.includes(\"到達\") || remark.includes(\"ARRIVED\")) {\n    statusColor = \"#666666\"; \n  }\n\n  if (isArrival) {\n    if (f.ActualArrivalTime) statusLabel = \"實際\";\n    else if (f.EstimatedArrivalTime) statusLabel = \"預計\";\n  } else {\n    if (f.ActualDepartureTime) statusLabel = \"實際\";\n    else if (f.EstimatedDepartureTime) statusLabel = \"預計\";\n  }\n\n  let displayTime = (timeStr || \"\").substring(11, 16);\n  const actualDate = (timeStr || \"\").substring(5, 10).replace('-', '/');\n  if (schedDate && actualDate && schedDate !== actualDate) {\n    displayTime += ` (${actualDate})`;\n  }\n\n  const codeshare = f.AirlineID2 ? ` (聯營: ${airlineMap[f.AirlineID2] || f.AirlineID2}${f.FlightNumber2})` : \"\";\n\n  // 字體調大版佈局\n  const flightRow = {\n    type: \"box\", layout: \"vertical\", spacing: \"md\", paddingAll: \"20px\", contents: [\n      { type: \"text\", text: `${isArrival ? '🛬 抵達' : '🛫 出發'} · ${remark}`, weight: \"bold\", size: \"md\", color: statusColor },\n      { type: \"text\", text: `${depName} ➔ ${arrName}`, size: \"xxl\", weight: \"bold\", margin: \"md\" },\n      { type: \"text\", text: `${statusLabel}${isArrival ? '降落' : '出發'}：${displayTime}`, size: \"xl\", color: \"#000000\", weight: \"bold\", margin: \"md\" },\n      { type: \"text\", text: `🏢 ${f.Terminal}航 / ${f.Gate || '-'}門${codeshare}`, size: \"sm\", color: \"#888888\", wrap: true, margin: \"md\" }\n    ]\n  };\n\n  if (!dailyGroups.has(schedDate)) dailyGroups.set(schedDate, []);\n  dailyGroups.get(schedDate).push({ sortTime: timeStr, content: flightRow });\n}\n\n// 4. 生成 Flex Carousel 結構並轉為字串輸出\nconst bubbles = Array.from(dailyGroups.entries())\n  .sort((a, b) => a[0].localeCompare(b[0]))\n  .map(([date, flights]) => {\n    const sortedFlights = flights.sort((a, b) => a.sortTime.localeCompare(b.sortTime)).map(f => f.content);\n    const bodyContents = [];\n    sortedFlights.forEach((f, idx) => {\n      if (idx > 0) bodyContents.push({ type: \"separator\" });\n      bodyContents.push(f);\n    });\n\n    return {\n      type: \"bubble\",\n      size: \"kilo\",\n      header: { type: \"box\", layout: \"vertical\", backgroundColor: \"#004098\", contents: [\n        { type: \"text\", text: `📅 ${date} 航班動態`, color: \"#ffffff\", weight: \"bold\", size: \"lg\" }\n      ]},\n      body: { type: \"box\", layout: \"vertical\", spacing: \"none\", paddingAll: \"0px\", contents: bodyContents }\n    };\n  });\n\nreturn {\n  replyToken: replyToken,\n  flexContentsString: JSON.stringify({\n    type: \"carousel\",\n    contents: bubbles\n  }),\n  altText: `✈️ ${mainAirlineName} ${airlineID}${flightNum} 查詢結果`\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        -48
+      ],
+      "id": "42807406-e22b-4f81-aa5a-f20f74a750f9",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "showLoadingAnimation",
+        "chatId": "={{ $json.source.userId }}"
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        608,
+        336
+      ],
+      "id": "a80b910a-9732-42aa-9ee6-344b0456a8a3",
+      "name": "Line Messaging1",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "MwwGVxeoC4XfTPag",
+          "name": "奧德彪"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "da5d166f-54b6-47a1-9b67-e09e9c3143fa",
+                    "leftValue": "={{ $('Line Messaging Trigger').item.json.message.text }}",
+                    "rightValue": "飛機",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Line Messaging Trigger').item.json.message.text }}",
+                    "rightValue": "台鐵",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    },
+                    "id": "11c6d5f2-a96f-4de5-8c98-e1c942d71b5a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c11c055d-59b8-43b9-8ea0-b78f633e57b6",
+                    "leftValue": "={{ $('Line Messaging Trigger').item.json.message.text }}",
+                    "rightValue": "高鐵",
+                    "operator": {
+                      "type": "string",
+                      "operation": "startsWith"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        320
+      ],
+      "id": "3b6cd3e5-c9d6-42d6-8333-685a00d96ef4",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "url": "https://tdx.transportdata.tw/api/basic/v2/Rail/TRA/Station",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "$format",
+              "value": "JSON"
+            },
+            {
+              "name": "$select",
+              "value": "StationID,StationName"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Get TDX Token\"].json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1280,
+        336
+      ],
+      "id": "7166d63e-82a2-4cde-a7c2-65b06c050c30",
+      "name": "取得全台車站清單"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得 LINE 原始文字 (例如: \"台鐵 中壢 羅東\" 或 \"台鐵 中壢到羅東\")\nlet text = $('Line Messaging Trigger').item.json.message.text.trim();\n\n// 2. 先拿掉「台鐵」關鍵字，簡化後續處理\ntext = text.replace(/^台鐵\\s*/, \"\").trim(); \n\n// 3. 取得 API 回傳的所有車站清單\nconst allStations = $(\"取得全台車站清單\").all().map(item => item.json).flat();\n\n// 4. 解析起訖名稱邏輯\nlet depName = \"\", arrName = \"\";\n\n// 使用正則表達式相容：空格、\"到\"、\"至\"、\"-\"、\"往\"\nconst parts = text.split(/[\\s\\-到至往]+/);\n\nif (parts.length >= 2) {\n  depName = parts[0].trim().replace(/臺/g, \"台\").replace(/站$/g, \"\");\n  arrName = parts[1].trim().replace(/臺/g, \"台\").replace(/站$/g, \"\");\n} else {\n  throw new Error(\"格式不對喔！請輸入「台鐵 中壢 羅東」或「台鐵 中壢到羅東」\");\n}\n\n// 5. 在清單中搜尋 StationID 的工具函數\nconst findId = (inputName) => {\n  const station = allStations.find(s => {\n    const apiName = s.StationName.Zh_tw.replace(/臺/g, \"台\").replace(/站$/g, \"\");\n    return apiName === inputName;\n  });\n  return station ? station.StationID : null;\n};\n\nconst depCode = findId(depName);\nconst arrCode = findId(arrName);\n\nif (!depCode || !arrCode) {\n  throw new Error(`找不到車站：${!depCode ? depName : arrName}`);\n}\n\n// 6. 取得今天日期 (台灣時間)\nconst taiwanDate = new Date(new Date().getTime() + 8 * 3600000).toISOString().split('T')[0];\n\nreturn {\n  depCode,\n  arrCode,\n  depName,\n  arrName,\n  queryDate: taiwanDate\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        336
+      ],
+      "id": "f8bc3cb0-dc83-43e4-b437-202e50cb9e62",
+      "name": "動態比對車站代碼"
+    },
+    {
+      "parameters": {
+        "url": "=https://tdx.transportdata.tw/api/basic/v2/Rail/TRA/DailyTimetable/OD/{{$json.depCode}}/to/{{$json.arrCode}}/{{$json.queryDate}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Get TDX Token\"].json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1728,
+        240
+      ],
+      "id": "a874036b-373e-4404-bfe0-fd395e833787",
+      "name": "呼叫台鐵時刻表API"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "elanhuang-939327d2-13b0-43e2"
+            },
+            {
+              "name": "client_secret",
+              "value": "702e519d-6bdf-4ca3-9e5f-72376b3c84b7"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1056,
+        336
+      ],
+      "id": "bc68c71d-2f13-42c8-b7fd-a65e1e8a2896",
+      "name": "Get TDX Token"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得基礎資料\nconst stationInfo = $(\"動態比對車站代碼\").first().json;\n\n// 2. 格式化日期與時間\nconst webDate = stationInfo.queryDate.replace(/-/g, \"/\");\nconst nowTime = new Date(new Date().getTime() + 8 * 3600000);\nconst nowStr = nowTime.toISOString().split('T')[1].substring(0, 5); \n\n// 3. 取得 API 資料\nconst scheduleTrains = $(\"呼叫台鐵時刻表API\").all().map(i => i.json);\nconst liveBoard = $(\"查詢誤點\").all().map(i => i.json);\n\n// 4. 定義台鐵官網連結 (encodeURI 處理)\nconst rawManualUrl = `https://www.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytime?startStation=${stationInfo.depCode}-${stationInfo.depName}&endStation=${stationInfo.arrCode}-${stationInfo.arrName}&rideDate=${webDate}&transfer=ONE&trainTypeList=ALL&startOrEndTime=true`;\nconst manualSearchUrl = encodeURI(rawManualUrl);\n\n// 5. 過濾接下來 3 班車\nconst upcoming = scheduleTrains\n  .filter(t => t.OriginStopTime.DepartureTime > nowStr)\n  .sort((a, b) => a.OriginStopTime.DepartureTime.localeCompare(b.OriginStopTime.DepartureTime))\n  .slice(0, 3);\n\n// 6. 建立時刻表行\nconst rows = upcoming.map(t => {\n  const trainNo = t.DailyTrainInfo.TrainNo;\n  const typeName = t.DailyTrainInfo.TrainTypeName.Zh_tw.replace(/\\(.*\\)/, \"\");\n  const depTime = t.OriginStopTime.DepartureTime;\n  const arrTime = t.DestinationStopTime.ArrivalTime;\n  \n  const liveInfo = liveBoard.find(l => l.TrainNo === trainNo);\n  let delayText = \"準點\", delayColor = \"#008000\"; \n  if (liveInfo && liveInfo.DelayTime > 0) {\n    delayText = `誤${liveInfo.DelayTime}`;\n    delayColor = \"#FF0000\"; \n  }\n\n  const stopStationUrl = encodeURI(`https://www.railway.gov.tw/tra-tip-web/tip/tip001/tip112/gobytrainno?rideDate=${webDate}&trainNo=${trainNo}`);\n\n  return {\n    type: \"box\", layout: \"vertical\", margin: \"lg\",\n    contents: [\n      {\n        type: \"box\", layout: \"horizontal\", alignItems: \"center\",\n        contents: [\n          { type: \"text\", text: trainNo, size: \"sm\", color: \"#555555\", flex: 10, weight: \"bold\" },\n          { type: \"text\", text: typeName, size: \"sm\", color: \"#888888\", flex: 10 },\n          { type: \"text\", text: delayText, size: \"xs\", color: delayColor, flex: 5 },\n          { type: \"text\", text: depTime, size: \"md\", color: \"#000000\", flex: 10, align: \"center\", weight: \"bold\" },\n          { type: \"text\", text: arrTime, size: \"md\", color: \"#aaaaaa\", flex: 10, align: \"end\" }\n        ]\n      },\n      {\n        type: \"button\", height: \"sm\", style: \"secondary\", color: \"#f0f0f0\", margin: \"sm\",\n        action: {\n          type: \"uri\", label: \"查看停靠站\",\n          uri: stopStationUrl\n        }\n      }\n    ]\n  };\n});\n\n// 7. 建立 Flex Bubble 物件\nconst flexBubble = {\n  type: \"bubble\",\n  header: {\n    type: \"box\", layout: \"vertical\",\n    contents: [{ type: \"text\", text: \"台鐵時刻表\", weight: \"bold\", color: \"#ffffff\", size: \"xl\", align: \"center\" }],\n    backgroundColor: \"#005EB8\"\n  },\n  body: {\n    type: \"box\", layout: \"vertical\",\n    contents: [\n      {\n        type: \"box\", layout: \"horizontal\", justifyContent: \"center\", alignItems: \"center\",\n        contents: [\n          { type: \"text\", text: stationInfo.depName, size: \"3xl\", weight: \"bold\", align: \"end\", flex: 1 },\n          { type: \"text\", text: \"→\", size: \"3xl\", weight: \"bold\", color: \"#005EB8\", flex: 0, margin: \"md\" },\n          { type: \"text\", text: stationInfo.arrName, size: \"3xl\", weight: \"bold\", align: \"start\", flex: 1, margin: \"md\" }\n        ]\n      },\n      { type: \"separator\", margin: \"lg\" },\n      ...(upcoming.length === 0 ? [\n        { type: \"text\", text: `❌ ${nowStr} 後無直達班次`, margin: \"xl\", align: \"center\", color: \"#FF0000\", weight: \"bold\" }\n      ] : [\n        {\n          type: \"box\", layout: \"horizontal\", margin: \"md\",\n          contents: [\n            { type: \"text\", text: \"車次\", size: \"sm\", color: \"#aaaaaa\", flex: 10 },\n            { type: \"text\", text: \"車種\", size: \"sm\", color: \"#aaaaaa\", flex: 10 },\n            { type: \"text\", text: \"狀態\", size: \"sm\", color: \"#aaaaaa\", flex: 5 },\n            { type: \"text\", text: \"發車\", size: \"sm\", color: \"#aaaaaa\", flex: 10, align: \"center\" },\n            { type: \"text\", text: \"抵達\", size: \"sm\", color: \"#aaaaaa\", flex: 10, align: \"end\" }\n          ]\n        },\n        ...rows\n      ])\n    ]\n  },\n  footer: {\n    type: \"box\", layout: \"vertical\",\n    contents: [\n      {\n        type: \"button\", style: \"link\", height: \"sm\",\n        action: {\n          type: \"uri\", label: \"手動查詢更多班次 (官網)\",\n          uri: manualSearchUrl\n        }\n      }\n    ]\n  }\n};\n\n// 最終輸出：將 flex 轉成字串，解決 [object Object] 報錯\nreturn {\n  replyToken: $(\"Line Messaging Trigger\").first().json.replyToken,\n  flexJson: JSON.stringify(flexBubble), \n  altText: `台鐵時刻表: ${stationInfo.depName}→${stationInfo.arrName}`\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2176,
+        336
+      ],
+      "id": "0ba5d334-c020-4d4f-8592-4046b119fc5f",
+      "name": "格式化時刻表文字"
+    },
+    {
+      "parameters": {
+        "replyToken": "={{ $('Line Messaging Trigger').first().json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "={{ $json.altText }}",
+              "flexJson": "={{ $json.flexJson }}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        336
+      ],
+      "id": "e64a257a-531f-4150-9fc3-879205447bc2",
+      "name": "發送 LINE 回應",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "MwwGVxeoC4XfTPag",
+          "name": "奧德彪"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://tdx.transportdata.tw/api/basic/v2/Rail/TRA/LiveBoard/Station/{{ $('動態比對車站代碼').first().json.depCode }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get TDX Token').first().json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1728,
+        432
+      ],
+      "id": "d41e5c5e-87e2-426d-b3dd-7008804ce556",
+      "name": "查詢誤點"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1952,
+        336
+      ],
+      "id": "835678ce-96e8-434d-a82f-2246287bd72b",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 定義高鐵站名對照表\nconst hsrStationList = [\n  { \"ID\": \"0990\", \"Name\": \"南港\" }, { \"ID\": \"1000\", \"Name\": \"台北\" },\n  { \"ID\": \"1010\", \"Name\": \"板橋\" }, { \"ID\": \"1020\", \"Name\": \"桃園\" },\n  { \"ID\": \"1030\", \"Name\": \"新竹\" }, { \"ID\": \"1035\", \"Name\": \"苗栗\" },\n  { \"ID\": \"1040\", \"Name\": \"台中\" }, { \"ID\": \"1043\", \"Name\": \"彰化\" },\n  { \"ID\": \"1047\", \"Name\": \"雲林\" }, { \"ID\": \"1050\", \"Name\": \"嘉義\" },\n  { \"ID\": \"1060\", \"Name\": \"台南\" }, { \"ID\": \"1070\", \"Name\": \"左營\" }\n];\n\n// 2. 縣市別名對照\nconst cityAlias = {\n  \"高雄\": \"左營\", \"新北\": \"板橋\", \"臺北\": \"台北\", \"臺中\": \"台中\", \"臺南\": \"台南\"\n};\n\n// 3. 【核心修正】解析 Line 輸入文字\nconst rawText = $(\"Line Messaging Trigger\").first().json.message.text || \"\";\n\n// 先移除「高鐵」，再把「到」、「至」、「-」或「~」替換成空格，最後移除多餘空格\nconst cleanText = rawText\n  .replace(/高鐵/g, \"\")\n  .replace(/[到至\\-~]/g, \" \") \n  .trim();\n\nconst parts = cleanText.split(/\\s+/);\n\nlet depInput = parts[0] || \"\";\nlet arrInput = parts[1] || \"\";\n\n// 4. 執行名稱轉換\ndepInput = cityAlias[depInput] || depInput;\narrInput = cityAlias[arrInput] || arrInput;\n\n// 5. 比對代碼\nconst depStation = hsrStationList.find(s => s.Name.includes(depInput));\nconst arrStation = hsrStationList.find(s => s.Name.includes(arrInput));\n\nif (!depStation || !arrStation) {\n  throw new Error(`找不到車站資訊，解析結果：${depInput} -> ${arrInput}`);\n}\n\n// 6. 準備輸出資料\nconst taipeiTime = new Date(new Date().getTime() + 8 * 3600000);\nconst todayStr = taipeiTime.toISOString().split('T')[0];\n\nreturn {\n  depCode: depStation.ID,\n  depName: depStation.Name,\n  arrCode: arrStation.ID,\n  arrName: arrStation.Name,\n  queryDate: todayStr,\n  manualSearchUrl: encodeURI(`https://www.thsrc.com.tw/ArticleContent/a3b630bb-106e-4c18-8737-ad99a4abb387?startStation=${depStation.Name}&endStation=${arrStation.Name}&outboundDate=${todayStr}`)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        624
+      ],
+      "id": "9be82a55-c178-4a0a-a78d-98dad0ba1fdd",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "url": "https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/Station?%24format=JSON",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "$format",
+              "value": "JSON"
+            },
+            {
+              "name": "$select",
+              "value": "StationID,StationName"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Get TDX Token2\"].json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1280,
+        624
+      ],
+      "id": "d0018898-09a5-46be-94c7-9cbf95538fd1",
+      "name": "取得全台車站清單1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            },
+            {
+              "name": "client_id",
+              "value": "elanhuang-939327d2-13b0-43e2"
+            },
+            {
+              "name": "client_secret",
+              "value": "702e519d-6bdf-4ca3-9e5f-72376b3c84b7"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1056,
+        624
+      ],
+      "id": "cc6fd441-0062-42f8-b4df-59dc1efba116",
+      "name": "Get TDX Token2"
+    },
+    {
+      "parameters": {
+        "url": "=https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/DailyTimetable/OD/{{ $json.depCode }}/to/{{ $json.arrCode }}/{{ $json.queryDate }}?%24format=JSON",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $node[\"Get TDX Token2\"].json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1728,
+        624
+      ],
+      "id": "f051a042-e927-462d-9ab9-0ca060be7f57",
+      "name": "呼叫高鐵時刻表API"
+    },
+    {
+      "parameters": {
+        "jsCode": "/**\n * 高鐵即時座位 Flex Message 組裝代碼\n * 適用流程：時刻表 -> 篩選前三班 -> 查詢座位API -> [本節點]\n */\n\n// 1. 取得「查詢座位API」的原始資料 (處理空值)\nconst seatInput = $input.all();\nconst seatData = (seatInput.length > 0 && seatInput[0].json.AvailableSeats) ? seatInput[0].json.AvailableSeats : [];\n\n// 2. 跨節點取得「篩選班次」提供的班次資訊與車站名稱\n// 注意：請確保你的篩選節點名稱確實叫做 \"篩選班次\"\nconst prevNodeData = $(\"篩選班次\").first().json;\nconst upcoming = prevNodeData.upcoming || [];\nconst stationInfo = prevNodeData.stationInfo || { depName: \"未知\", arrName: \"未知\", depCode: \"\" };\n\n// 3. 處理每一行班次的顯示邏輯\nconst rows = upcoming.map(t => {\n  const trainNo = t.DailyTrainInfo.TrainNo;\n  // 在座位清單中找這班車\n  const seatInfo = seatData.find(s => String(s.TrainNo) === String(trainNo));\n  \n  let seatIcon = \"⚪\"; // 預設灰色：代表 API 尚未提供該班次即時資料\n  let statusColor = \"#aaaaaa\";\n\n  if (seatInfo && seatInfo.StopStations) {\n    // 比對該班次在你「出發站」的狀態\n    const stop = seatInfo.StopStations.find(ss => String(ss.StationID) === String(stationInfo.depCode));\n    const status = stop ? stop.Status : null;\n\n    if (status === \"O\") { seatIcon = \"🟢\"; statusColor = \"#00b900\"; }\n    else if (status === \"L\") { seatIcon = \"🟡\"; statusColor = \"#ffcc00\"; }\n    else if (status === \"X\") { seatIcon = \"🔴\"; statusColor = \"#ff0000\"; }\n  }\n\n  return {\n    type: \"box\",\n    layout: \"horizontal\",\n    margin: \"lg\",\n    alignItems: \"center\",\n    contents: [\n      { type: \"text\", text: `${seatIcon} ${trainNo}`, size: \"sm\", color: \"#555555\", flex: 1, weight: \"bold\" },\n      { type: \"text\", text: t.OriginStopTime.DepartureTime, size: \"md\", color: \"#F58220\", flex: 1, align: \"center\", weight: \"bold\" },\n      { type: \"text\", text: \"→\", size: \"sm\", color: \"#aaaaaa\", flex: 0 },\n      { type: \"text\", text: t.DestinationStopTime.ArrivalTime, size: \"md\", color: \"#000000\", flex: 1, align: \"end\" }\n    ]\n  };\n});\n\n// 4. 設定底部提示文字 (若 API 回傳空陣列則顯示警示)\nconst isDataEmpty = seatData.length === 0;\nconst footerText = isDataEmpty ? \"⚠️ 部分班次尚未開放即時查詢\" : \"🟢有位 🟡位少 🔴客滿\";\n\n// 5. 組裝最終的輸出物件 (供 LINE 節點使用)\nreturn {\n  replyToken: $(\"Line Messaging Trigger\").first().json.replyToken,\n  flexJson: JSON.stringify({\n    type: \"bubble\",\n    header: {\n      type: \"box\",\n      layout: \"vertical\",\n      backgroundColor: \"#F58220\",\n      contents: [\n        { type: \"text\", text: \"台灣高鐵即時座位\", weight: \"bold\", color: \"#ffffff\", size: \"lg\", align: \"center\" }\n      ]\n    },\n    body: {\n      type: \"box\",\n      layout: \"vertical\",\n      contents: [\n        {\n          type: \"box\",\n          layout: \"horizontal\",\n          justifyContent: \"center\",\n          alignItems: \"center\",\n          contents: [\n            { type: \"text\", text: stationInfo.depName, size: \"xl\", weight: \"bold\", align: \"end\", flex: 1 },\n            { type: \"text\", text: \"→\", size: \"xl\", weight: \"bold\", color: \"#F58220\", flex: 0, margin: \"md\" },\n            { type: \"text\", text: stationInfo.arrName, size: \"xl\", weight: \"bold\", align: \"start\", flex: 1, margin: \"md\" }\n          ]\n        },\n        { type: \"separator\", margin: \"md\" },\n        // 如果沒班次，顯示查無班次，否則顯示 rows\n        ...(rows.length === 0 \n          ? [{ type: \"text\", text: \"❌ 此時段已無後續班次\", margin: \"xl\", align: \"center\", color: \"#FF0000\" }] \n          : rows)\n      ]\n    },\n    footer: {\n      type: \"box\",\n      layout: \"vertical\",\n      contents: [\n        { type: \"text\", text: footerText, size: \"xs\", color: \"#aaaaaa\", align: \"center\" }\n      ]\n    }\n  }),\n  altText: `高鐵時刻表: ${stationInfo.depName}→${stationInfo.arrName}`\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        624
+      ],
+      "id": "0edddc3b-f8f4-4f06-8bfa-55ae106bd7ba",
+      "name": "高鐵專用完整代碼"
+    },
+    {
+      "parameters": {
+        "replyToken": "={{ $('Line Messaging Trigger').first().json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "={{ $json.altText }}",
+              "flexJson": "={{ $json.flexJson }}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        2608,
+        624
+      ],
+      "id": "66a98cad-9d0f-4eec-9919-c913c593bbdf",
+      "name": "發送 LINE 回應1",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "MwwGVxeoC4XfTPag",
+          "name": "奧德彪"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://tdx.transportdata.tw/api/basic/v2/Rail/THSR/AvailableSeatStatusList/?$filter={{ $json.filterQuery }}&%24format=JSON",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get TDX Token2').first().json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        2160,
+        624
+      ],
+      "id": "874941b9-2ef2-4654-b046-19600068db6d",
+      "name": "查詢座位API"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得車站資訊 (從 Code in JavaScript2 抓取)\nconst stationInfo = $(\"Code in JavaScript2\").first().json;\n// 2. 取得時刻表清單 (從 呼叫高鐵時刻表API 抓取所有 items)\nconst allTrains = $input.all().map(i => i.json);\n\n// 3. 取得台北目前時間 (UTC+8)\nconst now = new Date(new Date().getTime() + 8 * 3600000);\nconst nowStr = now.toISOString().split('T')[1].substring(0, 5); \n\n// 4. 篩選出出發時間大於現在的班次，並排序取前三名\nconst upcoming = allTrains\n  .filter(t => t.OriginStopTime.DepartureTime > nowStr)\n  .sort((a, b) => a.OriginStopTime.DepartureTime.localeCompare(b.OriginStopTime.DepartureTime))\n  .slice(0, 3);\n\n// 5. 生成給下一關「查詢座位API」使用的篩選語法\n// 例如: TrainNo eq '0603' or TrainNo eq '0609'\nconst filterQuery = upcoming.map(t => `TrainNo eq '${t.DailyTrainInfo.TrainNo}'`).join(' or ');\n\nreturn {\n  upcoming,\n  filterQuery,\n  stationInfo\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1936,
+        624
+      ],
+      "id": "0a1dca6d-02d0-48e7-a777-a6658b9fd76b",
+      "name": "篩選班次"
+    }
+  ],
+  "connections": {
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Get TDX Token1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get TDX Token1": {
+      "main": [
+        [
+          {
+            "node": "Query TDX Status1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Query TDX Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query TDX Status1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query TDX Status": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging Trigger": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging": {
+      "main": [
+        []
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Line Messaging1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get TDX Token",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get TDX Token2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得全台車站清單": {
+      "main": [
+        [
+          {
+            "node": "動態比對車站代碼",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "動態比對車站代碼": {
+      "main": [
+        [
+          {
+            "node": "呼叫台鐵時刻表API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "查詢誤點",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get TDX Token": {
+      "main": [
+        [
+          {
+            "node": "取得全台車站清單",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "呼叫台鐵時刻表API": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "格式化時刻表文字": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回應",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢誤點": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "格式化時刻表文字",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get TDX Token2": {
+      "main": [
+        [
+          {
+            "node": "取得全台車站清單1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得全台車站清單1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "呼叫高鐵時刻表API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "呼叫高鐵時刻表API": {
+      "main": [
+        [
+          {
+            "node": "篩選班次",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "高鐵專用完整代碼": {
+      "main": [
+        [
+          {
+            "node": "發送 LINE 回應1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢座位API": {
+      "main": [
+        [
+          {
+            "node": "高鐵專用完整代碼",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "篩選班次": {
+      "main": [
+        [
+          {
+            "node": "查詢座位API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "0fFYZ9csrNOSWy9R",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-01-30T01:54:37.422Z",
+      "updatedAt": "2026-01-30T01:54:37.422Z"
+    }
+  ],
+  "activeVersion": null
+}
