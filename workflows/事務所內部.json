@@ -1,0 +1,3876 @@
+{
+  "id": "n2Bj33eE1dlfnWWC",
+  "name": "事務所內部",
+  "active": true,
+  "activeVersionId": "16c9a138-36f9-4f43-b132-72191bc9cc84",
+  "createdAt": "2026-06-07T11:42:20.979Z",
+  "updatedAt": "2026-09-13T10:46:50.419Z",
+  "isArchived": false,
+  "versionId": "16c9a138-36f9-4f43-b132-72191bc9cc84",
+  "triggerCount": 8,
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// 1. 取得全域靜態儲存區\nconst staticData = $getWorkflowStaticData('global');\nconst userIds = Object.keys(staticData);\nconst beforeCount = userIds.length;\nconst clearedList = [];\n\n// 2. 執行強制清理\nuserIds.forEach(id => {\n  // 紀錄被刪除的 ID\n  clearedList.push(id);\n  // 強制刪除，不論其內容是數字、物件還是字串\n  delete staticData[id];\n});\n\n// 3. 檢查是否真的清空了 (防呆)\nconst afterCount = Object.keys(staticData).length;\n\n// 4. 格式化回報訊息給 Telegram\nconst now = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });\nlet reportMessage = \"\";\n\nif (beforeCount > 0) {\n  reportMessage = `🧹 **自動大掃除報告**\\n`;\n  reportMessage += `-------------------------\\n`;\n  reportMessage += `清除數量：${beforeCount} 筆\\n`;\n  reportMessage += `清理時間：${now}\\n\\n`;\n  reportMessage += `**清除清單：**\\n`;\n  clearedList.forEach((id, index) => {\n    reportMessage += `${index + 1}. \\`${id}\\`\\n`;\n  });\n  \n  if (afterCount > 0) {\n    reportMessage += `\\n⚠️ 警告：仍有 ${afterCount} 筆資料未被清除！`;\n  } else {\n    reportMessage += `\\n✨ 暫存區已完全清空。`;\n  }\n} else {\n  reportMessage = `ℹ️ 大掃除執行完畢\\n暫存區原本就是空的。\\n時間：${now}`;\n}\n\nreturn {\n  tgMessage: reportMessage,\n  clearedCount: beforeCount,\n  remainingCount: afterCount\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        -144
+      ],
+      "id": "c1905e0f-be95-4ac6-9bef-99f6a523b1de",
+      "name": "Code in JavaScript11"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 2,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      },
+      "id": "85c897fc-30c8-484c-8e6e-d3771caae6a8",
+      "name": "導入客戶資料夾2026",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            },
+            {
+              "triggerAtHour": 13
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        768,
+        -144
+      ],
+      "id": "09868e7b-b452-4c2f-aae3-ffaf78563c9e",
+      "name": "清除下班暫存"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "=U0129208d5898b8edb3e0ff756f6ddb02",
+        "messages": {
+          "values": [
+            {
+              "text": "={{ $json.message }}"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1216,
+        -48
+      ],
+      "id": "1800053c-364f-4f94-9f0f-2c0b040bf032",
+      "name": "推送給自己",
+      "executeOnce": true,
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "K9g1r0HHEsT1u4XW",
+          "name": "KSCPB OA"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "1,16,31,46 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "0011a6e2-bd21-4ef8-9eb3-e21aec4e1da7",
+      "name": "導入客戶資料夾",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 18,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        992,
+        176
+      ],
+      "id": "14537db5-dde6-4c44-a500-0f374d99cc97",
+      "name": "If15"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 18,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        992,
+        848
+      ],
+      "id": "0f806ecc-42e6-4f7a-a50f-254fbd830995",
+      "name": "If16"
+    },
+    {
+      "parameters": {
+        "chatId": "725946654",
+        "text": "={{ $json.tgMessage }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1216,
+        -240
+      ],
+      "id": "41728c78-4bac-4b76-b5aa-807f743ae84c",
+      "name": "Send a text message1",
+      "webhookId": "d2ece63c-61e6-4167-83c4-6fc817b94aea",
+      "credentials": {
+        "telegramApi": {
+          "id": "W5OwLg2ueC9AgSxe",
+          "name": "營運值班中心"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得目前 global 的所有暫存內容\nconst staticData = $getWorkflowStaticData('global');\nconst userIds = Object.keys(staticData);\nconst count = userIds.length;\n\n// 2. 格式化輸出內容\nlet message = \"\";\nconst now = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });\n\nif (count === 0) {\n  message = `ℹ️ 目前暫存區是空的\\n時間：${now}`;\n} else {\n  message = `📋 **暫存清單查詢**\\n`;\n  message += `-------------------------\\n`;\n  message += `總計：${count} 筆\\n`;\n  message += `時間：${now}\\n\\n`;\n  message += `項目內容：\\n`;\n  \n  userIds.forEach((id, index) => {\n    const data = staticData[id];\n    let displayContent = \"\";\n    \n    // 判斷是否為時間戳數字\n    if (typeof data === 'number' && data > 1000000000000) {\n      displayContent = new Date(data).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });\n    } else {\n      displayContent = typeof data === 'object' ? JSON.stringify(data) : data;\n    }\n    \n    message += `${index + 1}. \\`${id}\\`\\n最後活動：${displayContent}\\n\\n`;\n  });\n}\n\nreturn {\n  tgMessage: message,\n  count: count\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        -688
+      ],
+      "id": "95ff2102-558c-4182-a963-7f6ab7b7f81b",
+      "name": "Code in JavaScript30"
+    },
+    {
+      "parameters": {
+        "chatId": "725946654",
+        "text": "={{ $json.tgMessage }}",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1888,
+        -784
+      ],
+      "id": "4004cdc9-1fc6-45de-81bb-1e2eaf07d6f1",
+      "name": "Send a text message3",
+      "webhookId": "d2ece63c-61e6-4167-83c4-6fc817b94aea",
+      "credentials": {
+        "telegramApi": {
+          "id": "W5OwLg2ueC9AgSxe",
+          "name": "營運值班中心"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "triggerAtMinute": 1
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1440,
+        -688
+      ],
+      "id": "ee0a9e61-4d7a-4e46-823a-b52f18ba0174",
+      "name": "定時抓鬼"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "91d940cf-7a55-4591-af57-e96981be23d8",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        768,
+        -464
+      ],
+      "id": "5edd6c20-2971-49d7-a743-9714dda94f83",
+      "name": "發票明細回傳",
+      "webhookId": "91d940cf-7a55-4591-af57-e96981be23d8"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "*/15 6-23 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        768,
+        -880
+      ],
+      "id": "ebb9fec9-f0d5-472f-ba19-df40e9694e7c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "aNDXFDtm7mHmuHDj",
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/aNDXFDtm7mHmuHDj"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Uid",
+              "keyValue": "={{ $json[\"編號\"] }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Uid": "={{ $json[\"編號\"] }}",
+            "client_name": "={{ $json[\"客戶名稱\"] }}",
+            "ubn": "={{ $json[\"統一編號\"] }}",
+            "user_id_1": "={{ $json[\"USERID-1\"] }}",
+            "user_id_2": "={{ $json[\"USERID-2\"] }}",
+            "user_id_3": "={{ $json[\"USERID-3\"] }}",
+            "user_id_4": "={{ $json[\"USERID-4\"] }}",
+            "user_id_5": "={{ $json[\"USERID-5\"] }}",
+            "user_id_6": "={{ $json[\"USERID-6\"] }}",
+            "user_id_7": "={{ $json[\"USERID-7\"] }}",
+            "user_id_8": "={{ $json[\"USERID-8\"] }}",
+            "user_id_9": "={{ $json[\"USERID-9\"] }}",
+            "user_id_10": "={{ $json[\"USERID-10\"] }}",
+            "billing_amount": "={{ $json[\"帳單金額\"] }}",
+            "status": "={{ $json[\"狀態\"] }}",
+            "merged_client": "={{ $json[\"合併客戶\"] }}",
+            "main_client_setting": "={{ $json[\"主客戶設定\"] }}",
+            "original_url_1": "={{ $json[\"原始連結\"] }}",
+            "direct_url_1": "={{ $json[\"直接連結\"] }}",
+            "jpg_link": "={{ $json[\"JPG連結\"] }}",
+            "client_folder": "={{ $json[\"客戶資料夾\"] }}",
+            "merged_folder": "={{ $json[\"合併資料夾\"] }}",
+            "accounting_staff": "={{ $json[\"帳務人員\"] }}",
+            "facetime": "={{ $json.FACETIME }}",
+            "line_official_call": "={{ $json[\"LINE官方通話\"] }}",
+            "total_amount": "={{ $json[\"總金額\"] }}",
+            "id_merge": "={{ $json[\"ID合併\"] }}",
+            "extra_invoice_link": "={{ $json[\"加買發票連結\"] }}",
+            "bank_account": "={{ $json[\"匯款帳號\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Uid",
+              "displayName": "Uid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "client_name",
+              "displayName": "client_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ubn",
+              "displayName": "ubn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_1",
+              "displayName": "user_id_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_2",
+              "displayName": "user_id_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_3",
+              "displayName": "user_id_3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_4",
+              "displayName": "user_id_4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_5",
+              "displayName": "user_id_5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_6",
+              "displayName": "user_id_6",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_7",
+              "displayName": "user_id_7",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_8",
+              "displayName": "user_id_8",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_9",
+              "displayName": "user_id_9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id_10",
+              "displayName": "user_id_10",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "billing_amount",
+              "displayName": "billing_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "merged_client",
+              "displayName": "merged_client",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "main_client_setting",
+              "displayName": "main_client_setting",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "original_url_1",
+              "displayName": "original_url_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "direct_url_1",
+              "displayName": "direct_url_1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "original_url_2",
+              "displayName": "original_url_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "direct_url_2",
+              "displayName": "direct_url_2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "jpg_link",
+              "displayName": "jpg_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "client_folder",
+              "displayName": "client_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "merged_folder",
+              "displayName": "merged_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "accounting_staff",
+              "displayName": "accounting_staff",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "facetime",
+              "displayName": "facetime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "line_official_call",
+              "displayName": "line_official_call",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "total_amount",
+              "displayName": "total_amount",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "id_merge",
+              "displayName": "id_merge",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "extra_invoice_link",
+              "displayName": "extra_invoice_link",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "bank_account",
+              "displayName": "bank_account",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "dryRun": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        176
+      ],
+      "id": "268e6857-8dc1-480c-98df-a53ad1630b66",
+      "name": "自動回傳帳單"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "fZv8hZOLdPRabmTj",
+          "mode": "list",
+          "cachedResultName": "最新客戶資料-客戶資料表2026",
+          "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/fZv8hZOLdPRabmTj"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Cid",
+              "keyValue": "={{ $json['編號'] }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Cid": "={{ $json['編號'] }}",
+            "client_name": "={{ $json['客戶名稱'] }}",
+            "ubn": "={{ $json['統一編號'] }}",
+            "tax_id": "={{ $json['稅籍編號'] }}",
+            "owner_name": "={{ $json['負責人'] }}",
+            "owner_id": "={{ $json['負責人身份證'] }}",
+            "cloud_folder": "={{ $json['雲端資料夾'] }}",
+            "password": "={{ $json['密碼'] }}",
+            "ubn_password": "={{ $json['統編+密碼'] }}",
+            "merged_folder": "={{ $json['合併資料夾'] }}",
+            "id_count": "={{ $json['ID數量'] }}",
+            "user_id": "={{ $json.USERID }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Cid",
+              "displayName": "Cid",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "client_name",
+              "displayName": "client_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ubn",
+              "displayName": "ubn",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "tax_id",
+              "displayName": "tax_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_name",
+              "displayName": "owner_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "owner_id",
+              "displayName": "owner_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "cloud_folder",
+              "displayName": "cloud_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "password",
+              "displayName": "password",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ubn_password",
+              "displayName": "ubn_password",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "empty1",
+              "displayName": "empty1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "empty2",
+              "displayName": "empty2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "empty3",
+              "displayName": "empty3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "empty4",
+              "displayName": "empty4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "empty5",
+              "displayName": "empty5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "merged_folder",
+              "displayName": "merged_folder",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "id_count",
+              "displayName": "id_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "original_url",
+              "displayName": "original_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "direct_url",
+              "displayName": "direct_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "dryRun": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        400
+      ],
+      "id": "9952efa9-c2bd-4c64-bea9-fb414615b4a5",
+      "name": "客戶資料表2026"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "yXliMPRrOwwclHJH",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/yXliMPRrOwwclHJH"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "trigger_key",
+              "keyValue": "={{ $json['Trigger_Key (觸發關鍵字)'] }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "trigger_key": "={{ $json['Trigger_Key (觸發關鍵字)'] }}",
+            "flex_message": "={{ $json['JSON_Content (JSON 內容)'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "trigger_key",
+              "displayName": "trigger_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "flex_message",
+              "displayName": "flex_message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "dryRun": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        848
+      ],
+      "id": "3f24e534-4cda-4242-baec-3785875b2e51",
+      "name": "n8n"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1URbMomrcx48Vb9rHVzK4PPjginlxt1LIEJw9BU198tY",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1URbMomrcx48Vb9rHVzK4PPjginlxt1LIEJw9BU198tY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "c540dc37-b2e7-4aa8-aae0-5c16e680e359",
+      "name": "n8n問答",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        1216,
+        848
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1129114424,
+          "mode": "list",
+          "cachedResultName": "客戶資料表2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1129114424"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "A1:T"
+            }
+          }
+        }
+      },
+      "id": "eab23e0e-ab6c-4a4d-9bee-1931efae22cc",
+      "name": "讀取客戶資料表",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        1216,
+        400
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 30429075,
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+        },
+        "options": {}
+      },
+      "id": "671892b1-6377-4a5e-aa6f-f9e2b86339fb",
+      "name": "讀取自動回傳帳單",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        1216,
+        176
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1961729212,
+          "mode": "list",
+          "cachedResultName": "LINE ID",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1961729212"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "B1:R"
+            }
+          }
+        }
+      },
+      "id": "ae0007bd-671a-480d-a410-430ae8e1fd8d",
+      "name": "讀取LINE ID",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        1216,
+        624
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "HKqXHpZoNEFlgas5",
+          "mode": "list",
+          "cachedResultName": "LINE ID",
+          "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/HKqXHpZoNEFlgas5"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "userId",
+              "keyValue": "={{ $('讀取LINE ID').item.json[\"B:userId\"] }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "userId": "={{ $('讀取LINE ID').item.json[\"B:userId\"] }}",
+            "permissions": "={{ $('讀取LINE ID').item.json[\"帳單權限\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "permissions",
+              "displayName": "permissions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "dryRun": false
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        624
+      ],
+      "id": "1e80b0f9-1a4e-4879-acdc-612bc751d412",
+      "name": "LINE ID"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "2,17,32,47 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "fe9535ef-5363-4907-b2df-7236cf7300bb",
+      "name": "導入客戶資料夾1",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 18,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        992,
+        400
+      ],
+      "id": "882a7b5a-4484-4d47-89b5-230ae8db075b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "3,18,33,48 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "2d1fb9cf-74e8-4cd9-ad85-5f87a26a6dec",
+      "name": "導入客戶資料夾2",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 6,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 18,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        992,
+        624
+      ],
+      "id": "be2e1819-572f-479a-a4ea-c49d5cf190a3",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得 Google Sheets 查表後的結果\nconst sheetData = items[0].json;\n\n// 2. 取得 Webhook 原始資料\nconst webhookNode = $node[\"發票明細回傳\"].json;\nconst questions = webhookNode.body.submission.questions;\n\n// 3. 提取表單明細\nconst period = questions.find(q => q.name === '發票期數')?.value || \"\";\nconst isUrgent = questions.find(q => q.name === '是否急用')?.value ? \" 🔴急件\" : \"\";\n\n// 整理購買清單 (只列出有填數量的項目)\nconst details = questions\n  .filter(q => q.type === 'MultipleChoice' && q.value !== null && q.name !== '發票期數')\n  .map(q => `• ${q.name}：${q.value} 本`)\n  .join('\\n');\n\n// 4. 組裝 Flex Message (隱藏標題，直接顯示參數版)\nconst flexContent = {\n  \"type\": \"bubble\",\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      { \"type\": \"text\", \"text\": \"✅ 收到發票申請\", \"weight\": \"bold\", \"color\": \"#1DB446\", \"size\": \"md\" },\n      { \"type\": \"text\", \"text\": sheetData[\"客戶名稱\"], \"weight\": \"bold\", \"size\": \"xl\", \"margin\": \"md\", \"wrap\": true },\n      { \"type\": \"text\", \"text\": `統一編號：${sheetData[\"統一編號\"] || \"無\"}`, \"size\": \"sm\", \"color\": \"#aaaaaa\" },\n      { \"type\": \"separator\", \"margin\": \"lg\" },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"sm\",\n        \"contents\": [\n          // 直接顯示期數與急件，不帶標題\n          { \n            \"type\": \"text\", \n            \"text\": `${period}${isUrgent}`, \n            \"weight\": \"bold\", \n            \"size\": \"xl\", \n            \"color\": \"#111111\",\n            \"margin\": \"md\"\n          },\n          { \"type\": \"text\", \"text\": \"申請明細：\", \"color\": \"#aaaaaa\", \"size\": \"xl\", \"margin\": \"lg\" },\n          { \n            \"type\": \"text\", \n            \"text\": details || \"未選擇明細\", \n            \"wrap\": true, \n            \"color\": \"#111111\", \n            \"size\": \"lg\", \n            \"weight\": \"bold\" \n          }\n        ]\n      }\n    ]\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      { \"type\": \"text\", \"text\": \"我們會儘速為您辦理，謝謝！\", \"size\": \"md\", \"color\": \"#aaaaaa\", \"align\": \"center\" }\n    ]\n  }\n};\n\nreturn {\n  userId: webhookNode.body.submission.urlParameters.find(p => p.name === 'uid')?.value,\n  clientName: sheetData[\"客戶名稱\"],\n  flexJson: JSON.stringify(flexContent),\n  // 將 \\n 替換為 <br>\n  emailBody: `客戶：${sheetData[\"客戶名稱\"]}<br>期數狀態：${period}${isUrgent}<br>明細：<br>${details}`\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        -240
+      ],
+      "id": "e2b4a82b-6f02-4534-ac79-40789993cb70",
+      "name": "Code in JavaScript15"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "to": "={{ $json.userId }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "發票加買回覆",
+              "flexJson": "={{ $json.flexJson }}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        -336
+      ],
+      "id": "c9d6cf01-270f-42c7-935f-3d48d12a252d",
+      "name": "Line Messaging12",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "K9g1r0HHEsT1u4XW",
+          "name": "KSCPB OA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 30429075,
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "編號",
+              "lookupValue": "={{ $json.originalBody.submission.questions[0].value }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1264,
+        -240
+      ],
+      "id": "4cda3ee0-077c-43ad-84f7-1a9ecc00aa23",
+      "name": "Get row(s) in sheet10",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得 Webhook 傳來的原始資料\nconst body = items[0].json.body;\n\n// 1. 提取網址參數中的 client (例如: A21-23829234)\nconst urlParams = body.submission.urlParameters;\nconst clientCode = urlParams.find(p => p.name === 'client')?.value;\n\n// 2. 提取網址參數中的 uid (LINE UserID)\nconst uid = urlParams.find(p => p.name === 'uid')?.value;\n\n// 3. 提取表單中的其他欄位 (可選，供後續發信使用)\nconst questions = body.submission.questions;\nconst isUrgent = questions.find(q => q.name === '是否急用')?.value || false;\n\n// 回傳整理後的乾淨資料\nreturn {\n  searchKey: clientCode, // 這將作為 Google Sheets 查詢的關鍵字\n  lineUserId: uid,\n  isUrgent: isUrgent,\n  originalBody: body // 保留原始資料備用\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -240
+      ],
+      "id": "5c513dbf-8ccc-41e8-86cb-90ad2e5c2b38",
+      "name": "Code in JavaScript16"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1961729212,
+          "mode": "list",
+          "cachedResultName": "LINE ID"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "A1:A2"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        992,
+        -880
+      ],
+      "id": "b1d214c8-aa5f-4276-b7c0-10c2304d1fe5",
+      "name": "預熱-LINE ID",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1044259696,
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單簡易版"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "A1:A2"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1216,
+        -880
+      ],
+      "id": "30451254-26e3-4cf0-bb84-b4bda351b360",
+      "name": "預熱-帳單總表",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得台灣當前時間字串\nconst now = new Date();\nconst timeString = now.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });\n\n// 組裝 Telegram HTML 格式訊息\nconst tgMessage = `<b>🔥 試算表預熱完成通知</b>\\n\\n` +\n                  `• <b>預熱項目</b>：LINE ID、帳單總表\\n` +\n                  `• <b>執行時間</b>：<code>${timeString}</code>\\n` +\n                  `• <b>連線狀態</b>：Google API 已保持熱啟動 🟢`;\n\nreturn [{\n  json: {\n    tgMessage: tgMessage\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1664,
+        -880
+      ],
+      "id": "2f30600f-fb77-498a-9230-721d532f28b1",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "sendTo": "87802029@kscpb.com",
+        "subject": "=[發票申請] {{ $json.clientName }}",
+        "message": "={{ $json.emailBody }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1712,
+        -144
+      ],
+      "id": "01636660-02c2-4f8c-9bbe-6fa8edda5b1b",
+      "name": "Send a message1",
+      "webhookId": "191cabeb-b8c9-489c-b917-a4a00bb051f9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "llXsJhovfic9XMqv",
+          "name": "Gmail kscpb87802029"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit?gid=1961729212#gid=1961729212",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1961729212,
+          "mode": "list",
+          "cachedResultName": "LINE ID",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1961729212"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "A1:A2"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1440,
+        -880
+      ],
+      "id": "25571078-9ab7-4c02-936e-9638694349df",
+      "name": "查看是否已經在LINE ID頁面1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Code in JavaScript11": {
+      "main": [
+        [
+          {
+            "node": "推送給自己",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "導入客戶資料夾2026": {
+      "main": [
+        [
+          {
+            "node": "If16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "清除下班暫存": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "導入客戶資料夾": {
+      "main": [
+        [
+          {
+            "node": "If15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If15": {
+      "main": [
+        [
+          {
+            "node": "讀取自動回傳帳單",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If16": {
+      "main": [
+        [
+          {
+            "node": "n8n問答",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "n8n問答",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript30": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "定時抓鬼": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript30",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "發票明細回傳": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "預熱-LINE ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "n8n問答": {
+      "main": [
+        [
+          {
+            "node": "n8n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取客戶資料表": {
+      "main": [
+        [
+          {
+            "node": "客戶資料表2026",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取自動回傳帳單": {
+      "main": [
+        [
+          {
+            "node": "自動回傳帳單",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取LINE ID": {
+      "main": [
+        [
+          {
+            "node": "LINE ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "導入客戶資料夾1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "讀取客戶資料表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "導入客戶資料夾2": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "讀取LINE ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript15": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging12",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet10": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript16": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "預熱-LINE ID": {
+      "main": [
+        [
+          {
+            "node": "預熱-帳單總表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "預熱-帳單總表": {
+      "main": [
+        [
+          {
+            "node": "查看是否已經在LINE ID頁面1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Send a text message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查看是否已經在LINE ID頁面1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "7d052c84-b62a-42e8-a440-474f934138d3",
+      "name": "買發票",
+      "nodeIds": [
+        "e2b4a82b-6f02-4534-ac79-40789993cb70",
+        "c9d6cf01-270f-42c7-935f-3d48d12a252d",
+        "4cda3ee0-077c-43ad-84f7-1a9ecc00aa23",
+        "5c513dbf-8ccc-41e8-86cb-90ad2e5c2b38",
+        "01636660-02c2-4f8c-9bbe-6fa8edda5b1b"
+      ]
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "binaryMode": "separate"
+  },
+  "staticData": {
+    "node:Gmail Trigger": {
+      "Gmail Trigger": {
+        "lastTimeChecked": 1784732186,
+        "possibleDuplicates": [
+          "19f8a53f735b1ceb",
+          "19f8a53f035a8c1c",
+          "19f8a53eefe7119c",
+          "19f8a53ead73af23",
+          "19f8a53e816a2128",
+          "19f8a53e7f8ea208",
+          "19f8a535435e2fcc"
+        ]
+      }
+    },
+    "node:導入客戶資料夾2026": {
+      "recurrenceRules": [
+        8
+      ],
+      "recurrenceRuleSignatures": [
+        "hours:2"
+      ]
+    },
+    "node:清除下班暫存": {
+      "recurrenceRules": [
+        null,
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null,
+        null
+      ]
+    },
+    "node:導入客戶資料夾": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    },
+    "node:定時抓鬼": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    },
+    "node:Schedule Trigger": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    },
+    "node:導入客戶資料夾1": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    },
+    "node:導入客戶資料夾2": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "n2Bj33eE1dlfnWWC",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-06-07T11:42:20.979Z",
+      "updatedAt": "2026-06-07T11:42:20.979Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "16c9a138-36f9-4f43-b132-72191bc9cc84",
+    "workflowId": "n2Bj33eE1dlfnWWC",
+    "nodes": [
+      {
+        "parameters": {
+          "mode": "runOnceForEachItem",
+          "jsCode": "// 1. 取得全域靜態儲存區\nconst staticData = $getWorkflowStaticData('global');\nconst userIds = Object.keys(staticData);\nconst beforeCount = userIds.length;\nconst clearedList = [];\n\n// 2. 執行強制清理\nuserIds.forEach(id => {\n  // 紀錄被刪除的 ID\n  clearedList.push(id);\n  // 強制刪除，不論其內容是數字、物件還是字串\n  delete staticData[id];\n});\n\n// 3. 檢查是否真的清空了 (防呆)\nconst afterCount = Object.keys(staticData).length;\n\n// 4. 格式化回報訊息給 Telegram\nconst now = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });\nlet reportMessage = \"\";\n\nif (beforeCount > 0) {\n  reportMessage = `🧹 **自動大掃除報告**\\n`;\n  reportMessage += `-------------------------\\n`;\n  reportMessage += `清除數量：${beforeCount} 筆\\n`;\n  reportMessage += `清理時間：${now}\\n\\n`;\n  reportMessage += `**清除清單：**\\n`;\n  clearedList.forEach((id, index) => {\n    reportMessage += `${index + 1}. \\`${id}\\`\\n`;\n  });\n  \n  if (afterCount > 0) {\n    reportMessage += `\\n⚠️ 警告：仍有 ${afterCount} 筆資料未被清除！`;\n  } else {\n    reportMessage += `\\n✨ 暫存區已完全清空。`;\n  }\n} else {\n  reportMessage = `ℹ️ 大掃除執行完畢\\n暫存區原本就是空的。\\n時間：${now}`;\n}\n\nreturn {\n  tgMessage: reportMessage,\n  clearedCount: beforeCount,\n  remainingCount: afterCount\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          992,
+          -144
+        ],
+        "id": "c1905e0f-be95-4ac6-9bef-99f6a523b1de",
+        "name": "Code in JavaScript11"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "hoursInterval": 2,
+                "triggerAtMinute": 30
+              }
+            ]
+          }
+        },
+        "id": "85c897fc-30c8-484c-8e6e-d3771caae6a8",
+        "name": "導入客戶資料夾2026",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          768,
+          848
+        ]
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 8
+              },
+              {
+                "triggerAtHour": 13
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          768,
+          -144
+        ],
+        "id": "09868e7b-b452-4c2f-aae3-ffaf78563c9e",
+        "name": "清除下班暫存"
+      },
+      {
+        "parameters": {
+          "operation": "send",
+          "to": "=U0129208d5898b8edb3e0ff756f6ddb02",
+          "messages": {
+            "values": [
+              {
+                "text": "={{ $json.message }}"
+              }
+            ]
+          }
+        },
+        "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+        "typeVersion": 1,
+        "position": [
+          1216,
+          -48
+        ],
+        "id": "1800053c-364f-4f94-9f0f-2c0b040bf032",
+        "name": "推送給自己",
+        "executeOnce": true,
+        "credentials": {
+          "lineMessagingApi": {
+            "id": "K9g1r0HHEsT1u4XW",
+            "name": "KSCPB OA"
+          }
+        },
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "1,16,31,46 * * * *"
+              }
+            ]
+          }
+        },
+        "id": "0011a6e2-bd21-4ef8-9eb3-e21aec4e1da7",
+        "name": "導入客戶資料夾",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          768,
+          176
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 6,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              },
+              {
+                "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 18,
+                "operator": {
+                  "type": "number",
+                  "operation": "lte"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          992,
+          176
+        ],
+        "id": "14537db5-dde6-4c44-a500-0f374d99cc97",
+        "name": "If15"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 6,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              },
+              {
+                "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 18,
+                "operator": {
+                  "type": "number",
+                  "operation": "lte"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          992,
+          848
+        ],
+        "id": "0f806ecc-42e6-4f7a-a50f-254fbd830995",
+        "name": "If16"
+      },
+      {
+        "parameters": {
+          "chatId": "725946654",
+          "text": "={{ $json.tgMessage }}",
+          "additionalFields": {
+            "parse_mode": "HTML"
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1216,
+          -240
+        ],
+        "id": "41728c78-4bac-4b76-b5aa-807f743ae84c",
+        "name": "Send a text message1",
+        "webhookId": "d2ece63c-61e6-4167-83c4-6fc817b94aea",
+        "credentials": {
+          "telegramApi": {
+            "id": "W5OwLg2ueC9AgSxe",
+            "name": "營運值班中心"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. 取得目前 global 的所有暫存內容\nconst staticData = $getWorkflowStaticData('global');\nconst userIds = Object.keys(staticData);\nconst count = userIds.length;\n\n// 2. 格式化輸出內容\nlet message = \"\";\nconst now = new Date().toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });\n\nif (count === 0) {\n  message = `ℹ️ 目前暫存區是空的\\n時間：${now}`;\n} else {\n  message = `📋 **暫存清單查詢**\\n`;\n  message += `-------------------------\\n`;\n  message += `總計：${count} 筆\\n`;\n  message += `時間：${now}\\n\\n`;\n  message += `項目內容：\\n`;\n  \n  userIds.forEach((id, index) => {\n    const data = staticData[id];\n    let displayContent = \"\";\n    \n    // 判斷是否為時間戳數字\n    if (typeof data === 'number' && data > 1000000000000) {\n      displayContent = new Date(data).toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });\n    } else {\n      displayContent = typeof data === 'object' ? JSON.stringify(data) : data;\n    }\n    \n    message += `${index + 1}. \\`${id}\\`\\n最後活動：${displayContent}\\n\\n`;\n  });\n}\n\nreturn {\n  tgMessage: message,\n  count: count\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1664,
+          -688
+        ],
+        "id": "95ff2102-558c-4182-a963-7f6ab7b7f81b",
+        "name": "Code in JavaScript30"
+      },
+      {
+        "parameters": {
+          "chatId": "725946654",
+          "text": "={{ $json.tgMessage }}",
+          "additionalFields": {
+            "parse_mode": "HTML"
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1888,
+          -784
+        ],
+        "id": "4004cdc9-1fc6-45de-81bb-1e2eaf07d6f1",
+        "name": "Send a text message3",
+        "webhookId": "d2ece63c-61e6-4167-83c4-6fc817b94aea",
+        "credentials": {
+          "telegramApi": {
+            "id": "W5OwLg2ueC9AgSxe",
+            "name": "營運值班中心"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "hours",
+                "triggerAtMinute": 1
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          1440,
+          -688
+        ],
+        "id": "ee0a9e61-4d7a-4e46-823a-b52f18ba0174",
+        "name": "定時抓鬼"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "91d940cf-7a55-4591-af57-e96981be23d8",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          768,
+          -464
+        ],
+        "id": "5edd6c20-2971-49d7-a743-9714dda94f83",
+        "name": "發票明細回傳",
+        "webhookId": "91d940cf-7a55-4591-af57-e96981be23d8"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "*/15 6-23 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.4,
+        "position": [
+          768,
+          -880
+        ],
+        "id": "ebb9fec9-f0d5-472f-ba19-df40e9694e7c",
+        "name": "Schedule Trigger"
+      },
+      {
+        "parameters": {
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "value": "aNDXFDtm7mHmuHDj",
+            "mode": "list",
+            "cachedResultName": "自動回傳帳單",
+            "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/aNDXFDtm7mHmuHDj"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "Uid",
+                "keyValue": "={{ $json[\"編號\"] }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Uid": "={{ $json[\"編號\"] }}",
+              "client_name": "={{ $json[\"客戶名稱\"] }}",
+              "ubn": "={{ $json[\"統一編號\"] }}",
+              "user_id_1": "={{ $json[\"USERID-1\"] }}",
+              "user_id_2": "={{ $json[\"USERID-2\"] }}",
+              "user_id_3": "={{ $json[\"USERID-3\"] }}",
+              "user_id_4": "={{ $json[\"USERID-4\"] }}",
+              "user_id_5": "={{ $json[\"USERID-5\"] }}",
+              "user_id_6": "={{ $json[\"USERID-6\"] }}",
+              "user_id_7": "={{ $json[\"USERID-7\"] }}",
+              "user_id_8": "={{ $json[\"USERID-8\"] }}",
+              "user_id_9": "={{ $json[\"USERID-9\"] }}",
+              "user_id_10": "={{ $json[\"USERID-10\"] }}",
+              "billing_amount": "={{ $json[\"帳單金額\"] }}",
+              "status": "={{ $json[\"狀態\"] }}",
+              "merged_client": "={{ $json[\"合併客戶\"] }}",
+              "main_client_setting": "={{ $json[\"主客戶設定\"] }}",
+              "original_url_1": "={{ $json[\"原始連結\"] }}",
+              "direct_url_1": "={{ $json[\"直接連結\"] }}",
+              "jpg_link": "={{ $json[\"JPG連結\"] }}",
+              "client_folder": "={{ $json[\"客戶資料夾\"] }}",
+              "merged_folder": "={{ $json[\"合併資料夾\"] }}",
+              "accounting_staff": "={{ $json[\"帳務人員\"] }}",
+              "facetime": "={{ $json.FACETIME }}",
+              "line_official_call": "={{ $json[\"LINE官方通話\"] }}",
+              "total_amount": "={{ $json[\"總金額\"] }}",
+              "id_merge": "={{ $json[\"ID合併\"] }}",
+              "extra_invoice_link": "={{ $json[\"加買發票連結\"] }}",
+              "bank_account": "={{ $json[\"匯款帳號\"] }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Uid",
+                "displayName": "Uid",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "client_name",
+                "displayName": "client_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "ubn",
+                "displayName": "ubn",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_1",
+                "displayName": "user_id_1",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_2",
+                "displayName": "user_id_2",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_3",
+                "displayName": "user_id_3",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_4",
+                "displayName": "user_id_4",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_5",
+                "displayName": "user_id_5",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_6",
+                "displayName": "user_id_6",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_7",
+                "displayName": "user_id_7",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_8",
+                "displayName": "user_id_8",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_9",
+                "displayName": "user_id_9",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id_10",
+                "displayName": "user_id_10",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "billing_amount",
+                "displayName": "billing_amount",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "status",
+                "displayName": "status",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "merged_client",
+                "displayName": "merged_client",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "main_client_setting",
+                "displayName": "main_client_setting",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "original_url_1",
+                "displayName": "original_url_1",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "direct_url_1",
+                "displayName": "direct_url_1",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "original_url_2",
+                "displayName": "original_url_2",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "direct_url_2",
+                "displayName": "direct_url_2",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "jpg_link",
+                "displayName": "jpg_link",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "client_folder",
+                "displayName": "client_folder",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "merged_folder",
+                "displayName": "merged_folder",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "accounting_staff",
+                "displayName": "accounting_staff",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "facetime",
+                "displayName": "facetime",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "line_official_call",
+                "displayName": "line_official_call",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "total_amount",
+                "displayName": "total_amount",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "id_merge",
+                "displayName": "id_merge",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "extra_invoice_link",
+                "displayName": "extra_invoice_link",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "bank_account",
+                "displayName": "bank_account",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "dryRun": false
+          }
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1440,
+          176
+        ],
+        "id": "268e6857-8dc1-480c-98df-a53ad1630b66",
+        "name": "自動回傳帳單"
+      },
+      {
+        "parameters": {
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "value": "fZv8hZOLdPRabmTj",
+            "mode": "list",
+            "cachedResultName": "最新客戶資料-客戶資料表2026",
+            "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/fZv8hZOLdPRabmTj"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "Cid",
+                "keyValue": "={{ $json['編號'] }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Cid": "={{ $json['編號'] }}",
+              "client_name": "={{ $json['客戶名稱'] }}",
+              "ubn": "={{ $json['統一編號'] }}",
+              "tax_id": "={{ $json['稅籍編號'] }}",
+              "owner_name": "={{ $json['負責人'] }}",
+              "owner_id": "={{ $json['負責人身份證'] }}",
+              "cloud_folder": "={{ $json['雲端資料夾'] }}",
+              "password": "={{ $json['密碼'] }}",
+              "ubn_password": "={{ $json['統編+密碼'] }}",
+              "merged_folder": "={{ $json['合併資料夾'] }}",
+              "id_count": "={{ $json['ID數量'] }}",
+              "user_id": "={{ $json.USERID }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Cid",
+                "displayName": "Cid",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "client_name",
+                "displayName": "client_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "ubn",
+                "displayName": "ubn",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "tax_id",
+                "displayName": "tax_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "owner_name",
+                "displayName": "owner_name",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "owner_id",
+                "displayName": "owner_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "cloud_folder",
+                "displayName": "cloud_folder",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "password",
+                "displayName": "password",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "ubn_password",
+                "displayName": "ubn_password",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "empty1",
+                "displayName": "empty1",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "empty2",
+                "displayName": "empty2",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "empty3",
+                "displayName": "empty3",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "empty4",
+                "displayName": "empty4",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "empty5",
+                "displayName": "empty5",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "merged_folder",
+                "displayName": "merged_folder",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "id_count",
+                "displayName": "id_count",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "user_id",
+                "displayName": "user_id",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "original_url",
+                "displayName": "original_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": true
+              },
+              {
+                "id": "direct_url",
+                "displayName": "direct_url",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "dryRun": false
+          }
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1440,
+          400
+        ],
+        "id": "9952efa9-c2bd-4c64-bea9-fb414615b4a5",
+        "name": "客戶資料表2026"
+      },
+      {
+        "parameters": {
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "value": "yXliMPRrOwwclHJH",
+            "mode": "list",
+            "cachedResultName": "n8n",
+            "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/yXliMPRrOwwclHJH"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "trigger_key",
+                "keyValue": "={{ $json['Trigger_Key (觸發關鍵字)'] }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "trigger_key": "={{ $json['Trigger_Key (觸發關鍵字)'] }}",
+              "flex_message": "={{ $json['JSON_Content (JSON 內容)'] }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "trigger_key",
+                "displayName": "trigger_key",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "flex_message",
+                "displayName": "flex_message",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "dryRun": false
+          }
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1440,
+          848
+        ],
+        "id": "3f24e534-4cda-4242-baec-3785875b2e51",
+        "name": "n8n"
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1URbMomrcx48Vb9rHVzK4PPjginlxt1LIEJw9BU198tY",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "n8n",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1URbMomrcx48Vb9rHVzK4PPjginlxt1LIEJw9BU198tY/edit#gid=0"
+          },
+          "options": {}
+        },
+        "id": "c540dc37-b2e7-4aa8-aae0-5c16e680e359",
+        "name": "n8n問答",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.4,
+        "position": [
+          1216,
+          848
+        ],
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 1129114424,
+            "mode": "list",
+            "cachedResultName": "客戶資料表2026",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1129114424"
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRangeA1",
+                "range": "A1:T"
+              }
+            }
+          }
+        },
+        "id": "eab23e0e-ab6c-4a4d-9bee-1931efae22cc",
+        "name": "讀取客戶資料表",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.4,
+        "position": [
+          1216,
+          400
+        ],
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 30429075,
+            "mode": "list",
+            "cachedResultName": "自動回傳帳單",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+          },
+          "options": {}
+        },
+        "id": "671892b1-6377-4a5e-aa6f-f9e2b86339fb",
+        "name": "讀取自動回傳帳單",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.4,
+        "position": [
+          1216,
+          176
+        ],
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 1961729212,
+            "mode": "list",
+            "cachedResultName": "LINE ID",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1961729212"
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRangeA1",
+                "range": "B1:R"
+              }
+            }
+          }
+        },
+        "id": "ae0007bd-671a-480d-a410-430ae8e1fd8d",
+        "name": "讀取LINE ID",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.4,
+        "position": [
+          1216,
+          624
+        ],
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "upsert",
+          "dataTableId": {
+            "__rl": true,
+            "value": "HKqXHpZoNEFlgas5",
+            "mode": "list",
+            "cachedResultName": "LINE ID",
+            "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/HKqXHpZoNEFlgas5"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "userId",
+                "keyValue": "={{ $('讀取LINE ID').item.json[\"B:userId\"] }}"
+              }
+            ]
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "userId": "={{ $('讀取LINE ID').item.json[\"B:userId\"] }}",
+              "permissions": "={{ $('讀取LINE ID').item.json[\"帳單權限\"] }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "userId",
+                "displayName": "userId",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "permissions",
+                "displayName": "permissions",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {
+            "dryRun": false
+          }
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          1440,
+          624
+        ],
+        "id": "1e80b0f9-1a4e-4879-acdc-612bc751d412",
+        "name": "LINE ID"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "2,17,32,47 * * * *"
+              }
+            ]
+          }
+        },
+        "id": "fe9535ef-5363-4907-b2df-7236cf7300bb",
+        "name": "導入客戶資料夾1",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          768,
+          400
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 6,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              },
+              {
+                "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 18,
+                "operator": {
+                  "type": "number",
+                  "operation": "lte"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          992,
+          400
+        ],
+        "id": "882a7b5a-4484-4d47-89b5-230ae8db075b",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "3,18,33,48 * * * *"
+              }
+            ]
+          }
+        },
+        "id": "2d1fb9cf-74e8-4cd9-ad85-5f87a26a6dec",
+        "name": "導入客戶資料夾2",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          768,
+          624
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 6,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              },
+              {
+                "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 18,
+                "operator": {
+                  "type": "number",
+                  "operation": "lte"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          992,
+          624
+        ],
+        "id": "be2e1819-572f-479a-a4ea-c49d5cf190a3",
+        "name": "If4"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. 取得 Google Sheets 查表後的結果\nconst sheetData = items[0].json;\n\n// 2. 取得 Webhook 原始資料\nconst webhookNode = $node[\"發票明細回傳\"].json;\nconst questions = webhookNode.body.submission.questions;\n\n// 3. 提取表單明細\nconst period = questions.find(q => q.name === '發票期數')?.value || \"\";\nconst isUrgent = questions.find(q => q.name === '是否急用')?.value ? \" 🔴急件\" : \"\";\n\n// 整理購買清單 (只列出有填數量的項目)\nconst details = questions\n  .filter(q => q.type === 'MultipleChoice' && q.value !== null && q.name !== '發票期數')\n  .map(q => `• ${q.name}：${q.value} 本`)\n  .join('\\n');\n\n// 4. 組裝 Flex Message (隱藏標題，直接顯示參數版)\nconst flexContent = {\n  \"type\": \"bubble\",\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      { \"type\": \"text\", \"text\": \"✅ 收到發票申請\", \"weight\": \"bold\", \"color\": \"#1DB446\", \"size\": \"md\" },\n      { \"type\": \"text\", \"text\": sheetData[\"客戶名稱\"], \"weight\": \"bold\", \"size\": \"xl\", \"margin\": \"md\", \"wrap\": true },\n      { \"type\": \"text\", \"text\": `統一編號：${sheetData[\"統一編號\"] || \"無\"}`, \"size\": \"sm\", \"color\": \"#aaaaaa\" },\n      { \"type\": \"separator\", \"margin\": \"lg\" },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"sm\",\n        \"contents\": [\n          // 直接顯示期數與急件，不帶標題\n          { \n            \"type\": \"text\", \n            \"text\": `${period}${isUrgent}`, \n            \"weight\": \"bold\", \n            \"size\": \"xl\", \n            \"color\": \"#111111\",\n            \"margin\": \"md\"\n          },\n          { \"type\": \"text\", \"text\": \"申請明細：\", \"color\": \"#aaaaaa\", \"size\": \"xl\", \"margin\": \"lg\" },\n          { \n            \"type\": \"text\", \n            \"text\": details || \"未選擇明細\", \n            \"wrap\": true, \n            \"color\": \"#111111\", \n            \"size\": \"lg\", \n            \"weight\": \"bold\" \n          }\n        ]\n      }\n    ]\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      { \"type\": \"text\", \"text\": \"我們會儘速為您辦理，謝謝！\", \"size\": \"md\", \"color\": \"#aaaaaa\", \"align\": \"center\" }\n    ]\n  }\n};\n\nreturn {\n  userId: webhookNode.body.submission.urlParameters.find(p => p.name === 'uid')?.value,\n  clientName: sheetData[\"客戶名稱\"],\n  flexJson: JSON.stringify(flexContent),\n  // 將 \\n 替換為 <br>\n  emailBody: `客戶：${sheetData[\"客戶名稱\"]}<br>期數狀態：${period}${isUrgent}<br>明細：<br>${details}`\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1488,
+          -240
+        ],
+        "id": "e2b4a82b-6f02-4534-ac79-40789993cb70",
+        "name": "Code in JavaScript15"
+      },
+      {
+        "parameters": {
+          "operation": "send",
+          "to": "={{ $json.userId }}",
+          "messages": {
+            "values": [
+              {
+                "altText": "發票加買回覆",
+                "flexJson": "={{ $json.flexJson }}",
+                "type": "flex"
+              }
+            ]
+          }
+        },
+        "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+        "typeVersion": 1,
+        "position": [
+          1712,
+          -336
+        ],
+        "id": "c9d6cf01-270f-42c7-935f-3d48d12a252d",
+        "name": "Line Messaging12",
+        "credentials": {
+          "lineMessagingApi": {
+            "id": "K9g1r0HHEsT1u4XW",
+            "name": "KSCPB OA"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 30429075,
+            "mode": "list",
+            "cachedResultName": "自動回傳帳單",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+          },
+          "filtersUI": {
+            "values": [
+              {
+                "lookupColumn": "編號",
+                "lookupValue": "={{ $json.originalBody.submission.questions[0].value }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          1264,
+          -240
+        ],
+        "id": "4cda3ee0-077c-43ad-84f7-1a9ecc00aa23",
+        "name": "Get row(s) in sheet10",
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 取得 Webhook 傳來的原始資料\nconst body = items[0].json.body;\n\n// 1. 提取網址參數中的 client (例如: A21-23829234)\nconst urlParams = body.submission.urlParameters;\nconst clientCode = urlParams.find(p => p.name === 'client')?.value;\n\n// 2. 提取網址參數中的 uid (LINE UserID)\nconst uid = urlParams.find(p => p.name === 'uid')?.value;\n\n// 3. 提取表單中的其他欄位 (可選，供後續發信使用)\nconst questions = body.submission.questions;\nconst isUrgent = questions.find(q => q.name === '是否急用')?.value || false;\n\n// 回傳整理後的乾淨資料\nreturn {\n  searchKey: clientCode, // 這將作為 Google Sheets 查詢的關鍵字\n  lineUserId: uid,\n  isUrgent: isUrgent,\n  originalBody: body // 保留原始資料備用\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1040,
+          -240
+        ],
+        "id": "5c513dbf-8ccc-41e8-86cb-90ad2e5c2b38",
+        "name": "Code in JavaScript16"
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 1961729212,
+            "mode": "list",
+            "cachedResultName": "LINE ID"
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRangeA1",
+                "range": "A1:A2"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          992,
+          -880
+        ],
+        "id": "b1d214c8-aa5f-4276-b7c0-10c2304d1fe5",
+        "name": "預熱-LINE ID",
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 1044259696,
+            "mode": "list",
+            "cachedResultName": "自動回傳帳單簡易版"
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRangeA1",
+                "range": "A1:A2"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          1216,
+          -880
+        ],
+        "id": "30451254-26e3-4cf0-bb84-b4bda351b360",
+        "name": "預熱-帳單總表",
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 取得台灣當前時間字串\nconst now = new Date();\nconst timeString = now.toLocaleString('zh-TW', { timeZone: 'Asia/Taipei' });\n\n// 組裝 Telegram HTML 格式訊息\nconst tgMessage = `<b>🔥 試算表預熱完成通知</b>\\n\\n` +\n                  `• <b>預熱項目</b>：LINE ID、帳單總表\\n` +\n                  `• <b>執行時間</b>：<code>${timeString}</code>\\n` +\n                  `• <b>連線狀態</b>：Google API 已保持熱啟動 🟢`;\n\nreturn [{\n  json: {\n    tgMessage: tgMessage\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1664,
+          -880
+        ],
+        "id": "2f30600f-fb77-498a-9230-721d532f28b1",
+        "name": "Code in JavaScript4"
+      },
+      {
+        "parameters": {
+          "sendTo": "87802029@kscpb.com",
+          "subject": "=[發票申請] {{ $json.clientName }}",
+          "message": "={{ $json.emailBody }}",
+          "options": {
+            "appendAttribution": false
+          }
+        },
+        "type": "n8n-nodes-base.gmail",
+        "typeVersion": 2.2,
+        "position": [
+          1712,
+          -144
+        ],
+        "id": "01636660-02c2-4f8c-9bbe-6fa8edda5b1b",
+        "name": "Send a message1",
+        "webhookId": "191cabeb-b8c9-489c-b917-a4a00bb051f9",
+        "credentials": {
+          "gmailOAuth2": {
+            "id": "llXsJhovfic9XMqv",
+            "name": "Gmail kscpb87802029"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit?gid=1961729212#gid=1961729212",
+            "mode": "url"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 1961729212,
+            "mode": "list",
+            "cachedResultName": "LINE ID",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1961729212"
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRangeA1",
+                "range": "A1:A2"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          1440,
+          -880
+        ],
+        "id": "25571078-9ab7-4c02-936e-9638694349df",
+        "name": "查看是否已經在LINE ID頁面1",
+        "alwaysOutputData": true,
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        },
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Code in JavaScript11": {
+        "main": [
+          [
+            {
+              "node": "推送給自己",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send a text message1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "導入客戶資料夾2026": {
+        "main": [
+          [
+            {
+              "node": "If16",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "清除下班暫存": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript11",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "導入客戶資料夾": {
+        "main": [
+          [
+            {
+              "node": "If15",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If15": {
+        "main": [
+          [
+            {
+              "node": "讀取自動回傳帳單",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If16": {
+        "main": [
+          [
+            {
+              "node": "n8n問答",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "n8n問答",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript30": {
+        "main": [
+          [
+            {
+              "node": "Send a text message3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "定時抓鬼": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript30",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "發票明細回傳": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript16",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Schedule Trigger": {
+        "main": [
+          [
+            {
+              "node": "預熱-LINE ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "n8n問答": {
+        "main": [
+          [
+            {
+              "node": "n8n",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "讀取客戶資料表": {
+        "main": [
+          [
+            {
+              "node": "客戶資料表2026",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "讀取自動回傳帳單": {
+        "main": [
+          [
+            {
+              "node": "自動回傳帳單",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "讀取LINE ID": {
+        "main": [
+          [
+            {
+              "node": "LINE ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "導入客戶資料夾1": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "讀取客戶資料表",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "導入客戶資料夾2": {
+        "main": [
+          [
+            {
+              "node": "If4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If4": {
+        "main": [
+          [
+            {
+              "node": "讀取LINE ID",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript15": {
+        "main": [
+          [
+            {
+              "node": "Line Messaging12",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send a message1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s) in sheet10": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript15",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript16": {
+        "main": [
+          [
+            {
+              "node": "Get row(s) in sheet10",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "預熱-LINE ID": {
+        "main": [
+          [
+            {
+              "node": "預熱-帳單總表",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "預熱-帳單總表": {
+        "main": [
+          [
+            {
+              "node": "查看是否已經在LINE ID頁面1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript4": {
+        "main": [
+          [
+            {
+              "node": "Send a text message3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "查看是否已經在LINE ID頁面1": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [
+      {
+        "id": "7d052c84-b62a-42e8-a440-474f934138d3",
+        "name": "買發票",
+        "nodeIds": [
+          "e2b4a82b-6f02-4534-ac79-40789993cb70",
+          "c9d6cf01-270f-42c7-935f-3d48d12a252d",
+          "4cda3ee0-077c-43ad-84f7-1a9ecc00aa23",
+          "5c513dbf-8ccc-41e8-86cb-90ad2e5c2b38",
+          "01636660-02c2-4f8c-9bbe-6fa8edda5b1b"
+        ]
+      }
+    ],
+    "authors": "鈞煜 黃",
+    "name": "Version 16c9a138",
+    "description": "",
+    "autosaved": true,
+    "createdAt": "2026-09-13T10:46:50.443Z",
+    "updatedAt": "2026-09-13T10:46:51.733Z"
+  }
+}
