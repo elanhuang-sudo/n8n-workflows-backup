@@ -1,0 +1,254 @@
+{
+  "id": "3yYiTBdFTOGhwj6W",
+  "name": "My workflow 4",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-08-08T02:04:34.812Z",
+  "updatedAt": "2026-08-08T02:31:28.963Z",
+  "isArchived": true,
+  "versionId": "62f6651c-e4f6-466b-aa42-9cff836c4efc",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "line-ai-friend",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        -64
+      ],
+      "id": "c6cbc415-bf39-40d5-b640-930eff390fed",
+      "name": "LINE Webhook",
+      "webhookId": "cacc050c-52c9-400a-88f9-63ee24948dc3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得 LINE 傳來的訊息\nconst body = $input.first().json.body;\nconst events = body.events || [];\n\nif (events.length === 0) {\n  return { json: { status: \"no_events\" } };\n}\n\nconst event = events[0];\n// 只處理文字訊息且排除機器人自己\nif (event.type !== 'message' || event.message.type !== 'text') {\n  return { json: { status: \"ignored\" } };\n}\n\nconst userMessage = event.message.text;\nconst replyToken = event.replyToken;\nconst userId = event.source.userId;\n\n// 2. 使用 n8n 的 Static Data 記憶體暫存對話\nconst staticData = $getWorkflowStaticData('global');\nif (!staticData.messages) {\n    staticData.messages = [];\n}\n\n// 放入新訊息\nstaticData.messages.push({\n    user: userId,\n    text: userMessage,\n    time: new Date().toISOString()\n});\n\n// 限制最多保留最近 50 則訊息，避免記憶體過大\nif (staticData.messages.length > 50) {\n    staticData.messages.shift();\n}\n\n// 3. 檢查是否被標記 (@) 或者是輸入特定指令來觸發機器人回應\nconst isTriggered = userMessage.includes('@機器人') || userMessage.includes('總結') || userMessage.includes('笑話');\n\n// 組合要給 Gemini 的對話上下文\nconst allChatHistory = staticData.messages.map(m => `${m.text}`).join('\\n');\n\nreturn {\n  json: {\n    replyToken,\n    userMessage,\n    allChatHistory,\n    isTriggered\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -64
+      ],
+      "id": "6d30c2b9-f3fe-4593-bc23-70f1b10323e2",
+      "name": "處理訊息與快取"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-trigger",
+              "leftValue": "={{ $json.isTriggered }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "name": "kan-true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -64
+      ],
+      "id": "32376f93-c04f-4ff8-a48c-e96c1a451d0a",
+      "name": "是否觸發AI回應"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        384,
+        -64
+      ],
+      "id": "8260603a-e96b-4ee6-abfb-2c4de60cc7f6",
+      "name": "Gemini AI 總結與搞笑"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.line.me/v2/bot/message/reply",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 你的LINE_CHANNEL_ACCESS_TOKEN"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"replyToken\": \"{{ $('處理訊息與快取').item.json.replyToken }}\",\n  \"messages\": [\n    {\n      \"type\": \"text\",\n      \"text\": \"{{ $json.output }}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        -64
+      ],
+      "id": "8dc6c34b-9117-4f9d-b277-aff6080127dd",
+      "name": "回覆 LINE 訊息"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        256,
+        144
+      ],
+      "id": "6d960b3c-009f-4b87-ac34-768763eb2c89",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "gf7dTUaiSzok6eag",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        144
+      ],
+      "id": "0a1b0f71-ae3d-4708-99f2-e187620e154f",
+      "name": "Simple Memory"
+    }
+  ],
+  "connections": {
+    "是否觸發AI回應": {
+      "main": [
+        [
+          {
+            "node": "Gemini AI 總結與搞笑",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini AI 總結與搞笑": {
+      "main": [
+        [
+          {
+            "node": "回覆 LINE 訊息",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "LINE Webhook": {
+      "main": [
+        [
+          {
+            "node": "處理訊息與快取",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "處理訊息與快取": {
+      "main": [
+        [
+          {
+            "node": "是否觸發AI回應",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Gemini AI 總結與搞笑",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Gemini AI 總結與搞笑",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "global": {
+      "messages": [
+        {
+          "user": "Ud303b043ce776a7b734ff950f91c6612",
+          "text": "你好",
+          "time": "2026-08-08T02:25:57.086Z"
+        },
+        {
+          "user": "Ud303b043ce776a7b734ff950f91c6612",
+          "text": "你好",
+          "time": "2026-08-08T02:26:37.713Z"
+        }
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "3yYiTBdFTOGhwj6W",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-08-08T02:04:34.812Z",
+      "updatedAt": "2026-08-08T02:04:34.812Z"
+    }
+  ],
+  "activeVersion": null
+}
