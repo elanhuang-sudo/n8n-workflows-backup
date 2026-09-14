@@ -1,0 +1,1710 @@
+{
+  "id": "kHquq02ZiEsGj8rG",
+  "name": "客戶資料夾",
+  "active": true,
+  "activeVersionId": "45b2c682-b7ca-4a0e-9960-9396f8238657",
+  "createdAt": "2026-09-09T01:16:53.978Z",
+  "updatedAt": "2026-09-09T02:04:25.403Z",
+  "isArchived": false,
+  "versionId": "45b2c682-b7ca-4a0e-9960-9396f8238657",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {
+        "replyToken": "={{ $('Start').item.json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "客戶資料夾",
+              "flexJson": "={{ $('Code in JavaScript21').item.json.flexJsonString }}\n",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -3360,
+        4128
+      ],
+      "id": "a0e454ed-08f3-4c79-b54b-79ed45202dfd",
+      "name": "Line Messaging",
+      "executeOnce": false,
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "K9g1r0HHEsT1u4XW",
+          "name": "KSCPB OA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 30429075,
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "B1:ac600"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -4256,
+        4592
+      ],
+      "id": "9ea59efa-6ff3-4e58-ad4d-997339673465",
+      "name": "Get row(s) in sheet2",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0cbad640-c8ff-404d-a68f-b287a0dff6b6",
+              "leftValue": "={{ $json['ID合併'] }}",
+              "rightValue": "={{ $('Start').item.json.source_userId }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            },
+            {
+              "id": "142b05f4-2625-4589-ad88-ac4208254e05",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -4032,
+        4592
+      ],
+      "id": "c42180c2-bf6a-424e-8636-20f3aa01293c",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得上一個節點 (Aggregate 節點) 的資料\nconst input = $input.first().json;\n\n// 確保資料為陣列格式 (對應 Aggregate 節點輸出的中文 key)\nconst clients = Array.isArray(input['客戶名稱']) \n  ? input['客戶名稱'] \n  : (input['客戶名稱'] ? [input['客戶名稱']] : []);\n\nconst folderLinks = Array.isArray(input['客戶資料夾']) \n  ? input['客戶資料夾'] \n  : (input['客戶資料夾'] ? [input['客戶資料夾']] : []);\n\nconst uids = Array.isArray(input['Uid']) \n  ? input['Uid'] \n  : (input['Uid'] ? [input['Uid']] : []);\n\n// 2. 取得 Line Messaging Trigger 的 userId\nconst userId = $('Start').first().json._firstItem?.source?.userId || '';\n\n// 3. 將資料合併並根據 Uid 排序\nlet clientList = clients.map((name, index) => {\n  return {\n    name: name,\n    link: folderLinks[index] || '',\n    uid: String(uids[index] || '')\n  };\n});\n\n// 執行排序 (根據 Uid 進行字母與數字升冪排序，如 A21 會排在 B66 前面)\nclientList.sort((a, b) => a.uid.localeCompare(b.uid, undefined, { numeric: true, sensitivity: 'base' }));\n\n// LINE Flex Message 按鈕數量安全限制 (上限 10 個，避免超出 LINE 限制導致 400 錯誤)\nconst maxButtons = clientList.slice(0, 10);\n\n// 4. 動態生成按鈕\nconst buttons = maxButtons.map((item) => {\n  const link = item.link;\n  \n  // 串接 uid 參數邏輯\n  const finalUri = link.includes('?') \n    ? `${link}&uid=${userId}` \n    : `${link}?uid=${userId}`;\n\n  return {\n    \"type\": \"button\",\n    \"action\": {\n      \"type\": \"uri\",\n      // LINE label 限制最多 40 字\n      \"label\": String(item.name).substring(0, 40),\n      \"uri\": finalUri\n    },\n    \"style\": \"primary\",\n    \"margin\": \"md\",\n    \"color\": \"#00B900\"\n  };\n});\n\n// 5. 組裝 Flex Message\nconst flexContent = {\n  \"type\": \"bubble\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📁 雲端資料夾存取\",\n        \"weight\": \"bold\",\n        \"size\": \"lg\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"所屬單位的資料夾連結：\",\n        \"size\": \"md\",\n        \"color\": \"#666666\",\n        \"wrap\": true,\n        \"margin\": \"none\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"sm\",\n        \"contents\": buttons.length > 0 ? buttons : [\n          {\n            \"type\": \"text\",\n            \"text\": \"目前無可用的資料夾連結\",\n            \"color\": \"#999999\",\n            \"size\": \"sm\"\n          }\n        ]\n      }\n    ]\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"如誤按請忽略此訊息\",\n        \"size\": \"xs\",\n        \"color\": \"#FF0000\",\n        \"align\": \"center\"\n      }\n    ]\n  }\n};\n\nreturn {\n  flexJsonString: JSON.stringify(flexContent)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3584,
+        4496
+      ],
+      "id": "5178ce50-f184-48e7-8db0-161a5d6f42ac",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "客戶名稱"
+            },
+            {
+              "fieldToAggregate": "客戶資料夾"
+            },
+            {
+              "fieldToAggregate": "Uid"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -3808,
+        4496
+      ],
+      "id": "47cd9b23-f2de-46f5-93eb-a5b6d88edb22",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "客戶名稱"
+            },
+            {
+              "fieldToAggregate": "客戶資料夾"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -3584,
+        4688
+      ],
+      "id": "3b2a2f51-421d-4d58-9910-059dec095227",
+      "name": "Aggregate4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f75f7bff-09ab-40fb-81dd-e434a438cefe",
+              "leftValue": "={{ $('If2').all().length }}",
+              "rightValue": "={{ $('Get row(s) in sheet2').all().length }}",
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -3808,
+        4688
+      ],
+      "id": "0810baec-1a79-41c1-baa4-77adc801ab5e",
+      "name": "Filter3"
+    },
+    {
+      "parameters": {
+        "replyToken": "={{ $('Start').item.json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "操作指引與帳號綁定",
+              "flexJson": "{\n  \"type\": \"bubble\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"操作指引與帳號綁定\",\n        \"weight\": \"bold\",\n        \"size\": \"xl\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"sm\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": \"1. 在對話框輸入帳號密碼\",\n            \"wrap\": true,\n            \"size\": \"lg\",\n            \"color\": \"#666666\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"統編+負責人身份證英文大寫+身份證後五碼\",\n            \"wrap\": true,\n            \"size\": \"md\",\n            \"color\": \"#666666\",\n            \"margin\": \"none\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"2. 登入系統查詢資料夾\",\n            \"wrap\": true,\n            \"size\": \"lg\",\n            \"color\": \"#666666\",\n            \"margin\": \"xxl\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"http://file.kscpb.com/Query\",\n            \"size\": \"md\",\n            \"color\": \"#0645AD\",\n            \"action\": {\n              \"type\": \"uri\",\n              \"label\": \"查詢網址\",\n              \"uri\": \"http://file.kscpb.com/Query\"\n            },\n            \"decoration\": \"none\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"點擊下方按鈕系統綁定後，下一營業日點擊即可快速推送\",\n            \"wrap\": true,\n            \"size\": \"sm\",\n            \"color\": \"#666666\",\n            \"margin\": \"xxl\"\n          }\n        ]\n      }\n    ]\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"sm\",\n    \"contents\": [\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"color\": \"#1DB446\",\n        \"action\": {\n          \"type\": \"message\",\n          \"label\": \"綁定帳號\",\n          \"text\": \"綁定帳號\"\n        }\n      }\n    ]\n  }\n}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -3360,
+        4688
+      ],
+      "id": "9278fb23-2453-46a7-bba7-c497e988fb81",
+      "name": "Line Messaging5",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "K9g1r0HHEsT1u4XW",
+          "name": "KSCPB OA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1961729212,
+          "mode": "list",
+          "cachedResultName": "LINE ID",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1961729212"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "B:userId",
+              "lookupValue": "={{ $('Start').item.json.source_userId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3360,
+        4496
+      ],
+      "id": "d8ebe228-bf08-4b93-affe-5b443c3cdfab",
+      "name": "Get row(s) in sheet6",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d0b7ba39-e210-4387-b2d2-91219f47727f",
+              "leftValue": "={{ $json[\"帳單權限\"] }}",
+              "rightValue": "N",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3136,
+        4496
+      ],
+      "id": "5ee18af8-ede6-42bb-9334-a8fa7bf994ff",
+      "name": "If9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "04cd9614-a39f-4267-be31-9b5b289132be",
+              "leftValue": "={{ $json.id_merge }}",
+              "rightValue": "={{ $('Start').item.json.source_userId }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -4480,
+        4352
+      ],
+      "id": "ea005016-2636-4b29-8001-6892110c1555",
+      "name": "If13"
+    },
+    {
+      "parameters": {
+        "replyToken": "={{ $('Start').item.json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "altText": "客戶資料夾",
+              "flexJson": "={{ $('Code in JavaScript1').item.json.flexJsonString }}",
+              "type": "flex"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -2912,
+        4544
+      ],
+      "id": "037f5ef3-7022-4a8c-8725-38a01fc79eb0",
+      "name": "Line Messaging15",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "K9g1r0HHEsT1u4XW",
+          "name": "KSCPB OA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得所有符合的資料列（每一個 item 就是一家公司）\nconst items = $input.all();\n\n// 2. 取得 Line Messaging Trigger 的 userId 與 replyToken\nlet userId = \"\";\nlet replyToken = \"\";\ntry {\n  const triggerJson = $('Start').first().json._firstItem;\n  userId = triggerJson.source?.userId || \"\";\n  replyToken = triggerJson.replyToken || \"\";\n} catch (e) {\n  userId = \"\";\n  replyToken = \"\";\n}\n\n// 3. 把每個 item 轉成 {name, folderId, uid}，並精準擷取 Folder ID\nlet clientList = items.map((item) => {\n  const json = item.json;\n  const link = String(json.client_folder || \"\").trim();\n\n  let folderId = \"\";\n  if (link.includes(\"folders/\")) {\n    folderId = link.split(\"folders/\")[1].split(\"?\")[0].split(\"/\")[0].trim();\n  } else if (link.includes(\"id=\")) {\n    folderId = link.split(\"id=\")[1].split(\"&\")[0].trim();\n  } else {\n    folderId = link; // 若原本填的就是純 Folder ID\n  }\n\n  return {\n    name: String(json.client_name || \"\").trim(),\n    folderId: folderId,\n    uid: String(json.Uid || \"\")\n  };\n}).filter(item => item.name && item.folderId); // 過濾掉空資料\n\n// 執行排序 (根據 Uid 升冪排序)\nclientList.sort((a, b) => a.uid.localeCompare(b.uid, undefined, { numeric: true, sensitivity: 'base' }));\n\n// 4. 動態生成按鈕\nconst buttons = clientList.map((item) => {\n  return {\n    \"type\": \"button\",\n    \"action\": {\n      \"type\": \"postback\",\n      \"label\": item.name.substring(0, 40),\n      \"data\": `folder_id=${item.folderId}&folder_name=${item.name}`,\n      \"displayText\": `📁 ${item.name}資料夾開啟中，請稍後...`\n    },\n    \"style\": \"primary\",\n    \"margin\": \"md\",\n    \"color\": \"#00B900\"\n  };\n});\n\n// 5. 組裝 Flex Message (多客戶選單用)\nconst flexContent = {\n  \"type\": \"bubble\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📁 雲端資料夾存取\",\n        \"weight\": \"bold\",\n        \"size\": \"lg\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"請選擇欲存取的所屬單位資料夾：\",\n        \"size\": \"md\",\n        \"color\": \"#666666\",\n        \"wrap\": true,\n        \"margin\": \"none\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"sm\",\n        \"contents\": buttons\n      }\n    ]\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"點擊公司名稱即可直接瀏覽內部檔案\",\n        \"size\": \"sm\",\n        \"color\": \"#888888\",\n        \"align\": \"center\"\n      }\n    ]\n  }\n};\n\n// 6. 判斷是否為單一客戶，準備跳過選單所需欄位\nconst isSingle = clientList.length === 1;\n\nreturn {\n  flexJsonString: JSON.stringify(flexContent),\n  flexObject: flexContent,\n  onlyOneClient: isSingle,\n  replyToken: replyToken,\n  folder_id: isSingle ? clientList[0].folderId : \"\",\n  folder_name: isSingle ? clientList[0].name : \"\",\n  company_id: isSingle ? clientList[0].folderId : \"\",\n  company_name: isSingle ? clientList[0].name : \"\"\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4256,
+        4112
+      ],
+      "id": "c109d085-4039-48e5-a3a4-f96b2e9ccf77",
+      "name": "Code in JavaScript21"
+    },
+    {
+      "parameters": {
+        "replyToken": "={{ $('Start').item.json.replyToken }}",
+        "messages": {
+          "values": [
+            {
+              "text": "抱歉，帳號尚未開啟資料夾查看權限，請洽公司負責人。"
+            }
+          ]
+        }
+      },
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        -2912,
+        4320
+      ],
+      "id": "1cdb6147-490e-46ae-94a0-d0a266213f2e",
+      "name": "無資料夾權限",
+      "credentials": {
+        "lineMessagingApi": {
+          "id": "K9g1r0HHEsT1u4XW",
+          "name": "KSCPB OA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "aNDXFDtm7mHmuHDj",
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/aNDXFDtm7mHmuHDj"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id_merge",
+              "condition": "ilike",
+              "keyValue": "={{ $('Start').item.json.source_userId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -4704,
+        4352
+      ],
+      "id": "b8578590-7279-4014-8a3e-4c2d49faec86",
+      "name": "客戶資料夾",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Code in JavaScript21').first().json;\n\nreturn [\n  {\n    json: {\n      replyToken: data.replyToken,\n      folder_id: data.folder_id,\n      folder_name: data.folder_name,\n      company_id: data.company_id,\n      company_name: data.company_name,\n      raw_search_key: `folder_id=${data.folder_id}&folder_name=${data.folder_name}`\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3360,
+        3936
+      ],
+      "id": "f7bb7e40-0950-48b4-b746-248ddfd3b458",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d0b7ba39-e210-4387-b2d2-91219f47727f",
+              "leftValue": "={{ $json.permissions }}",
+              "rightValue": "N",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3808,
+        4112
+      ],
+      "id": "5450f1a2-3acf-475b-93d0-5630b21a532a",
+      "name": "是否有權限?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9ea70eac-8315-45d4-bdb2-368abb39fbaf",
+              "leftValue": "={{ $('Code in JavaScript21').item.json.onlyOneClient }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3584,
+        4032
+      ],
+      "id": "ccd7435b-c6f1-46b1-a72f-3a5c9a832f56",
+      "name": "是否為單一公司"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "HKqXHpZoNEFlgas5",
+          "mode": "list",
+          "cachedResultName": "LINE ID",
+          "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/HKqXHpZoNEFlgas5"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "userId",
+              "keyValue": "={{ $('Start').item.json.source_userId }}"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -4032,
+        4112
+      ],
+      "id": "96929b4b-1c4e-46f6-befb-e1c4e1d18f4a",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "28e1b00b-6702-47e6-981e-106f4ed46bff",
+              "name": "folder_id",
+              "value": "={{ $json.folder_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3136,
+        3936
+      ],
+      "id": "3153f605-655e-4f32-8bbd-f86d85c37415",
+      "name": "Return"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "replyToken",
+              "type": "any"
+            },
+            {
+              "name": "source_userId",
+              "type": "any"
+            },
+            {
+              "name": "_firstItem",
+              "type": "any"
+            }
+          ]
+        }
+      },
+      "id": "d0b20ed7-dc83-41ff-a4f2-c5c035c08a59",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -4928,
+        4352
+      ]
+    }
+  ],
+  "connections": {
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate4": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet6": {
+      "main": [
+        [
+          {
+            "node": "If9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If9": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging15",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "無資料夾權限",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If13": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript21",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript21": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "客戶資料夾": {
+      "main": [
+        [
+          {
+            "node": "If13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否有權限?": {
+      "main": [
+        [
+          {
+            "node": "是否為單一公司",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "無資料夾權限",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "是否為單一公司": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "是否有權限?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "客戶資料夾",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript5": {
+      "main": [
+        [
+          {
+            "node": "Return",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {
+    "Start": [
+      {
+        "json": {
+          "replyToken": "b9068c2080084bab8e341cd6bb42170b",
+          "source_userId": "U6af8a125b5867f793cfceef8d292a100",
+          "_firstItem": {
+            "type": "message",
+            "message": {
+              "type": "text",
+              "id": "630970877651189884",
+              "quoteToken": "cI_HsGm1MlTD_hqude5iuAFrI99vbiAU-OLRUMmz-wjjw2GxzW9goUR9fGt8wCbwJxXgxC5VHMTtNWj1tj_PXHH2QdcNe0e6JZS25xi_IJp-7HQee5QlH6j0mI1Htxhgb--AZoHrsyoLdGxDJteygQ",
+              "markAsReadToken": "jI6KAYTG8zAdANq3oIrFJNFWyMRCgh0fkG3Q65H0Sb-HxC4tuC1PYZdJ4i-ZGOTClAcjUUMkZCpK39BSIdcF6JrfYHiUlMs1L5k5sIVpkSloIvv30gCdkdZebUzFi0dxXJ34GYvl-3P4ndbhAvqe-vr1jvJjehGd-QL8RX_krH8siywv7qBZc6_uF4v4a-_STA4P6m_meoUAoaY2jKerEQ",
+              "text": "客戶資料夾"
+            },
+            "webhookEventId": "01M21YB3JBFDRGFF7H26TWAT85",
+            "deliveryContext": {
+              "isRedelivery": false
+            },
+            "timestamp": 1788919254269,
+            "source": {
+              "type": "user",
+              "userId": "U6af8a125b5867f793cfceef8d292a100"
+            },
+            "replyToken": "b9068c2080084bab8e341cd6bb42170b",
+            "mode": "active",
+            "destination": "U34843875432eadd7b105344fef1e376e"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "meta": null,
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "kHquq02ZiEsGj8rG",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-09-09T01:16:53.978Z",
+      "updatedAt": "2026-09-09T01:16:53.978Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "45b2c682-b7ca-4a0e-9960-9396f8238657",
+    "workflowId": "kHquq02ZiEsGj8rG",
+    "nodes": [
+      {
+        "parameters": {
+          "replyToken": "={{ $('Start').item.json.replyToken }}",
+          "messages": {
+            "values": [
+              {
+                "altText": "客戶資料夾",
+                "flexJson": "={{ $('Code in JavaScript21').item.json.flexJsonString }}\n",
+                "type": "flex"
+              }
+            ]
+          }
+        },
+        "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+        "typeVersion": 1,
+        "position": [
+          -3360,
+          4128
+        ],
+        "id": "a0e454ed-08f3-4c79-b54b-79ed45202dfd",
+        "name": "Line Messaging",
+        "executeOnce": false,
+        "credentials": {
+          "lineMessagingApi": {
+            "id": "K9g1r0HHEsT1u4XW",
+            "name": "KSCPB OA"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 30429075,
+            "mode": "list",
+            "cachedResultName": "自動回傳帳單",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+          },
+          "options": {
+            "dataLocationOnSheet": {
+              "values": {
+                "rangeDefinition": "specifyRangeA1",
+                "range": "B1:ac600"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          -4256,
+          4592
+        ],
+        "id": "9ea59efa-6ff3-4e58-ad4d-997339673465",
+        "name": "Get row(s) in sheet2",
+        "executeOnce": false,
+        "alwaysOutputData": false,
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "0cbad640-c8ff-404d-a68f-b287a0dff6b6",
+                "leftValue": "={{ $json['ID合併'] }}",
+                "rightValue": "={{ $('Start').item.json.source_userId }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              },
+              {
+                "id": "142b05f4-2625-4589-ad88-ac4208254e05",
+                "leftValue": "",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals",
+                  "name": "filter.operator.equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -4032,
+          4592
+        ],
+        "id": "c42180c2-bf6a-424e-8636-20f3aa01293c",
+        "name": "If2"
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. 取得上一個節點 (Aggregate 節點) 的資料\nconst input = $input.first().json;\n\n// 確保資料為陣列格式 (對應 Aggregate 節點輸出的中文 key)\nconst clients = Array.isArray(input['客戶名稱']) \n  ? input['客戶名稱'] \n  : (input['客戶名稱'] ? [input['客戶名稱']] : []);\n\nconst folderLinks = Array.isArray(input['客戶資料夾']) \n  ? input['客戶資料夾'] \n  : (input['客戶資料夾'] ? [input['客戶資料夾']] : []);\n\nconst uids = Array.isArray(input['Uid']) \n  ? input['Uid'] \n  : (input['Uid'] ? [input['Uid']] : []);\n\n// 2. 取得 Line Messaging Trigger 的 userId\nconst userId = $('Start').first().json._firstItem?.source?.userId || '';\n\n// 3. 將資料合併並根據 Uid 排序\nlet clientList = clients.map((name, index) => {\n  return {\n    name: name,\n    link: folderLinks[index] || '',\n    uid: String(uids[index] || '')\n  };\n});\n\n// 執行排序 (根據 Uid 進行字母與數字升冪排序，如 A21 會排在 B66 前面)\nclientList.sort((a, b) => a.uid.localeCompare(b.uid, undefined, { numeric: true, sensitivity: 'base' }));\n\n// LINE Flex Message 按鈕數量安全限制 (上限 10 個，避免超出 LINE 限制導致 400 錯誤)\nconst maxButtons = clientList.slice(0, 10);\n\n// 4. 動態生成按鈕\nconst buttons = maxButtons.map((item) => {\n  const link = item.link;\n  \n  // 串接 uid 參數邏輯\n  const finalUri = link.includes('?') \n    ? `${link}&uid=${userId}` \n    : `${link}?uid=${userId}`;\n\n  return {\n    \"type\": \"button\",\n    \"action\": {\n      \"type\": \"uri\",\n      // LINE label 限制最多 40 字\n      \"label\": String(item.name).substring(0, 40),\n      \"uri\": finalUri\n    },\n    \"style\": \"primary\",\n    \"margin\": \"md\",\n    \"color\": \"#00B900\"\n  };\n});\n\n// 5. 組裝 Flex Message\nconst flexContent = {\n  \"type\": \"bubble\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📁 雲端資料夾存取\",\n        \"weight\": \"bold\",\n        \"size\": \"lg\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"所屬單位的資料夾連結：\",\n        \"size\": \"md\",\n        \"color\": \"#666666\",\n        \"wrap\": true,\n        \"margin\": \"none\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"sm\",\n        \"contents\": buttons.length > 0 ? buttons : [\n          {\n            \"type\": \"text\",\n            \"text\": \"目前無可用的資料夾連結\",\n            \"color\": \"#999999\",\n            \"size\": \"sm\"\n          }\n        ]\n      }\n    ]\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"如誤按請忽略此訊息\",\n        \"size\": \"xs\",\n        \"color\": \"#FF0000\",\n        \"align\": \"center\"\n      }\n    ]\n  }\n};\n\nreturn {\n  flexJsonString: JSON.stringify(flexContent)\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -3584,
+          4496
+        ],
+        "id": "5178ce50-f184-48e7-8db0-161a5d6f42ac",
+        "name": "Code in JavaScript1"
+      },
+      {
+        "parameters": {
+          "fieldsToAggregate": {
+            "fieldToAggregate": [
+              {
+                "fieldToAggregate": "客戶名稱"
+              },
+              {
+                "fieldToAggregate": "客戶資料夾"
+              },
+              {
+                "fieldToAggregate": "Uid"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          -3808,
+          4496
+        ],
+        "id": "47cd9b23-f2de-46f5-93eb-a5b6d88edb22",
+        "name": "Aggregate1"
+      },
+      {
+        "parameters": {
+          "fieldsToAggregate": {
+            "fieldToAggregate": [
+              {
+                "fieldToAggregate": "客戶名稱"
+              },
+              {
+                "fieldToAggregate": "客戶資料夾"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.aggregate",
+        "typeVersion": 1,
+        "position": [
+          -3584,
+          4688
+        ],
+        "id": "3b2a2f51-421d-4d58-9910-059dec095227",
+        "name": "Aggregate4"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "f75f7bff-09ab-40fb-81dd-e434a438cefe",
+                "leftValue": "={{ $('If2').all().length }}",
+                "rightValue": "={{ $('Get row(s) in sheet2').all().length }}",
+                "operator": {
+                  "type": "number",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": "",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          -3808,
+          4688
+        ],
+        "id": "0810baec-1a79-41c1-baa4-77adc801ab5e",
+        "name": "Filter3"
+      },
+      {
+        "parameters": {
+          "replyToken": "={{ $('Start').item.json.replyToken }}",
+          "messages": {
+            "values": [
+              {
+                "altText": "操作指引與帳號綁定",
+                "flexJson": "{\n  \"type\": \"bubble\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"操作指引與帳號綁定\",\n        \"weight\": \"bold\",\n        \"size\": \"xl\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"sm\",\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": \"1. 在對話框輸入帳號密碼\",\n            \"wrap\": true,\n            \"size\": \"lg\",\n            \"color\": \"#666666\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"統編+負責人身份證英文大寫+身份證後五碼\",\n            \"wrap\": true,\n            \"size\": \"md\",\n            \"color\": \"#666666\",\n            \"margin\": \"none\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"2. 登入系統查詢資料夾\",\n            \"wrap\": true,\n            \"size\": \"lg\",\n            \"color\": \"#666666\",\n            \"margin\": \"xxl\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"http://file.kscpb.com/Query\",\n            \"size\": \"md\",\n            \"color\": \"#0645AD\",\n            \"action\": {\n              \"type\": \"uri\",\n              \"label\": \"查詢網址\",\n              \"uri\": \"http://file.kscpb.com/Query\"\n            },\n            \"decoration\": \"none\"\n          },\n          {\n            \"type\": \"text\",\n            \"text\": \"點擊下方按鈕系統綁定後，下一營業日點擊即可快速推送\",\n            \"wrap\": true,\n            \"size\": \"sm\",\n            \"color\": \"#666666\",\n            \"margin\": \"xxl\"\n          }\n        ]\n      }\n    ]\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"spacing\": \"sm\",\n    \"contents\": [\n      {\n        \"type\": \"button\",\n        \"style\": \"primary\",\n        \"height\": \"sm\",\n        \"color\": \"#1DB446\",\n        \"action\": {\n          \"type\": \"message\",\n          \"label\": \"綁定帳號\",\n          \"text\": \"綁定帳號\"\n        }\n      }\n    ]\n  }\n}",
+                "type": "flex"
+              }
+            ]
+          }
+        },
+        "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+        "typeVersion": 1,
+        "position": [
+          -3360,
+          4688
+        ],
+        "id": "9278fb23-2453-46a7-bba7-c497e988fb81",
+        "name": "Line Messaging5",
+        "credentials": {
+          "lineMessagingApi": {
+            "id": "K9g1r0HHEsT1u4XW",
+            "name": "KSCPB OA"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+            "mode": "id"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 1961729212,
+            "mode": "list",
+            "cachedResultName": "LINE ID",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1961729212"
+          },
+          "filtersUI": {
+            "values": [
+              {
+                "lookupColumn": "B:userId",
+                "lookupValue": "={{ $('Start').item.json.source_userId }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          -3360,
+          4496
+        ],
+        "id": "d8ebe228-bf08-4b93-affe-5b443c3cdfab",
+        "name": "Get row(s) in sheet6",
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "d0b7ba39-e210-4387-b2d2-91219f47727f",
+                "leftValue": "={{ $json[\"帳單權限\"] }}",
+                "rightValue": "N",
+                "operator": {
+                  "type": "string",
+                  "operation": "notContains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -3136,
+          4496
+        ],
+        "id": "5ee18af8-ede6-42bb-9334-a8fa7bf994ff",
+        "name": "If9"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "04cd9614-a39f-4267-be31-9b5b289132be",
+                "leftValue": "={{ $json.id_merge }}",
+                "rightValue": "={{ $('Start').item.json.source_userId }}",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -4480,
+          4352
+        ],
+        "id": "ea005016-2636-4b29-8001-6892110c1555",
+        "name": "If13"
+      },
+      {
+        "parameters": {
+          "replyToken": "={{ $('Start').item.json.replyToken }}",
+          "messages": {
+            "values": [
+              {
+                "altText": "客戶資料夾",
+                "flexJson": "={{ $('Code in JavaScript1').item.json.flexJsonString }}",
+                "type": "flex"
+              }
+            ]
+          }
+        },
+        "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+        "typeVersion": 1,
+        "position": [
+          -2912,
+          4544
+        ],
+        "id": "037f5ef3-7022-4a8c-8725-38a01fc79eb0",
+        "name": "Line Messaging15",
+        "credentials": {
+          "lineMessagingApi": {
+            "id": "K9g1r0HHEsT1u4XW",
+            "name": "KSCPB OA"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// 1. 取得所有符合的資料列（每一個 item 就是一家公司）\nconst items = $input.all();\n\n// 2. 取得 Line Messaging Trigger 的 userId 與 replyToken\nlet userId = \"\";\nlet replyToken = \"\";\ntry {\n  const triggerJson = $('Start').first().json._firstItem;\n  userId = triggerJson.source?.userId || \"\";\n  replyToken = triggerJson.replyToken || \"\";\n} catch (e) {\n  userId = \"\";\n  replyToken = \"\";\n}\n\n// 3. 把每個 item 轉成 {name, folderId, uid}，並精準擷取 Folder ID\nlet clientList = items.map((item) => {\n  const json = item.json;\n  const link = String(json.client_folder || \"\").trim();\n\n  let folderId = \"\";\n  if (link.includes(\"folders/\")) {\n    folderId = link.split(\"folders/\")[1].split(\"?\")[0].split(\"/\")[0].trim();\n  } else if (link.includes(\"id=\")) {\n    folderId = link.split(\"id=\")[1].split(\"&\")[0].trim();\n  } else {\n    folderId = link; // 若原本填的就是純 Folder ID\n  }\n\n  return {\n    name: String(json.client_name || \"\").trim(),\n    folderId: folderId,\n    uid: String(json.Uid || \"\")\n  };\n}).filter(item => item.name && item.folderId); // 過濾掉空資料\n\n// 執行排序 (根據 Uid 升冪排序)\nclientList.sort((a, b) => a.uid.localeCompare(b.uid, undefined, { numeric: true, sensitivity: 'base' }));\n\n// 4. 動態生成按鈕\nconst buttons = clientList.map((item) => {\n  return {\n    \"type\": \"button\",\n    \"action\": {\n      \"type\": \"postback\",\n      \"label\": item.name.substring(0, 40),\n      \"data\": `folder_id=${item.folderId}&folder_name=${item.name}`,\n      \"displayText\": `📁 ${item.name}資料夾開啟中，請稍後...`\n    },\n    \"style\": \"primary\",\n    \"margin\": \"md\",\n    \"color\": \"#00B900\"\n  };\n});\n\n// 5. 組裝 Flex Message (多客戶選單用)\nconst flexContent = {\n  \"type\": \"bubble\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📁 雲端資料夾存取\",\n        \"weight\": \"bold\",\n        \"size\": \"lg\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"請選擇欲存取的所屬單位資料夾：\",\n        \"size\": \"md\",\n        \"color\": \"#666666\",\n        \"wrap\": true,\n        \"margin\": \"none\"\n      },\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"margin\": \"lg\",\n        \"spacing\": \"sm\",\n        \"contents\": buttons\n      }\n    ]\n  },\n  \"footer\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"點擊公司名稱即可直接瀏覽內部檔案\",\n        \"size\": \"sm\",\n        \"color\": \"#888888\",\n        \"align\": \"center\"\n      }\n    ]\n  }\n};\n\n// 6. 判斷是否為單一客戶，準備跳過選單所需欄位\nconst isSingle = clientList.length === 1;\n\nreturn {\n  flexJsonString: JSON.stringify(flexContent),\n  flexObject: flexContent,\n  onlyOneClient: isSingle,\n  replyToken: replyToken,\n  folder_id: isSingle ? clientList[0].folderId : \"\",\n  folder_name: isSingle ? clientList[0].name : \"\",\n  company_id: isSingle ? clientList[0].folderId : \"\",\n  company_name: isSingle ? clientList[0].name : \"\"\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -4256,
+          4112
+        ],
+        "id": "c109d085-4039-48e5-a3a4-f96b2e9ccf77",
+        "name": "Code in JavaScript21"
+      },
+      {
+        "parameters": {
+          "replyToken": "={{ $('Start').item.json.replyToken }}",
+          "messages": {
+            "values": [
+              {
+                "text": "抱歉，帳號尚未開啟資料夾查看權限，請洽公司負責人。"
+              }
+            ]
+          }
+        },
+        "type": "@aotoki/n8n-nodes-line-messaging.lineMessaging",
+        "typeVersion": 1,
+        "position": [
+          -2912,
+          4320
+        ],
+        "id": "1cdb6147-490e-46ae-94a0-d0a266213f2e",
+        "name": "無資料夾權限",
+        "credentials": {
+          "lineMessagingApi": {
+            "id": "K9g1r0HHEsT1u4XW",
+            "name": "KSCPB OA"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "value": "aNDXFDtm7mHmuHDj",
+            "mode": "list",
+            "cachedResultName": "自動回傳帳單",
+            "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/aNDXFDtm7mHmuHDj"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "id_merge",
+                "condition": "ilike",
+                "keyValue": "={{ $('Start').item.json.source_userId }}"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          -4704,
+          4352
+        ],
+        "id": "b8578590-7279-4014-8a3e-4c2d49faec86",
+        "name": "客戶資料夾",
+        "alwaysOutputData": true,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const data = $('Code in JavaScript21').first().json;\n\nreturn [\n  {\n    json: {\n      replyToken: data.replyToken,\n      folder_id: data.folder_id,\n      folder_name: data.folder_name,\n      company_id: data.company_id,\n      company_name: data.company_name,\n      raw_search_key: `folder_id=${data.folder_id}&folder_name=${data.folder_name}`\n    }\n  }\n];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -3360,
+          3936
+        ],
+        "id": "f7bb7e40-0950-48b4-b746-248ddfd3b458",
+        "name": "Code in JavaScript5"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "d0b7ba39-e210-4387-b2d2-91219f47727f",
+                "leftValue": "={{ $json.permissions }}",
+                "rightValue": "N",
+                "operator": {
+                  "type": "string",
+                  "operation": "notContains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -3808,
+          4112
+        ],
+        "id": "5450f1a2-3acf-475b-93d0-5630b21a532a",
+        "name": "是否有權限?"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "9ea70eac-8315-45d4-bdb2-368abb39fbaf",
+                "leftValue": "={{ $('Code in JavaScript21').item.json.onlyOneClient }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -3584,
+          4032
+        ],
+        "id": "ccd7435b-c6f1-46b1-a72f-3a5c9a832f56",
+        "name": "是否為單一公司"
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "dataTableId": {
+            "__rl": true,
+            "value": "HKqXHpZoNEFlgas5",
+            "mode": "list",
+            "cachedResultName": "LINE ID",
+            "cachedResultUrl": "/projects/icqrwfCTGUzPjgZI/datatables/HKqXHpZoNEFlgas5"
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "userId",
+                "keyValue": "={{ $('Start').item.json.source_userId }}"
+              }
+            ]
+          },
+          "returnAll": true
+        },
+        "type": "n8n-nodes-base.dataTable",
+        "typeVersion": 1.1,
+        "position": [
+          -4032,
+          4112
+        ],
+        "id": "96929b4b-1c4e-46f6-befb-e1c4e1d18f4a",
+        "name": "Get row(s)"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "28e1b00b-6702-47e6-981e-106f4ed46bff",
+                "name": "folder_id",
+                "value": "={{ $json.folder_id }}",
+                "type": "string"
+              }
+            ]
+          },
+          "includeOtherFields": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -3136,
+          3936
+        ],
+        "id": "3153f605-655e-4f32-8bbd-f86d85c37415",
+        "name": "Return"
+      },
+      {
+        "parameters": {
+          "workflowInputs": {
+            "values": [
+              {
+                "name": "replyToken",
+                "type": "any"
+              },
+              {
+                "name": "source_userId",
+                "type": "any"
+              },
+              {
+                "name": "_firstItem",
+                "type": "any"
+              }
+            ]
+          }
+        },
+        "id": "d0b20ed7-dc83-41ff-a4f2-c5c035c08a59",
+        "typeVersion": 1.1,
+        "name": "Start",
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "position": [
+          -4928,
+          4352
+        ]
+      }
+    ],
+    "connections": {
+      "Get row(s) in sheet2": {
+        "main": [
+          [
+            {
+              "node": "If2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If2": {
+        "main": [
+          [
+            {
+              "node": "Aggregate1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Filter3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate1": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript1": {
+        "main": [
+          [
+            {
+              "node": "Get row(s) in sheet6",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate4": {
+        "main": [
+          [
+            {
+              "node": "Line Messaging5",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter3": {
+        "main": [
+          [
+            {
+              "node": "Aggregate4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s) in sheet6": {
+        "main": [
+          [
+            {
+              "node": "If9",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If9": {
+        "main": [
+          [
+            {
+              "node": "Line Messaging15",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "無資料夾權限",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If13": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript21",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Get row(s) in sheet2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript21": {
+        "main": [
+          [
+            {
+              "node": "Get row(s)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "客戶資料夾": {
+        "main": [
+          [
+            {
+              "node": "If13",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "是否有權限?": {
+        "main": [
+          [
+            {
+              "node": "是否為單一公司",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "無資料夾權限",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "是否為單一公司": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript5",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Line Messaging",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s)": {
+        "main": [
+          [
+            {
+              "node": "是否有權限?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "客戶資料夾",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript5": {
+        "main": [
+          [
+            {
+              "node": "Return",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "鈞煜 黃",
+    "name": "Version 45b2c682",
+    "description": "",
+    "autosaved": false,
+    "createdAt": "2026-09-09T02:04:25.405Z",
+    "updatedAt": "2026-09-09T02:04:47.096Z"
+  }
+}
