@@ -1,0 +1,1186 @@
+{
+  "id": "QKajABzbmopjnjAD",
+  "name": "經濟部API",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-08-14T00:29:50.985Z",
+  "updatedAt": "2026-08-14T06:19:19.697Z",
+  "isArchived": false,
+  "versionId": "df83262a-2139-4cea-bd38-870f765f895b",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "44c09365-53ca-4ab1-bfb0-63dc3620a29e",
+      "name": "手動觸發測試",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1920,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://data.gcis.nat.gov.tw/od/data/api/5F64D864-61CB-4D0D-8AD9-492047CC1EA6?$format=json&$filter=Business_Accounting_NO eq {{ $('讀取公司統編列表').item.json.統編 }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5
+            }
+          }
+        }
+      },
+      "id": "24b8e0eb-65f2-4f81-868e-635019512cbc",
+      "name": "1. 查詢公司 API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -976,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 民國年轉西元年函式 (YYYMMDD -> YYYY-MM-DD)\nfunction convertRocDate(rocStr) {\n  if (!rocStr || typeof rocStr !== 'string') return '';\n  const trimmed = rocStr.trim();\n  if (trimmed.length !== 7) return trimmed;\n  const year = parseInt(trimmed.substring(0, 3), 10) + 1911;\n  const month = trimmed.substring(3, 5);\n  const day = trimmed.substring(5, 7);\n  return `${year}-${month}-${day}`;\n}\n\n// 走訪 n8n 傳進來的所有項目 (Items)\nreturn $input.all().map((item, index) => {\n  // 取得 API 回傳的 JSON (若為陣列則抓第一筆，否則直接使用該物件)\n  const apiData = Array.isArray(item.json) ? item.json[0] : item.json;\n  \n  // 透過索引自動對應 Split Out 切出來的原統編 (若抓不到則嘗試讀取 Sheet 節點)\n  const splitItem = $('Split Out').all()[index]?.json || {};\n  const sheetItem = $('讀取公司統編列表').all()[index]?.json || {};\n  const rowNumber = sheetItem.row_number || splitItem.row_number;\n  const originalTaxId = splitItem['統編'] || sheetItem['統編'] || '';\n\n  // 判斷是否有查到公司資料\n  if (apiData && apiData.Company_Name) {\n    // 狀態優先取 Case_Status_Desc，若無則帶 Company_Status_Desc\n    const statusDesc = (apiData.Case_Status_Desc && apiData.Case_Status_Desc.trim()) \n      ? apiData.Case_Status_Desc.trim() \n      : (apiData.Company_Status_Desc || '');\n\n    return {\n      json: {\n        row_number: rowNumber,\n        '統編': apiData.Business_Accounting_NO || originalTaxId,\n        '組織類型': '公司',\n        '公司名稱': apiData.Company_Name || '',\n        '負責人': apiData.Responsible_Name || '',\n        '地址': apiData.Company_Location || '',\n        '設立日期': convertRocDate(apiData.Company_Setup_Date),\n        '狀態': statusDesc,\n        '到期日': convertRocDate(apiData.Sus_End_Date)\n      }\n    };\n  } else {\n    // 查無公司資料\n    return {\n      json: {\n        row_number: rowNumber,\n        '統編': originalTaxId,\n        '組織類型': '查無公司資料',\n        '公司名稱': '',\n        '負責人': '',\n        '地址': '',\n        '設立日期': '',\n        '狀態': '',\n        '到期日': ''\n      }\n    };\n  }\n});"
+      },
+      "id": "04f4ad16-7186-4ed1-8e46-a2dc1b2e402b",
+      "name": "整理公司資料並轉日期",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "工作表1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "統編": "={{ $json[\"統編\"] }}",
+            "組織類型": "={{ $json[\"組織類型\"] }}",
+            "公司名稱": "={{ $json[\"公司名稱\"] }}",
+            "負責人": "={{ $json[\"負責人\"] }}",
+            "地址": "={{ $json[\"地址\"] }}",
+            "狀態": "={{ $json[\"狀態\"] }}",
+            "到期日": "={{ $json[\"到期日\"] }}"
+          },
+          "matchingColumns": [
+            "統編"
+          ],
+          "schema": [
+            {
+              "id": "統編",
+              "displayName": "統編",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "組織類型",
+              "displayName": "組織類型",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "公司名稱",
+              "displayName": "公司名稱",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "負責人",
+              "displayName": "負責人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "地址",
+              "displayName": "地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "狀態",
+              "displayName": "狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "到期日",
+              "displayName": "到期日",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e7f86c2a-ff20-4463-ac54-6015ebfa3416",
+      "name": "寫回 Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -304,
+        128
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "[\"統編\"]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        128
+      ],
+      "id": "1d180027-f7db-4764-9602-531d24c7ce4c",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "url": "=https://data.gcis.nat.gov.tw/od/data/api/426D5542-5F05-43EB-83F9-F1300F14E1F1?$format=json&$filter=President_No eq {{ $json.統編.toString().trim() }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5
+            }
+          }
+        }
+      },
+      "id": "a1144893-fc9b-4c1c-8a3f-b8c1f694bc1d",
+      "name": "前置 API：取得地址解判縣市",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -976,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://data.gcis.nat.gov.tw/od/data/api/7E6AFA72-AD6A-46D3-8681-ED77951D912D?$format=json&$filter=President_No eq {{ $json.President_No }} and Agency eq {{ $json.Agency }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5
+            }
+          }
+        }
+      },
+      "id": "2cae3fd1-c3ea-4465-b9bd-1b849caa19ea",
+      "name": "主 API：帶入 Agency 查詢應用一",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -752,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "統編",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        512
+      ],
+      "id": "88f1f9b1-d93f-49f3-b8c4-5b8cf997c3a4",
+      "name": "Split Out2"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "工作表1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "統編": "={{ $json[\"統編\"] }}",
+            "組織類型": "={{ $json[\"組織類型\"] }}",
+            "公司名稱": "={{ $json[\"公司名稱\"] }}",
+            "負責人": "={{ $json[\"負責人\"] }}",
+            "地址": "={{ $json[\"地址\"] }}",
+            "row_number": 0,
+            "狀態": "={{ $json[\"狀態\"] }}",
+            "到期日": "={{ $json[\"到期日\"] }}"
+          },
+          "matchingColumns": [
+            "統編"
+          ],
+          "schema": [
+            {
+              "id": "統編",
+              "displayName": "統編",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "組織類型",
+              "displayName": "組織類型",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "公司名稱",
+              "displayName": "公司名稱",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "負責人",
+              "displayName": "負責人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "地址",
+              "displayName": "地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "狀態",
+              "displayName": "狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "到期日",
+              "displayName": "到期日",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "941e4604-69d2-4db3-8255-ebfc45cb0c9d",
+      "name": "寫回 Google Sheets2",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -80,
+        512
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "25a28093-a2cc-4730-8763-85ea1808c873",
+              "leftValue": "={{ $json[\"組織類型\"] }}",
+              "rightValue": "查無公司資料",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -528,
+        128
+      ],
+      "id": "e203c69d-d6be-4ac5-8808-800b72a1d39f",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 民國年轉西元年函式 (YYYMMDD -> YYYY-MM-DD)\nfunction convertRocDate(rocStr) {\n  if (!rocStr || typeof rocStr !== 'string') return '';\n  const trimmed = rocStr.trim();\n  if (trimmed.length !== 7) return trimmed;\n  const year = parseInt(trimmed.substring(0, 3), 10) + 1911;\n  const month = trimmed.substring(3, 5);\n  const day = trimmed.substring(5, 7);\n  return `${year}-${month}-${day}`;\n}\n\n// 走訪 n8n 傳進來的所有項目 (Items)\nreturn $input.all().map((item, index) => {\n  // 取得 API 回傳的 JSON (若為陣列則抓第一筆，否則直接使用該物件)\n  const apiData = Array.isArray(item.json) ? item.json[0] : item.json;\n  \n  // 透過索引自動對應 Split Out 切出來的原統編 (若抓不到則嘗試讀取 Sheet 節點)\n  const splitItem = $('Split Out2').all()[index]?.json || {};\n  const sheetItem = $('讀取商業統編列表').all()[index]?.json || {};\n  const rowNumber = sheetItem.row_number || splitItem.row_number;\n  const originalTaxId = splitItem['統編'] || splitItem['[\"統編\"]'] || sheetItem['統編'] || '';\n\n  // 判斷是否有查到商業資料\n  if (apiData && apiData.Business_Name) {\n    return {\n      json: {\n        row_number: rowNumber,\n        '統編': apiData.President_No || originalTaxId,\n        '組織類型': apiData.Business_Organization_Type_Desc || '商業行號',\n        '公司名稱': apiData.Business_Name || '',\n        '負責人': apiData.Responsible_Name || '',\n        '地址': apiData.Business_Address || '',\n        '設立日期': convertRocDate(apiData.Business_Setup_Approve_Date),\n        '狀態': apiData.Business_Current_Status_Desc || '',\n        '到期日': '' // 商業 API 通常無停業到期日欄位，預設給空白保持欄位結構一致\n      }\n    };\n  } else {\n    // 查無商業資料\n    return {\n      json: {\n        row_number: rowNumber,\n        '統編': originalTaxId,\n        '組織類型': '查無商業資料',\n        '公司名稱': '',\n        '負責人': '',\n        '地址': '',\n        '設立日期': '',\n        '狀態': '',\n        '到期日': ''\n      }\n    };\n  }\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        512
+      ],
+      "id": "5deb3465-2eee-448f-b958-cdfb06b65fa6",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f3f0d8e3-f35f-4b89-ba31-ffc03027db1d",
+              "leftValue": "={{ $json[\"組織類型\"] }}",
+              "rightValue": "查無商業資料",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -304,
+        512
+      ],
+      "id": "7be2b379-fbc8-4e35-b995-33b26d34a85c",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c8b6ab82-5b2c-40f0-93f5-3e9fa5d48983",
+              "leftValue": "={{ $json[\"組織類型\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1424,
+        128
+      ],
+      "id": "8291fb85-b134-4771-8251-090e95f55e7d",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "eef9a768-7cf5-4b6c-875e-4712403e9887",
+              "leftValue": "={{ $json[\"組織類型\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1424,
+        512
+      ],
+      "id": "1f651c9f-3c53-42a1-9e91-bc99251e0c58",
+      "name": "Filter3"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "總公司統編",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        320
+      ],
+      "id": "ee5cba76-4341-48f0-ac23-de17c3d310f3",
+      "name": "Split Out (分公司)"
+    },
+    {
+      "parameters": {
+        "url": "=https://data.gcis.nat.gov.tw/od/data/api/FDB8D2C8-573D-4276-BFA4-8D3925ABE1CB?$format=json&$filter=Business_Accounting_NO eq {{ $json[\"總公司統編\"] }}&$skip=0",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 5
+            }
+          }
+        }
+      },
+      "id": "979e1f28-e039-490a-9335-e8b9c1dd2376",
+      "name": "查詢分公司 API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -752,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 民國年轉西元年函式 (YYYMMDD -> YYYY-MM-DD)\nfunction convertRocDate(rocStr) {\n  if (!rocStr || typeof rocStr !== 'string') return '';\n  const trimmed = rocStr.trim();\n  if (trimmed.length !== 7) return trimmed;\n  const year = parseInt(trimmed.substring(0, 3), 10) + 1911;\n  const month = trimmed.substring(3, 5);\n  const day = trimmed.substring(5, 7);\n  return `${year}-${month}-${day}`;\n}\n\n// 走訪所有 API 回傳項目\nreturn $input.all().map((item, index) => {\n  const apiData = Array.isArray(item.json) ? item.json[0] : item.json;\n\n  // 防錯模式取得原始 Sheet 資料\n  let splitItem = {};\n  try {\n    splitItem = $('Split Out (分公司)').all()[index]?.json || {};\n  } catch (e) {}\n  let sheetItem = {};\n  try {\n    sheetItem = $('讀取分公司統編列表').all()[index]?.json || {};\n  } catch (e) {}\n  const rowNumber = apiData?.row_number || splitItem.row_number || sheetItem.row_number || (index + 1);\n  const originalTaxId = apiData?.Branch_Office_Business_Accounting_NO || splitItem['總公司統編'] || sheetItem['總公司統編'] || '';\n\n  // 判斷是否有查到分公司資料\n  if (apiData && apiData.Branch_Office_Name) {\n    return {\n      json: {\n        row_number: rowNumber,\n        '統編': apiData.Branch_Office_Business_Accounting_NO || originalTaxId,\n        '組織類型': '分公司',\n        '公司名稱': apiData.Branch_Office_Name || '',\n        '總公司統編': apiData.Business_Accounting_NO || '',\n        '負責人': apiData.Branch_Office_Manager_Name || '',\n        '地址': apiData.Branch_Office_Location || '',\n        '設立日期': convertRocDate(apiData.BR_ESTAB_DATE),\n        '最後變更日期': convertRocDate(apiData.CHG_APP_DATE),\n        '狀態': apiData.Branch_Office_Status_Desc || ''\n      }\n    };\n  } else {\n    // 查無分公司資料\n    return {\n      json: {\n        row_number: rowNumber,\n        '統編': originalTaxId,\n        '組織類型': '查無分公司資料',\n        '公司名稱': '',\n        '總公司統編': '',\n        '負責人': '',\n        '地址': '',\n        '設立日期': '',\n        '最後變更日期': '',\n        '狀態': ''\n      }\n    };\n  }\n});"
+      },
+      "id": "a7dd494b-90b7-4a43-a21d-53edffceea13",
+      "name": "整理分公司資料並轉日期",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "工作表1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "統編": "={{ $json[\"統編\"] }}",
+            "組織類型": "={{ $json[\"組織類型\"] }}",
+            "公司名稱": "={{ $json[\"公司名稱\"] }}",
+            "負責人": "={{ $json[\"負責人\"] }}",
+            "地址": "={{ $json[\"地址\"] }}",
+            "狀態": "={{ $json[\"狀態\"] }}",
+            "row_number": 0,
+            "分公司統編": "={{ $json[\"統編\"] }}"
+          },
+          "matchingColumns": [
+            "統編"
+          ],
+          "schema": [
+            {
+              "id": "統編",
+              "displayName": "統編",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "組織類型",
+              "displayName": "組織類型",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "公司名稱",
+              "displayName": "公司名稱",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "負責人",
+              "displayName": "負責人",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "地址",
+              "displayName": "地址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "狀態",
+              "displayName": "狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "到期日",
+              "displayName": "到期日",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "總公司統編",
+              "displayName": "總公司統編",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "分公司統編",
+              "displayName": "分公司統編",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "客戶代碼",
+              "displayName": "客戶代碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d21ec30d-c2c8-485a-b98e-86c75991dd41",
+      "name": "寫回 Google Sheets (分公司)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -80,
+        320
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "工作表1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "ec69b8e3-adcc-41cf-a043-aa0aa2111023",
+      "name": "讀取公司統編列表",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1648,
+        128
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "工作表1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "c0a217e6-1c75-4c42-95e4-f21c7595fbaf",
+      "name": "讀取商業統編列表",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1648,
+        512
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "工作表1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rfnJiXdPqpCTh6cjARLtnVEZArPVQdzPdhkvJt7G8kc/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "d9e64b3b-80f9-4dad-bdac-c5065dc423cf",
+      "name": "讀取分公司統編列表",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1648,
+        320
+      ],
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "eef9a768-7cf5-4b6c-875e-4712403e9887",
+              "leftValue": "={{ $json[\"總公司統編\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -1424,
+        320
+      ],
+      "id": "a31a3f29-ff4a-467f-9c06-7268033595f2",
+      "name": "Filter4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        320
+      ],
+      "id": "94eab259-2d95-45d3-ba3a-0dce98fb8837",
+      "name": "Remove Duplicates"
+    }
+  ],
+  "connections": {
+    "手動觸發測試": {
+      "main": [
+        [
+          {
+            "node": "讀取公司統編列表",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "讀取商業統編列表",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "讀取分公司統編列表",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. 查詢公司 API": {
+      "main": [
+        [
+          {
+            "node": "整理公司資料並轉日期",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "整理公司資料並轉日期": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "1. 查詢公司 API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "前置 API：取得地址解判縣市": {
+      "main": [
+        [
+          {
+            "node": "主 API：帶入 Agency 查詢應用一",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "主 API：帶入 Agency 查詢應用一": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out2": {
+      "main": [
+        [
+          {
+            "node": "前置 API：取得地址解判縣市",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "寫回 Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "寫回 Google Sheets2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter3": {
+      "main": [
+        [
+          {
+            "node": "Split Out2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out (分公司)": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "查詢分公司 API": {
+      "main": [
+        [
+          {
+            "node": "整理分公司資料並轉日期",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "整理分公司資料並轉日期": {
+      "main": [
+        [
+          {
+            "node": "寫回 Google Sheets (分公司)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取公司統編列表": {
+      "main": [
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取商業統編列表": {
+      "main": [
+        [
+          {
+            "node": "Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取分公司統編列表": {
+      "main": [
+        [
+          {
+            "node": "Filter4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter4": {
+      "main": [
+        [
+          {
+            "node": "Split Out (分公司)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "查詢分公司 API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "768172b1-b3c8-4ed4-b429-2009a3de6bc8",
+      "name": "查詢公司資料",
+      "nodeIds": [
+        "ec69b8e3-adcc-41cf-a043-aa0aa2111023",
+        "24b8e0eb-65f2-4f81-868e-635019512cbc",
+        "04f4ad16-7186-4ed1-8e46-a2dc1b2e402b",
+        "e7f86c2a-ff20-4463-ac54-6015ebfa3416",
+        "1d180027-f7db-4764-9602-531d24c7ce4c",
+        "e203c69d-d6be-4ac5-8808-800b72a1d39f",
+        "8291fb85-b134-4771-8251-090e95f55e7d"
+      ]
+    },
+    {
+      "id": "ef6ef8cf-38c0-485b-bef6-11ecd2f236c3",
+      "name": "查詢商業資料",
+      "nodeIds": [
+        "a1144893-fc9b-4c1c-8a3f-b8c1f694bc1d",
+        "2cae3fd1-c3ea-4465-b9bd-1b849caa19ea",
+        "c0a217e6-1c75-4c42-95e4-f21c7595fbaf",
+        "88f1f9b1-d93f-49f3-b8c4-5b8cf997c3a4",
+        "941e4604-69d2-4db3-8255-ebfc45cb0c9d",
+        "5deb3465-2eee-448f-b958-cdfb06b65fa6",
+        "7be2b379-fbc8-4e35-b995-33b26d34a85c",
+        "1f651c9f-3c53-42a1-9e91-bc99251e0c58"
+      ]
+    },
+    {
+      "id": "37a0b1e2-04c7-4112-996f-2faa64b7a699",
+      "name": "查詢分公司資料",
+      "nodeIds": [
+        "ee5cba76-4341-48f0-ac23-de17c3d310f3",
+        "979e1f28-e039-490a-9335-e8b9c1dd2376",
+        "a7dd494b-90b7-4a43-a21d-53edffceea13",
+        "d21ec30d-c2c8-485a-b98e-86c75991dd41",
+        "d9e64b3b-80f9-4dad-bdac-c5065dc423cf",
+        "a31a3f29-ff4a-467f-9c06-7268033595f2",
+        "94eab259-2d95-45d3-ba3a-0dce98fb8837"
+      ]
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "QKajABzbmopjnjAD",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-08-14T00:29:50.985Z",
+      "updatedAt": "2026-08-14T00:29:50.985Z"
+    }
+  ],
+  "activeVersion": null
+}
