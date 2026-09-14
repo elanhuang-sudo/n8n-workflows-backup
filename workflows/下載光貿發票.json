@@ -1,0 +1,2246 @@
+{
+  "id": "vAbx9piOR7tExOCl",
+  "name": "下載光貿發票",
+  "active": true,
+  "activeVersionId": "b82a3abc-8ec2-42a1-b769-f058f67159aa",
+  "createdAt": "2026-05-06T06:49:55.642Z",
+  "updatedAt": "2026-09-09T00:50:16.731Z",
+  "isArchived": false,
+  "versionId": "b82a3abc-8ec2-42a1-b769-f058f67159aa",
+  "triggerCount": 1,
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "33a3e0cc-5e41-4423-8387-c86e26f36727",
+              "leftValue": "={{ $json[\"下載連結\"] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "8b481577-d448-479c-9e58-1574aefe4564",
+              "leftValue": "={{ $json[\"發票統編\"] }}",
+              "rightValue": "個人",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -2480,
+        1064
+      ],
+      "id": "da59fdf3-3acc-49f4-95a7-93452afc955b",
+      "name": "Filter11"
+    },
+    {
+      "parameters": {
+        "name": "={{ $node[\"Code in JavaScript27\"].json.fileName }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1zmYRo9hg73k3r4AliLtxkkK63IavCn3o",
+          "mode": "list",
+          "cachedResultName": "電子發票",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1zmYRo9hg73k3r4AliLtxkkK63IavCn3o"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -688,
+        992
+      ],
+      "id": "6239b784-4156-4a3a-9ff7-fb66117e1eb3",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Fxs5Oob1oO15B62W",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.data.file_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1136,
+        992
+      ],
+      "id": "69a05885-6cd5-4f3c-a61d-63ce3b8bac75",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "amount": 0.5
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -912,
+        992
+      ],
+      "id": "26efb6cd-0de2-43a5-9194-467d6eb52c1a",
+      "name": "Wait4",
+      "webhookId": "fd03f702-ef69-4e12-97fc-7ac14d4726ec"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 8,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            },
+            {
+              "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+              "leftValue": "={{ $now.hour }}",
+              "rightValue": 17,
+              "operator": {
+                "type": "number",
+                "operation": "lte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -3824,
+        1232
+      ],
+      "id": "e366fc35-5c4a-413c-a2f8-3788c721981b",
+      "name": "If21"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://invoice-api.amego.tw/json/invoice_file",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "1"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "invoice",
+              "value": "={{ $node[\"Code in JavaScript27\"].json.invoice }}"
+            },
+            {
+              "name": "data",
+              "value": "={{ $node[\"Code in JavaScript27\"].json.data_payload }}"
+            },
+            {
+              "name": "time",
+              "value": "={{ $node[\"Edit Fields1\"].json.time }}"
+            },
+            {
+              "name": "sign",
+              "value": "={{ $json.sign }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1360,
+        992
+      ],
+      "id": "9bd7bac7-0fed-445b-b572-6276ac13ce39",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // 1. 抓取所需欄位\n  const invoiceNumber = item.json['發票號碼'] || item.json.col_1 || '';\n  const taxID = item.json['發票統編'] || item.json.col_2 || ''; \n  const companyName = item.json['發票公司'] || item.json.col_3 || '';\n  const invoiceDate = item.json['發票日期'] || ''; // 抓取發票日期\n\n  const style = 3;\n  const dataObj = {\n    \"type\": \"invoice\",\n    \"invoice_number\": invoiceNumber,\n    \"download_style\": style \n  };\n\n  // 2. 動態計算發票期別 (將西元年轉為民國期別，如 20260525 轉為 11506)\n  let period = \"11506\"; // 預設值\n  if (invoiceDate) {\n    const dateStr = String(invoiceDate).replace(/\\D/g, ''); // 確保只留數字\n    if (dateStr.length >= 8) {\n      const year = parseInt(dateStr.substring(0, 4)) - 1911; // 西元轉民國\n      const month = parseInt(dateStr.substring(4, 6));       // 擷取月份\n      const periodMonth = String(Math.ceil(month / 2) * 2).padStart(2, '0'); // 計算雙月期別\n      period = `${year}${periodMonth}`;\n    }\n  }\n\n  // 3. 格式判斷：遇到「個人」不加括號，有統編才組合\n  let taxDisplay = '個人';\n  if (taxID && taxID !== '0' && taxID !== '個人') {\n    taxDisplay = `(${taxID}${companyName})`;\n  }\n\n  // 4. 輸出最終結果（包含事先鎖定好的 time 時間戳記）\n  return {\n    json: {\n      invoice: '60118942', // 商家統編\n      invoice_number: invoiceNumber,\n      tax_id: taxID,\n      company_name: companyName,\n      invoice_date: invoiceDate,\n      data_payload: JSON.stringify(dataObj),\n      appKey: '7FwqIY6mNMt5XeLxudYO',\n      \n      // 💡 固定時間戳記\n      time: Math.floor(Date.now() / 1000).toString(),\n      \n      // 輸出目標檔名格式：期別_發票號碼_統編公司_發票日期.pdf\n      fileName: `${period}_${invoiceNumber}_${taxDisplay}_${invoiceDate}.pdf`\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2032,
+        992
+      ],
+      "id": "3843c7b9-5eea-4f84-9432-1c793fb383f3",
+      "name": "Code in JavaScript27"
+    },
+    {
+      "parameters": {
+        "value": "={{ $json.raw_sign_string }}",
+        "dataPropertyName": "sign"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        -1584,
+        992
+      ],
+      "id": "7eb36250-0978-40c6-9ece-1cf080a2ded7",
+      "name": "Crypto1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7ba69fed-df9e-432b-8da4-f7580c13d042",
+              "name": "time",
+              "value": "={{ Math.floor(Date.now() / 1000).toString() }}",
+              "type": "string"
+            },
+            {
+              "id": "d249b617-7c65-4ef2-b370-79acdd053e5b",
+              "name": "raw_sign_string",
+              "value": "={{ $json.data_payload }}{{ Math.floor(Date.now() / 1000).toString() }}7FwqIY6mNMt5XeLxudYO",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1808,
+        992
+      ],
+      "id": "d8f7a870-acca-4d5a-aa01-a9e5446723dc",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -2256,
+        1064
+      ],
+      "id": "0dfffbed-732b-4caa-9e55-414a71b75499",
+      "name": "Loop Over Items6"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Replace Me6",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        1064
+      ],
+      "id": "4af7a8af-e8a9-4870-9108-7415d32df587"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw",
+          "mode": "list",
+          "cachedResultName": "光貿發票列印",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 666761299,
+          "mode": "list",
+          "cachedResultName": "11504",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit#gid=666761299"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "發票號碼": "={{ $node[\"Code in JavaScript27\"].json.invoice_number }}",
+            "下載連結": "=OK"
+          },
+          "matchingColumns": [
+            "發票號碼"
+          ],
+          "schema": [
+            {
+              "id": "發票號碼",
+              "displayName": "發票號碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "發票統編",
+              "displayName": "發票統編",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "發票公司",
+              "displayName": "發票公司",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "下載連結",
+              "displayName": "下載連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "發票日期",
+              "displayName": "發票日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "隨機碼",
+              "displayName": "隨機碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "下載網址",
+              "displayName": "下載網址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "發送狀態",
+              "displayName": "發送狀態",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -464,
+        992
+      ],
+      "id": "348572d5-37e6-4420-acdf-a0b6d5edf061",
+      "name": "Update row in sheet3",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "c1",
+              "leftValue": "={{ $json['發票號碼'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isNotEmpty"
+              }
+            },
+            {
+              "id": "c2",
+              "leftValue": "={{ $json['發票統編'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "isEmpty"
+              }
+            },
+            {
+              "id": "c31a3186-efc4-46c9-a651-2960d1b864b2",
+              "leftValue": "={{ String($json[\"發票統編\"] || \"\") }}",
+              "rightValue": "=0",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2,
+      "position": [
+        -3376,
+        1232
+      ],
+      "id": "173c6800-1738-46ca-99bb-85d6eaf2db33",
+      "name": "過濾待補件列"
+    },
+    {
+      "parameters": {
+        "batchSize": 25,
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -3152,
+        1232
+      ],
+      "id": "abdc9ff5-4852-49aa-9dfb-8a00a557d90d",
+      "name": "逐筆處理(避免API錯誤)"
+    },
+    {
+      "parameters": {
+        "jsCode": "const time = Math.floor(Date.now() / 1000).toString();\nconst appKey = '7FwqIY6mNMt5XeLxudYO';\n\n// 使用 map 確保處理進來的所有 10 筆發票\nreturn items.map(item => {\n  const invoiceNum = item.json['發票號碼'].toString().trim();\n  \n  // 依照文檔建構查詢物件\n  const dataObj = { \n    \"type\": \"invoice\",\n    \"invoice_number\": invoiceNum \n  };\n  \n  const dataPayload = JSON.stringify(dataObj);\n\n  return {\n    json: {\n      time: time,\n      data_payload: dataPayload,\n      // 簽章必須包含 dataPayload\n      raw_sign_string: dataPayload + time + appKey,\n      invoice_number: invoiceNum\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2928,
+        1304
+      ],
+      "id": "f112ff5f-82eb-4abc-95ea-0606a0245ccf",
+      "name": "準備簽章"
+    },
+    {
+      "parameters": {
+        "value": "={{ $json.raw_sign_string }}",
+        "dataPropertyName": "sign"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        -2704,
+        1304
+      ],
+      "id": "87d32010-d958-49dc-87b0-a51b25f48aee",
+      "name": "計算加密Sign"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://invoice-api.amego.tw/json/invoice_query",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "invoice"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "invoice",
+              "value": "60118942"
+            },
+            {
+              "name": "data",
+              "value": "={{ $json.data_payload }}"
+            },
+            {
+              "name": "time",
+              "value": "={{ $json.time }}"
+            },
+            {
+              "name": "sign",
+              "value": "={{ $json.sign }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -2480,
+        1304
+      ],
+      "id": "b7d2f2c0-fd86-4d89-9f06-501ee36450b4",
+      "name": "向光貿查詢明細"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 666761299,
+          "mode": "list",
+          "cachedResultName": "11506",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit#gid=666761299"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "發票號碼": "={{ $node[\"準備簽章\"].json.invoice_number }}",
+            "發票統編": "={{ $json.data && $json.data.buyer_identifier ? $json.data.buyer_identifier : '個人' }}",
+            "發票公司": "={{ $json.data.buyer_name }}",
+            "發票日期": "={{ $json.data.invoice_date }}",
+            "隨機碼": "={{ $json.data.random_number }}",
+            "下載網址": "={{ \"https://invoice.amego.tw/user/order_query?type=2&number=\" + $json.data.invoice_number + \"&date=\" + $json.data.invoice_date.toString().replace(/(\\d{4})(\\d{2})(\\d{2})/, '$1-$2-$3') + \"&random=\" + $json.data.random_number }}"
+          },
+          "matchingColumns": [
+            "發票號碼"
+          ],
+          "schema": [
+            {
+              "id": "發票號碼",
+              "displayName": "發票號碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "發票統編",
+              "displayName": "發票統編",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "發票公司",
+              "displayName": "發票公司",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "下載連結",
+              "displayName": "下載連結",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "發票日期",
+              "displayName": "發票日期",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "隨機碼",
+              "displayName": "隨機碼",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "下載網址",
+              "displayName": "下載網址",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -2256,
+        1304
+      ],
+      "id": "1a019abc-0a87-46e9-9f57-60124206a4d8",
+      "name": "更新發票統編",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2032,
+        1376
+      ],
+      "id": "8292d4f6-d554-49fa-bd54-d77a722ed176",
+      "name": "等待1秒避免過速",
+      "webhookId": "9b1ec97b-b497-4e49-8efc-760fcf0a6bd9"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 666761299,
+          "mode": "list",
+          "cachedResultName": "11506",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit#gid=666761299"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -3600,
+        1232
+      ],
+      "id": "696a6973-1efb-41e2-84bc-b0dbfc282a13",
+      "name": "讀取試算表1",
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -4048,
+        1232
+      ],
+      "id": "03508ca2-753e-4642-b171-6ade31c41e41",
+      "name": "批次下載光貿發票"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "documentId": {
+          "__rl": true,
+          "value": "1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw",
+          "mode": "list",
+          "cachedResultName": "光貿發票列印",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 666761299,
+          "mode": "list",
+          "cachedResultName": "11506",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit#gid=666761299"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2928,
+        992
+      ],
+      "id": "0fbd5164-c0f2-45a5-9e6b-3122a84bb3db",
+      "name": "Get row(s) in sheet18",
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "發票號碼",
+              "field2": "發票統編"
+            }
+          ]
+        },
+        "joinMode": "keepEverything",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2704,
+        1064
+      ],
+      "id": "6b10694e-16f0-4c27-bfa2-c138cf0be367",
+      "name": "Merge4"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  // 1. 抓取所需欄位\n  const invoiceNumber = item.json['發票號碼'] || item.json.col_1 || '';\n  const taxID = item.json['發票統編'] || item.json.col_2 || ''; \n  const companyName = item.json['發票公司'] || item.json.col_3 || '';\n  const invoiceDate = item.json['發票日期'] || ''; // 抓取發票日期\n\n  const style = 3;\n  const dataObj = {\n    \"type\": \"invoice\",\n    \"invoice_number\": invoiceNumber,\n    \"download_style\": style \n  };\n\n  // 2. 動態計算發票期別 (將西元年轉為民國期別，如 20260525 轉為 11506)\n  let period = \"11506\"; // 預設值\n  if (invoiceDate) {\n    const dateStr = String(invoiceDate).replace(/\\D/g, ''); // 確保只留數字\n    if (dateStr.length >= 8) {\n      const year = parseInt(dateStr.substring(0, 4)) - 1911; // 西元轉民國\n      const month = parseInt(dateStr.substring(4, 6));       // 擷取月份\n      const periodMonth = String(Math.ceil(month / 2) * 2).padStart(2, '0'); // 計算雙月期別\n      period = `${year}${periodMonth}`;\n    }\n  }\n\n  // 3. 格式判斷：遇到「個人」不加括號，有統編才組合\n  let taxDisplay = '個人';\n  if (taxID && taxID !== '0' && taxID !== '個人') {\n    taxDisplay = `(${taxID}${companyName})`;\n  }\n\n  // 4. 輸出最終結果（包含事先鎖定好的 time 時間戳記）\n  return {\n    json: {\n      invoice: '60118942', // 商家統編\n      invoice_number: invoiceNumber,\n      tax_id: taxID,\n      company_name: companyName,\n      data_payload: JSON.stringify(dataObj),\n      appKey: '7FwqIY6mNMt5XeLxudYO',\n      \n      // 💡 關鍵新增：在此處直接固定時間戳記，解決跨秒誤差與 undefined 問題\n      time: Math.floor(Date.now() / 1000).toString(),\n      \n      // 輸出目標檔名格式\n      fileName: `${period}_${invoiceNumber}_${taxDisplay}.pdf`\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4048,
+        768
+      ],
+      "id": "c9ce2712-6eed-4d40-88bd-d180a0225f70",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "Filter11": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request4": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If21": {
+      "main": [
+        [
+          {
+            "node": "讀取試算表1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript27": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crypto1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Crypto1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items6": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code in JavaScript27",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace Me6": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update row in sheet3": {
+      "main": [
+        [
+          {
+            "node": "Replace Me6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "過濾待補件列": {
+      "main": [
+        [
+          {
+            "node": "逐筆處理(避免API錯誤)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "逐筆處理(避免API錯誤)": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Get row(s) in sheet18",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "準備簽章",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "準備簽章": {
+      "main": [
+        [
+          {
+            "node": "計算加密Sign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "計算加密Sign": {
+      "main": [
+        [
+          {
+            "node": "向光貿查詢明細",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "向光貿查詢明細": {
+      "main": [
+        [
+          {
+            "node": "更新發票統編",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "更新發票統編": {
+      "main": [
+        [
+          {
+            "node": "等待1秒避免過速",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "等待1秒避免過速": {
+      "main": [
+        [
+          {
+            "node": "逐筆處理(避免API錯誤)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取試算表1": {
+      "main": [
+        [
+          {
+            "node": "過濾待補件列",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "批次下載光貿發票": {
+      "main": [
+        [
+          {
+            "node": "If21",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet18": {
+      "main": [
+        [
+          {
+            "node": "Merge4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge4": {
+      "main": [
+        [
+          {
+            "node": "Filter11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "availableInMCP": false
+  },
+  "staticData": {
+    "node:批次下載光貿發票": {
+      "recurrenceRules": [
+        null
+      ],
+      "recurrenceRuleSignatures": [
+        null
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": null,
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "vAbx9piOR7tExOCl",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-05-06T06:49:55.642Z",
+      "updatedAt": "2026-05-06T06:49:55.642Z"
+    }
+  ],
+  "activeVersion": {
+    "versionId": "b82a3abc-8ec2-42a1-b769-f058f67159aa",
+    "workflowId": "vAbx9piOR7tExOCl",
+    "nodes": [
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "33a3e0cc-5e41-4423-8387-c86e26f36727",
+                "leftValue": "={{ $json[\"下載連結\"] }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              },
+              {
+                "id": "8b481577-d448-479c-9e58-1574aefe4564",
+                "leftValue": "={{ $json[\"發票統編\"] }}",
+                "rightValue": "個人",
+                "operator": {
+                  "type": "string",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2.3,
+        "position": [
+          -2480,
+          1064
+        ],
+        "id": "da59fdf3-3acc-49f4-95a7-93452afc955b",
+        "name": "Filter11"
+      },
+      {
+        "parameters": {
+          "name": "={{ $node[\"Code in JavaScript27\"].json.fileName }}",
+          "driveId": {
+            "__rl": true,
+            "value": "My Drive",
+            "mode": "list",
+            "cachedResultName": "My Drive",
+            "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "1zmYRo9hg73k3r4AliLtxkkK63IavCn3o",
+            "mode": "list",
+            "cachedResultName": "電子發票",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1zmYRo9hg73k3r4AliLtxkkK63IavCn3o"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          -688,
+          992
+        ],
+        "id": "6239b784-4156-4a3a-9ff7-fb66117e1eb3",
+        "name": "Upload file",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "Fxs5Oob1oO15B62W",
+            "name": "Google Drive account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "={{ $json.data.file_url }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "file"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -1136,
+          992
+        ],
+        "id": "69a05885-6cd5-4f3c-a61d-63ce3b8bac75",
+        "name": "HTTP Request4"
+      },
+      {
+        "parameters": {
+          "amount": 0.5
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          -912,
+          992
+        ],
+        "id": "26efb6cd-0de2-43a5-9194-467d6eb52c1a",
+        "name": "Wait4",
+        "webhookId": "fd03f702-ef69-4e12-97fc-7ac14d4726ec"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 3
+            },
+            "conditions": [
+              {
+                "id": "6f967e53-af68-4b64-a287-e93b08400a01",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 8,
+                "operator": {
+                  "type": "number",
+                  "operation": "gte"
+                }
+              },
+              {
+                "id": "96ee0575-c8a0-4300-9a9c-fbe5894a9264",
+                "leftValue": "={{ $now.hour }}",
+                "rightValue": 17,
+                "operator": {
+                  "type": "number",
+                  "operation": "lte"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          -3824,
+          1232
+        ],
+        "id": "e366fc35-5c4a-413c-a2f8-3788c721981b",
+        "name": "If21"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://invoice-api.amego.tw/json/invoice_file",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "type",
+                "value": "1"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "form-urlencoded",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "invoice",
+                "value": "={{ $node[\"Code in JavaScript27\"].json.invoice }}"
+              },
+              {
+                "name": "data",
+                "value": "={{ $node[\"Code in JavaScript27\"].json.data_payload }}"
+              },
+              {
+                "name": "time",
+                "value": "={{ $node[\"Edit Fields1\"].json.time }}"
+              },
+              {
+                "name": "sign",
+                "value": "={{ $json.sign }}"
+              }
+            ]
+          },
+          "options": {
+            "timeout": 10000
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -1360,
+          992
+        ],
+        "id": "9bd7bac7-0fed-445b-b572-6276ac13ce39",
+        "name": "HTTP Request5"
+      },
+      {
+        "parameters": {
+          "jsCode": "return items.map(item => {\n  // 1. 抓取所需欄位\n  const invoiceNumber = item.json['發票號碼'] || item.json.col_1 || '';\n  const taxID = item.json['發票統編'] || item.json.col_2 || ''; \n  const companyName = item.json['發票公司'] || item.json.col_3 || '';\n  const invoiceDate = item.json['發票日期'] || ''; // 抓取發票日期\n\n  const style = 3;\n  const dataObj = {\n    \"type\": \"invoice\",\n    \"invoice_number\": invoiceNumber,\n    \"download_style\": style \n  };\n\n  // 2. 動態計算發票期別 (將西元年轉為民國期別，如 20260525 轉為 11506)\n  let period = \"11506\"; // 預設值\n  if (invoiceDate) {\n    const dateStr = String(invoiceDate).replace(/\\D/g, ''); // 確保只留數字\n    if (dateStr.length >= 8) {\n      const year = parseInt(dateStr.substring(0, 4)) - 1911; // 西元轉民國\n      const month = parseInt(dateStr.substring(4, 6));       // 擷取月份\n      const periodMonth = String(Math.ceil(month / 2) * 2).padStart(2, '0'); // 計算雙月期別\n      period = `${year}${periodMonth}`;\n    }\n  }\n\n  // 3. 格式判斷：遇到「個人」不加括號，有統編才組合\n  let taxDisplay = '個人';\n  if (taxID && taxID !== '0' && taxID !== '個人') {\n    taxDisplay = `(${taxID}${companyName})`;\n  }\n\n  // 4. 輸出最終結果（包含事先鎖定好的 time 時間戳記）\n  return {\n    json: {\n      invoice: '60118942', // 商家統編\n      invoice_number: invoiceNumber,\n      tax_id: taxID,\n      company_name: companyName,\n      invoice_date: invoiceDate,\n      data_payload: JSON.stringify(dataObj),\n      appKey: '7FwqIY6mNMt5XeLxudYO',\n      \n      // 💡 固定時間戳記\n      time: Math.floor(Date.now() / 1000).toString(),\n      \n      // 輸出目標檔名格式：期別_發票號碼_統編公司_發票日期.pdf\n      fileName: `${period}_${invoiceNumber}_${taxDisplay}_${invoiceDate}.pdf`\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -2032,
+          992
+        ],
+        "id": "3843c7b9-5eea-4f84-9432-1c793fb383f3",
+        "name": "Code in JavaScript27"
+      },
+      {
+        "parameters": {
+          "value": "={{ $json.raw_sign_string }}",
+          "dataPropertyName": "sign"
+        },
+        "type": "n8n-nodes-base.crypto",
+        "typeVersion": 1,
+        "position": [
+          -1584,
+          992
+        ],
+        "id": "7eb36250-0978-40c6-9ece-1cf080a2ded7",
+        "name": "Crypto1"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "7ba69fed-df9e-432b-8da4-f7580c13d042",
+                "name": "time",
+                "value": "={{ Math.floor(Date.now() / 1000).toString() }}",
+                "type": "string"
+              },
+              {
+                "id": "d249b617-7c65-4ef2-b370-79acdd053e5b",
+                "name": "raw_sign_string",
+                "value": "={{ $json.data_payload }}{{ Math.floor(Date.now() / 1000).toString() }}7FwqIY6mNMt5XeLxudYO",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1808,
+          992
+        ],
+        "id": "d8f7a870-acca-4d5a-aa01-a9e5446723dc",
+        "name": "Edit Fields1"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -2256,
+          1064
+        ],
+        "id": "0dfffbed-732b-4caa-9e55-414a71b75499",
+        "name": "Loop Over Items6"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "name": "Replace Me6",
+        "typeVersion": 1,
+        "position": [
+          -240,
+          1064
+        ],
+        "id": "4af7a8af-e8a9-4870-9108-7415d32df587"
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "operation": "update",
+          "documentId": {
+            "__rl": true,
+            "value": "1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw",
+            "mode": "list",
+            "cachedResultName": "光貿發票列印",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 666761299,
+            "mode": "list",
+            "cachedResultName": "11504",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit#gid=666761299"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "發票號碼": "={{ $node[\"Code in JavaScript27\"].json.invoice_number }}",
+              "下載連結": "=OK"
+            },
+            "matchingColumns": [
+              "發票號碼"
+            ],
+            "schema": [
+              {
+                "id": "發票號碼",
+                "displayName": "發票號碼",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "發票統編",
+                "displayName": "發票統編",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "發票公司",
+                "displayName": "發票公司",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "下載連結",
+                "displayName": "下載連結",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "發票日期",
+                "displayName": "發票日期",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "隨機碼",
+                "displayName": "隨機碼",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "下載網址",
+                "displayName": "下載網址",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "發送狀態",
+                "displayName": "發送狀態",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "row_number",
+                "displayName": "row_number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true,
+                "readOnly": true,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          -464,
+          992
+        ],
+        "id": "348572d5-37e6-4420-acdf-a0b6d5edf061",
+        "name": "Update row in sheet3",
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "c1",
+                "leftValue": "={{ $json['發票號碼'] }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "isNotEmpty"
+                }
+              },
+              {
+                "id": "c2",
+                "leftValue": "={{ $json['發票統編'] }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "isEmpty"
+                }
+              },
+              {
+                "id": "c31a3186-efc4-46c9-a651-2960d1b864b2",
+                "leftValue": "={{ String($json[\"發票統編\"] || \"\") }}",
+                "rightValue": "=0",
+                "operator": {
+                  "type": "string",
+                  "operation": "empty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {
+            "looseTypeValidation": true
+          }
+        },
+        "type": "n8n-nodes-base.filter",
+        "typeVersion": 2,
+        "position": [
+          -3376,
+          1232
+        ],
+        "id": "173c6800-1738-46ca-99bb-85d6eaf2db33",
+        "name": "過濾待補件列"
+      },
+      {
+        "parameters": {
+          "batchSize": 25,
+          "options": {
+            "reset": false
+          }
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -3152,
+          1232
+        ],
+        "id": "abdc9ff5-4852-49aa-9dfb-8a00a557d90d",
+        "name": "逐筆處理(避免API錯誤)"
+      },
+      {
+        "parameters": {
+          "jsCode": "const time = Math.floor(Date.now() / 1000).toString();\nconst appKey = '7FwqIY6mNMt5XeLxudYO';\n\n// 使用 map 確保處理進來的所有 10 筆發票\nreturn items.map(item => {\n  const invoiceNum = item.json['發票號碼'].toString().trim();\n  \n  // 依照文檔建構查詢物件\n  const dataObj = { \n    \"type\": \"invoice\",\n    \"invoice_number\": invoiceNum \n  };\n  \n  const dataPayload = JSON.stringify(dataObj);\n\n  return {\n    json: {\n      time: time,\n      data_payload: dataPayload,\n      // 簽章必須包含 dataPayload\n      raw_sign_string: dataPayload + time + appKey,\n      invoice_number: invoiceNum\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -2928,
+          1304
+        ],
+        "id": "f112ff5f-82eb-4abc-95ea-0606a0245ccf",
+        "name": "準備簽章"
+      },
+      {
+        "parameters": {
+          "value": "={{ $json.raw_sign_string }}",
+          "dataPropertyName": "sign"
+        },
+        "type": "n8n-nodes-base.crypto",
+        "typeVersion": 1,
+        "position": [
+          -2704,
+          1304
+        ],
+        "id": "87d32010-d958-49dc-87b0-a51b25f48aee",
+        "name": "計算加密Sign"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://invoice-api.amego.tw/json/invoice_query",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "type",
+                "value": "invoice"
+              }
+            ]
+          },
+          "sendBody": true,
+          "contentType": "form-urlencoded",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "invoice",
+                "value": "60118942"
+              },
+              {
+                "name": "data",
+                "value": "={{ $json.data_payload }}"
+              },
+              {
+                "name": "time",
+                "value": "={{ $json.time }}"
+              },
+              {
+                "name": "sign",
+                "value": "={{ $json.sign }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.1,
+        "position": [
+          -2480,
+          1304
+        ],
+        "id": "b7d2f2c0-fd86-4d89-9f06-501ee36450b4",
+        "name": "向光貿查詢明細"
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "operation": "update",
+          "documentId": {
+            "__rl": true,
+            "value": "1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw",
+            "mode": "list"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 666761299,
+            "mode": "list",
+            "cachedResultName": "11506",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit#gid=666761299"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "發票號碼": "={{ $node[\"準備簽章\"].json.invoice_number }}",
+              "發票統編": "={{ $json.data && $json.data.buyer_identifier ? $json.data.buyer_identifier : '個人' }}",
+              "發票公司": "={{ $json.data.buyer_name }}",
+              "發票日期": "={{ $json.data.invoice_date }}",
+              "隨機碼": "={{ $json.data.random_number }}",
+              "下載網址": "={{ \"https://invoice.amego.tw/user/order_query?type=2&number=\" + $json.data.invoice_number + \"&date=\" + $json.data.invoice_date.toString().replace(/(\\d{4})(\\d{2})(\\d{2})/, '$1-$2-$3') + \"&random=\" + $json.data.random_number }}"
+            },
+            "matchingColumns": [
+              "發票號碼"
+            ],
+            "schema": [
+              {
+                "id": "發票號碼",
+                "displayName": "發票號碼",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "發票統編",
+                "displayName": "發票統編",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "發票公司",
+                "displayName": "發票公司",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "下載連結",
+                "displayName": "下載連結",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "發票日期",
+                "displayName": "發票日期",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "隨機碼",
+                "displayName": "隨機碼",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "下載網址",
+                "displayName": "下載網址",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "row_number",
+                "displayName": "row_number",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "number",
+                "canBeUsedToMatch": true,
+                "readOnly": true,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [
+          -2256,
+          1304
+        ],
+        "id": "1a019abc-0a87-46e9-9f57-60124206a4d8",
+        "name": "更新發票統編",
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "amount": 1
+        },
+        "type": "n8n-nodes-base.wait",
+        "typeVersion": 1.1,
+        "position": [
+          -2032,
+          1376
+        ],
+        "id": "8292d4f6-d554-49fa-bd54-d77a722ed176",
+        "name": "等待1秒避免過速",
+        "webhookId": "9b1ec97b-b497-4e49-8efc-760fcf0a6bd9"
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw",
+            "mode": "list"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 666761299,
+            "mode": "list",
+            "cachedResultName": "11506",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit#gid=666761299"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.5,
+        "position": [
+          -3600,
+          1232
+        ],
+        "id": "696a6973-1efb-41e2-84bc-b0dbfc282a13",
+        "name": "讀取試算表1",
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {}
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -4048,
+          1232
+        ],
+        "id": "03508ca2-753e-4642-b171-6ade31c41e41",
+        "name": "批次下載光貿發票"
+      },
+      {
+        "parameters": {
+          "authentication": "serviceAccount",
+          "documentId": {
+            "__rl": true,
+            "value": "1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw",
+            "mode": "list",
+            "cachedResultName": "光貿發票列印",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 666761299,
+            "mode": "list",
+            "cachedResultName": "11506",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1aGIckIe835C582ncdz_uLByzbCxRQj8NMYYx5nfToHw/edit#gid=666761299"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          -2928,
+          992
+        ],
+        "id": "0fbd5164-c0f2-45a5-9e6b-3122a84bb3db",
+        "name": "Get row(s) in sheet18",
+        "executeOnce": true,
+        "credentials": {
+          "googleApi": {
+            "id": "v7XKVwskBioDRndK",
+            "name": "服務帳戶"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "combine",
+          "advanced": true,
+          "mergeByFields": {
+            "values": [
+              {
+                "field1": "發票號碼",
+                "field2": "發票統編"
+              }
+            ]
+          },
+          "joinMode": "keepEverything",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          -2704,
+          1064
+        ],
+        "id": "6b10694e-16f0-4c27-bfa2-c138cf0be367",
+        "name": "Merge4"
+      },
+      {
+        "parameters": {
+          "jsCode": "return items.map(item => {\n  // 1. 抓取所需欄位\n  const invoiceNumber = item.json['發票號碼'] || item.json.col_1 || '';\n  const taxID = item.json['發票統編'] || item.json.col_2 || ''; \n  const companyName = item.json['發票公司'] || item.json.col_3 || '';\n  const invoiceDate = item.json['發票日期'] || ''; // 抓取發票日期\n\n  const style = 3;\n  const dataObj = {\n    \"type\": \"invoice\",\n    \"invoice_number\": invoiceNumber,\n    \"download_style\": style \n  };\n\n  // 2. 動態計算發票期別 (將西元年轉為民國期別，如 20260525 轉為 11506)\n  let period = \"11506\"; // 預設值\n  if (invoiceDate) {\n    const dateStr = String(invoiceDate).replace(/\\D/g, ''); // 確保只留數字\n    if (dateStr.length >= 8) {\n      const year = parseInt(dateStr.substring(0, 4)) - 1911; // 西元轉民國\n      const month = parseInt(dateStr.substring(4, 6));       // 擷取月份\n      const periodMonth = String(Math.ceil(month / 2) * 2).padStart(2, '0'); // 計算雙月期別\n      period = `${year}${periodMonth}`;\n    }\n  }\n\n  // 3. 格式判斷：遇到「個人」不加括號，有統編才組合\n  let taxDisplay = '個人';\n  if (taxID && taxID !== '0' && taxID !== '個人') {\n    taxDisplay = `(${taxID}${companyName})`;\n  }\n\n  // 4. 輸出最終結果（包含事先鎖定好的 time 時間戳記）\n  return {\n    json: {\n      invoice: '60118942', // 商家統編\n      invoice_number: invoiceNumber,\n      tax_id: taxID,\n      company_name: companyName,\n      data_payload: JSON.stringify(dataObj),\n      appKey: '7FwqIY6mNMt5XeLxudYO',\n      \n      // 💡 關鍵新增：在此處直接固定時間戳記，解決跨秒誤差與 undefined 問題\n      time: Math.floor(Date.now() / 1000).toString(),\n      \n      // 輸出目標檔名格式\n      fileName: `${period}_${invoiceNumber}_${taxDisplay}.pdf`\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -4048,
+          768
+        ],
+        "id": "c9ce2712-6eed-4d40-88bd-d180a0225f70",
+        "name": "Code in JavaScript"
+      }
+    ],
+    "connections": {
+      "Filter11": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items6",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload file": {
+        "main": [
+          [
+            {
+              "node": "Update row in sheet3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "HTTP Request4": {
+        "main": [
+          [
+            {
+              "node": "Wait4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Wait4": {
+        "main": [
+          [
+            {
+              "node": "Upload file",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If21": {
+        "main": [
+          [
+            {
+              "node": "讀取試算表1",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          []
+        ]
+      },
+      "HTTP Request5": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript27": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Crypto1": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request5",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields1": {
+        "main": [
+          [
+            {
+              "node": "Crypto1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Loop Over Items6": {
+        "main": [
+          [],
+          [
+            {
+              "node": "Code in JavaScript27",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Replace Me6": {
+        "main": [
+          [
+            {
+              "node": "Loop Over Items6",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update row in sheet3": {
+        "main": [
+          [
+            {
+              "node": "Replace Me6",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "過濾待補件列": {
+        "main": [
+          [
+            {
+              "node": "逐筆處理(避免API錯誤)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "逐筆處理(避免API錯誤)": {
+        "main": [
+          [
+            {
+              "node": "Merge4",
+              "type": "main",
+              "index": 1
+            },
+            {
+              "node": "Get row(s) in sheet18",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "準備簽章",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "準備簽章": {
+        "main": [
+          [
+            {
+              "node": "計算加密Sign",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "計算加密Sign": {
+        "main": [
+          [
+            {
+              "node": "向光貿查詢明細",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "向光貿查詢明細": {
+        "main": [
+          [
+            {
+              "node": "更新發票統編",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "更新發票統編": {
+        "main": [
+          [
+            {
+              "node": "等待1秒避免過速",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "等待1秒避免過速": {
+        "main": [
+          [
+            {
+              "node": "逐筆處理(避免API錯誤)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "讀取試算表1": {
+        "main": [
+          [
+            {
+              "node": "過濾待補件列",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "批次下載光貿發票": {
+        "main": [
+          [
+            {
+              "node": "If21",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get row(s) in sheet18": {
+        "main": [
+          [
+            {
+              "node": "Merge4",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Merge4": {
+        "main": [
+          [
+            {
+              "node": "Filter11",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "nodeGroups": [],
+    "authors": "鈞煜 黃",
+    "name": "Version b82a3abc",
+    "description": "",
+    "autosaved": false,
+    "createdAt": "2026-08-03T07:15:52.705Z",
+    "updatedAt": "2026-08-03T07:16:40.819Z"
+  }
+}
