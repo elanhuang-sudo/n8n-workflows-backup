@@ -1,0 +1,1574 @@
+{
+  "id": "wwjRQxoqf796Rc9v",
+  "name": "My workflow",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2025-12-25T09:49:10.314Z",
+  "updatedAt": "2025-12-29T00:20:58.475Z",
+  "isArchived": true,
+  "versionId": "eb40a1d9-6a7e-461c-8f68-40826b933f92",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "@aotoki/n8n-nodes-line-messaging.lineMessagingTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        896
+      ],
+      "id": "9d951f63-240b-455a-ad2d-1c9c645eead1",
+      "name": "Line Messaging Trigger",
+      "webhookId": "09fb1bf8-e24c-402e-bdfd-7ece8f79302f",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "operation": "reply"
+      },
+      "type": "@aotoki/n8n-nodes-preview-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        800
+      ],
+      "id": "8b4a6bb6-b719-4d4a-9a6c-ed6bcb71754b",
+      "name": "Line Messaging",
+      "executeOnce": false,
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a52ba3a2-0a0a-4c9b-a0bd-9c964034c733",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "我要通話",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0dc428d0-6b4c-4da0-a6db-7d7adea03f60",
+      "name": "我要通話"
+    },
+    {
+      "parameters": {
+        "operation": "reply"
+      },
+      "type": "@aotoki/n8n-nodes-preview-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        416
+      ],
+      "id": "87c51bf8-69b8-4c5a-9d1a-98dfb868718e",
+      "name": "Line Messaging1",
+      "executeOnce": true,
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a52ba3a2-0a0a-4c9b-a0bd-9c964034c733",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "我要通話",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        0,
+        1792
+      ],
+      "id": "634237c1-a950-41b0-9a92-1f5c54ba1b07",
+      "name": "我的帳單"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a52ba3a2-0a0a-4c9b-a0bd-9c964034c733",
+              "leftValue": "={{ $('Line Messaging Trigger').item.json.message.text }}",
+              "rightValue": "加買發票",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        1280
+      ],
+      "id": "2ce330c6-c05c-4f79-ae08-f6ee767f6b0c",
+      "name": "加買發票"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit?gid=1961729212#gid=1961729212",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1961729212,
+          "mode": "list",
+          "cachedResultName": "LINE ID",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1961729212"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "A:timestamp": "={{ $now.toFormat('yyyy-MM-dd HH:mm:ss') }}",
+            "D:message": "={{ $('Line Messaging Trigger').first().json.message.text }}",
+            "B:userId": "={{ $('Line Messaging Trigger').first().json.source.userId }}",
+            "C:displayName": "={{ $json.displayName }}",
+            "E:pictureUrl": "={{ $json.pictureUrl }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "A:timestamp",
+              "displayName": "A:timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "B:userId",
+              "displayName": "B:userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "C:displayName",
+              "displayName": "C:displayName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "D:message",
+              "displayName": "D:message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "E:pictureUrl",
+              "displayName": "E:pictureUrl",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號1",
+              "displayName": "編號1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號2",
+              "displayName": "編號2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號3",
+              "displayName": "編號3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號4",
+              "displayName": "編號4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號5",
+              "displayName": "編號5",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號6",
+              "displayName": "編號6",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號7",
+              "displayName": "編號7",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號8",
+              "displayName": "編號8",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號9",
+              "displayName": "編號9",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "編號10",
+              "displayName": "編號10",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "帳單1",
+              "displayName": "帳單1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "帳單2",
+              "displayName": "帳單2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "帳單3",
+              "displayName": "帳單3",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "帳單4",
+              "displayName": "帳單4",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        1568
+      ],
+      "id": "ca898eb2-adb7-441d-9124-c44dd162c112",
+      "name": "Append row in sheet",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "url": "=https://api.line.me/v2/bot/profile/{{ $('Line Messaging Trigger').item.json.source.userId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer pc49SOTM2eihVfnbdQ4fEKStFYU4vgzpk6d5F5LsTvBQILYrITQFOKvrimUKpYEmekMy+IFdjAAb6jj+mD+6AG3/+w85jHeNWs+7bH7TyCo2QMXlrsZRf3JW1Rd64FKAG9uZ2HSTFH7Vis/DjV12sQdB04t89/1O/w1cDnyilFU="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        896,
+        1568
+      ],
+      "id": "5acafc54-7e5e-4c60-ae0c-453c8a76a4ed",
+      "name": "HTTP Request",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "f66f769d-53f7-4945-8f76-1cad1bffc7a1",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "=/^.{8}[a-zA-Z].{5}$/",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "我要通話",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "71f47783-a8b7-4147-ab41-9c72c8cd2bf9"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d61e59f8-8a11-46a6-b715-bcb7cadd6ea8",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "客戶資料夾",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "bbf6059b-ebf8-417e-b519-33a6537446d7",
+                    "leftValue": "={{ $json.message.text }}",
+                    "rightValue": "加買發票",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9f9e1904-ef3f-4ab3-9814-4d6070e145ac",
+                    "leftValue": "={{ $json.message.type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        848
+      ],
+      "id": "04a3e975-02cb-4657-bc18-f8ee44272f7a",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit?gid=1961729212#gid=1961729212",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1961729212,
+          "mode": "list",
+          "cachedResultName": "LINE ID",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1961729212"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "B:userId",
+              "lookupValue": "={{ $('Line Messaging Trigger').item.json.source.userId }}"
+            }
+          ]
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "B1:B"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        1568
+      ],
+      "id": "6e3b875a-d58b-499f-9837-6737840cd91c",
+      "name": "Get row(s) in sheet",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 30429075,
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRange"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        512
+      ],
+      "id": "1376f1ff-e92a-4c01-8a8b-e00b912418b3",
+      "name": "Get row(s) in sheet1"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 30429075,
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically",
+              "readRowsUntil": "firstEmptyRow"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        896
+      ],
+      "id": "2fa250c1-c950-4b89-9c87-c5a2bfaa314d",
+      "name": "Get row(s) in sheet2",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 30429075,
+          "mode": "list",
+          "cachedResultName": "自動回傳帳單",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=30429075"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "detectAutomatically",
+              "readRowsUntil": "firstEmptyRow"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        672,
+        1280
+      ],
+      "id": "156565f5-4403-4e62-80ef-d4a5bf12c36c",
+      "name": "Get row(s) in sheet3",
+      "executeOnce": false,
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c7883499-9a80-4344-97dd-c67d37c43a9d",
+              "leftValue": "={{ $json['ID合併'] }}",
+              "rightValue": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        1280
+      ],
+      "id": "a6e9ca57-2fc0-4c0c-85a7-25225f26e1df",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "operation": "reply"
+      },
+      "type": "@aotoki/n8n-nodes-preview-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        1184
+      ],
+      "id": "a0b6bad2-3a7e-4e04-a01a-7db04fe930b8",
+      "name": "Line Messaging3",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "客戶名稱"
+            },
+            {
+              "fieldToAggregate": "加買發票連結"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1184
+      ],
+      "id": "af7aab42-70bb-4a1f-b387-5997c444b019",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得上一個節點的 JSON 資料\nconst input = items[0].json;\nconst clients = input[\"客戶名稱\"];\nconst links = input[\"加買發票連結\"];\n\n// 1. 動態生成按鈕陣列\nconst buttons = clients.map((name, index) => {\n  return {\n    \"type\": \"button\",\n    \"action\": {\n      \"type\": \"uri\",\n      \"label\": name, // 按鈕文字顯示客戶名稱\n      \"uri\": links[index] // 點擊跳轉對應連結\n    },\n    \"style\": \"primary\",\n    \"margin\": \"sm\"\n  };\n});\n\n// 2. 組裝成完整的 Flex Message 結構\nconst flexContent = {\n  \"type\": \"bubble\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📋 加買發票申請\",\n        \"weight\": \"bold\",\n        \"size\": \"lg\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"請選擇對應的單位進行填寫：\",\n        \"size\": \"sm\",\n        \"color\": \"#666666\",\n        \"wrap\": true\n      },\n      ...buttons // 將剛剛生成的按鈕清單展開放入\n    ]\n  }\n};\n\n// ...前面的代碼不變\n\n// 輸出時，務必加上 JSON.stringify() 並將其包在一個新的物件屬性中\nreturn {\n  flexJsonString: JSON.stringify(flexContent)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        1184
+      ],
+      "id": "0b357adf-4a6a-43f7-b0fc-3a619cc9e4a8",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0cbad640-c8ff-404d-a68f-b287a0dff6b6",
+              "leftValue": "={{ $json['ID合併'] }}",
+              "rightValue": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        896
+      ],
+      "id": "53e417f9-771a-477f-a3a6-11bb26477f9f",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得上一個節點的資料\nconst input = items[0].json;\nconst clients = input[\"客戶名稱\"] || [];\n// 這裡將 Key 修改為你 JSON 中的「客戶資料夾」\nconst links = input[\"客戶資料夾\"] || [];\n\n// 2. 動態生成按鈕陣列\nconst buttons = clients.map((name, index) => {\n  return {\n    \"type\": \"button\",\n    \"action\": {\n      \"type\": \"uri\",\n      \"label\": name.substring(0, 40), // LINE 限制標籤最多 40 字\n      \"uri\": encodeURI(links[index]) // 確保網址編碼正確\n    },\n    \"style\": \"primary\",\n    \"margin\": \"sm\"\n  };\n});\n\n// 3. 組裝 Flex Message 結構\nconst flexContent = {\n  \"type\": \"bubble\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📁 客戶資料夾存取\",\n        \"weight\": \"bold\",\n        \"size\": \"lg\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"請選擇下方單位以查看資料夾：\",\n        \"size\": \"sm\",\n        \"color\": \"#666666\",\n        \"wrap\": true\n      },\n      ...buttons\n    ]\n  }\n};\n\n// 4. 輸出字串化後的 JSON 給 Line 節點使用\nreturn {\n  flexJsonString: JSON.stringify(flexContent)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        800
+      ],
+      "id": "4a40611f-6760-4636-a3e6-00a51bb0282f",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "客戶名稱"
+            },
+            {
+              "fieldToAggregate": "客戶資料夾"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        896,
+        800
+      ],
+      "id": "c73f2065-cb12-42f2-a74c-7ca0d052c72a",
+      "name": "Aggregate1"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "帳務人員"
+            },
+            {
+              "fieldToAggregate": "LINE官方通話"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        896,
+        416
+      ],
+      "id": "224b4b84-6659-446e-acd4-79f54f6551cb",
+      "name": "Aggregate2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得資料並處理成陣列\nlet staffList = items[0].json[\"帳務人員\"];\nlet lineLinks = items[0].json[\"LINE官方通話\"];\n\nif (!Array.isArray(staffList)) staffList = [staffList];\nif (!Array.isArray(lineLinks)) lineLinks = [lineLinks];\n\n// 2. 資料清洗：移除重複\nconst uniqueData = [];\nconst seenStaff = new Set();\n\nstaffList.forEach((name, index) => {\n  if (name && !seenStaff.has(name)) {\n    const staffName = String(name);\n    seenStaff.add(staffName);\n    uniqueData.push({\n      name: staffName,\n      link: String(lineLinks[index] || \"https://line.me/\")\n    });\n  }\n});\n\n// --- 強制輸出邏輯 ---\nconst targetName = \"黃鈞煜 分機122\";\nconst targetLink = \"https://g.kscpb.com/ks122\";\n\n// 如果目前的清單中找不到黃鈞煜，就強行加入一筆\nif (!seenStaff.has(targetName)) {\n  uniqueData.push({\n    name: targetName,\n    link: targetLink\n  });\n}\n// ------------------\n\n// 3. 生成 Bubbles (垂直上下佈局)\nconst bubbles = uniqueData.slice(0, 10).map((person) => {\n  \n  let serviceType = \"帳務處理、發票查詢\";\n  // 包含 \"黃鈞煜\" 即切換服務類型\n  if (person.name.includes(\"黃鈞煜\")) {\n    serviceType = \"設立變更登記\";\n  }\n\n  return {\n    \"type\": \"bubble\",\n    \"size\": \"mega\", \n    \"header\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"backgroundColor\": \"#F8F8F8\",\n      \"contents\": [\n        {\n          \"type\": \"text\",\n          \"text\": \"📞 聯絡專員\",\n          \"weight\": \"bold\",\n          \"size\": \"lg\",\n          \"color\": \"#1DB446\"\n        }\n      ]\n    },\n    \"body\": {\n      \"type\": \"box\",\n      \"layout\": \"vertical\",\n      \"spacing\": \"xl\",\n      \"contents\": [\n        {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"服務項目\",\n              \"size\": \"sm\",\n              \"color\": \"#aaaaaa\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": serviceType,\n              \"size\": \"lg\",\n              \"color\": \"#1DB446\",\n              \"weight\": \"bold\",\n              \"wrap\": true,\n              \"margin\": \"sm\"\n            }\n          ]\n        },\n        {\n          \"type\": \"box\",\n          \"layout\": \"vertical\",\n          \"contents\": [\n            {\n              \"type\": \"text\",\n              \"text\": \"負責人員\",\n              \"size\": \"sm\",\n              \"color\": \"#aaaaaa\"\n            },\n            {\n              \"type\": \"text\",\n              \"text\": person.name,\n              \"size\": \"xl\",\n              \"color\": \"#333333\",\n              \"weight\": \"bold\",\n              \"wrap\": true,\n              \"margin\": \"sm\"\n            }\n          ]\n        },\n        {\n          \"type\": \"button\",\n          \"action\": {\n            \"type\": \"uri\",\n            \"label\": \"立即 LINE 通話\",\n            \"uri\": person.link.startsWith('http') ? person.link : \"https://line.me/\"\n          },\n          \"style\": \"primary\",\n          \"color\": \"#00B900\",\n          \"height\": \"md\"\n        }\n      ]\n    }\n  };\n});\n\n// 4. 判斷輸出格式\nconst finalFlex = bubbles.length === 1 ? bubbles[0] : {\n  \"type\": \"carousel\",\n  \"contents\": bubbles\n};\n\nreturn {\n  flexJsonString: JSON.stringify(finalFlex)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        416
+      ],
+      "id": "35f99019-0217-4c81-90e2-9417f4db3223",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0cbad640-c8ff-404d-a68f-b287a0dff6b6",
+              "leftValue": "={{ $json['ID合併'] }}",
+              "rightValue": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        512
+      ],
+      "id": "98bab563-b92b-4f27-8c4b-3fb74f6a5d7f",
+      "name": "If3",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "operation": "reply"
+      },
+      "type": "@aotoki/n8n-nodes-preview-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1568,
+        608
+      ],
+      "id": "aa96abfb-9f6d-4faa-94d2-3c5c75128ef0",
+      "name": "Line Messaging4",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 設定 7 位指定專員名單\nconst uniqueData = [\n  { name: \"王淑娥 分機111\", link: \"https://g.kscpb.com/ks111\" },\n  { name: \"黃紋綺 分機112\", link: \"https://g.kscpb.com/ks112\" },\n  { name: \"張玉幸 分機113\", link: \"https://g.kscpb.com/ks113\" },\n  { name: \"余秋萍 分機115\", link: \"https://g.kscpb.com/ks115\" },\n  { name: \"周佳玲 分機116\", link: \"https://g.kscpb.com/ks116\" },\n  { name: \"黎依婷 分機117\", link: \"https://g.kscpb.com/ks117\" },\n  { name: \"黃鈞煜 分機122\", link: \"https://g.kscpb.com/ks122\" }\n];\n\nconst listContents = [];\n\nuniqueData.forEach((person, index) => {\n  let serviceType = person.name.includes(\"黃鈞煜\") ? \"設立變更登記\" : \"帳務處理、發票查詢\";\n\n  // 每位專員區塊：水平佈局\n  listContents.push({\n    \"type\": \"box\",\n    \"layout\": \"horizontal\",\n    \"contents\": [\n      {\n        \"type\": \"box\",\n        \"layout\": \"vertical\",\n        \"flex\": 2, // 調整比例讓大字有足夠空間\n        \"contents\": [\n          {\n            \"type\": \"text\",\n            \"text\": person.name,\n            \"weight\": \"bold\",\n            \"size\": \"lg\", // 姓名放大至 lg\n            \"color\": \"#333333\",\n            \"wrap\": true\n          },\n          {\n            \"type\": \"text\",\n            \"text\": serviceType,\n            \"size\": \"xs\",\n            \"color\": \"#999999\",\n            \"margin\": \"xs\"\n          }\n        ]\n      },\n      {\n        \"type\": \"button\",\n        \"action\": {\n          \"type\": \"uri\",\n          \"label\": \"通話\",\n          \"uri\": person.link\n        },\n        \"style\": \"primary\",\n        \"color\": \"#00B900\",\n        \"height\": \"sm\", \n        \"flex\": 1,      \n        \"gravity\": \"center\"\n      }\n    ],\n    \"margin\": \"md\",\n    \"spacing\": \"sm\",\n    \"alignItems\": \"center\"\n  });\n\n  // 分隔線\n  if (index < uniqueData.length - 1) {\n    listContents.push({\n      \"type\": \"separator\",\n      \"margin\": \"md\",\n      \"color\": \"#EEEEEE\"\n    });\n  }\n});\n\nconst finalFlex = {\n  \"type\": \"bubble\",\n  \"size\": \"mega\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"backgroundColor\": \"#F8F8F8\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📞 聯絡專員名單\",\n        \"weight\": \"bold\",\n        \"size\": \"md\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": listContents,\n    \"paddingAll\": \"md\"\n  }\n};\n\nreturn {\n  flexJsonString: JSON.stringify(finalFlex)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        608
+      ],
+      "id": "9df5f8c4-13c0-48e4-9110-ebefde6be3bb",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "帳務人員"
+            },
+            {
+              "fieldToAggregate": "LINE官方通話"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        896,
+        608
+      ],
+      "id": "41aa3c04-a8a4-4e8b-8def-64602f800796",
+      "name": "Aggregate3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6a085ee8-21eb-460e-9c0d-a72e23b40105",
+              "leftValue": "={{ $json['B:userId'] }}",
+              "rightValue": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+              "operator": {
+                "type": "string",
+                "operation": "notRegex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        1568
+      ],
+      "id": "0e206cdb-12dd-4d9a-ba56-bf01b6a4e7d6",
+      "name": "Filter",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "客戶名稱"
+            },
+            {
+              "fieldToAggregate": "客戶資料夾"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        992
+      ],
+      "id": "22444d1c-30f6-42e3-997b-532b2695ca2f",
+      "name": "Aggregate4"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1129114424,
+          "mode": "list",
+          "cachedResultName": "客戶資料表2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oIRo0xUcrnbxPhhpACLBVawumjJf3aOlU19xcHKvVn0/edit#gid=1129114424"
+        },
+        "options": {
+          "dataLocationOnSheet": {
+            "values": {
+              "rangeDefinition": "specifyRangeA1",
+              "range": "B1:Q"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        448,
+        224
+      ],
+      "id": "02374bf6-45d5-4a57-b588-719574e61fc2",
+      "name": "Get row(s) in sheet4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0569c941-8214-4d21-bf2e-a6f6adab5d2f",
+              "leftValue": "={{ $json.USERID }}",
+              "rightValue": "={{ $('Line Messaging Trigger').item.json.source.userId }}",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        672,
+        224
+      ],
+      "id": "8049e464-c6e5-4bbf-8d2e-807a90c96f70",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "operation": "reply"
+      },
+      "type": "@aotoki/n8n-nodes-preview-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        224
+      ],
+      "id": "48387c2b-63ba-4ed2-8496-c87e6502a310",
+      "name": "Line Messaging2",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f75f7bff-09ab-40fb-81dd-e434a438cefe",
+              "leftValue": "={{ $('If3').all(0, \"true\").length }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        1120,
+        608
+      ],
+      "id": "2b232d7c-4ba4-4b7b-93f0-774f3802ca6f",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "客戶名稱"
+            },
+            {
+              "fieldToAggregate": "雲端資料夾"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        896,
+        224
+      ],
+      "id": "d0d2a0d6-2e7c-45fe-9c8b-af446faf1cc5",
+      "name": "Aggregate5"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. 取得上一個節點的第一個資料項目\nconst input = items[0].json;\n\n// 取得客戶名稱陣列與連結陣列\nconst clients = input[\"客戶名稱\"] || [];\nconst links = input[\"雲端資料夾\"] || [];\n\n// 2. 動態生成按鈕陣列\nconst buttons = clients.map((name, index) => {\n  return {\n    \"type\": \"button\",\n    \"action\": {\n      \"type\": \"uri\",\n      \"label\": name.substring(0, 40), // LINE 限制標籤最多 40 字\n      \"uri\": encodeURI(links[index])   // 確保連結編碼正確\n    },\n    \"style\": \"primary\",\n    \"margin\": \"sm\"\n  };\n});\n\n// 3. 組裝 Flex Message 結構\nconst flexContent = {\n  \"type\": \"bubble\",\n  \"header\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"📁 客戶資料夾存取\",\n        \"weight\": \"bold\",\n        \"size\": \"lg\",\n        \"color\": \"#1DB446\"\n      }\n    ]\n  },\n  \"body\": {\n    \"type\": \"box\",\n    \"layout\": \"vertical\",\n    \"contents\": [\n      {\n        \"type\": \"text\",\n        \"text\": \"請選擇下方單位以查看資料夾：\",\n        \"size\": \"sm\",\n        \"color\": \"#666666\",\n        \"wrap\": true\n      },\n      ...buttons // 這裡直接接按鈕，已移除 separator\n    ]\n  }\n};\n\n// 4. 輸出字串化後的 JSON 給 Line 節點使用\nreturn {\n  flexJsonString: JSON.stringify(flexContent)\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        224
+      ],
+      "id": "81e2db9b-735b-4264-b1d1-b197bbef888f",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "f75f7bff-09ab-40fb-81dd-e434a438cefe",
+              "leftValue": "={{ ($json[\"ID合併\"] || \"\").includes($item(0).$node[\"Line Messaging Trigger\"].json[\"source\"][\"userId\"]) }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        896,
+        992
+      ],
+      "id": "59050a5a-05b6-47c0-bf0b-60342b14701e",
+      "name": "Filter3"
+    },
+    {
+      "parameters": {
+        "operation": "reply"
+      },
+      "type": "@aotoki/n8n-nodes-preview-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1344,
+        992
+      ],
+      "id": "eb1a0578-6898-4776-863f-00c7a3cadd1d",
+      "name": "Line Messaging5",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "operation": "reply"
+      },
+      "type": "@aotoki/n8n-nodes-preview-line-messaging.lineMessaging",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        1376
+      ],
+      "id": "d4065ca9-6ea1-4946-b7b6-3f8d1e553c1c",
+      "name": "Line Messaging6",
+      "credentials": {}
+    }
+  ],
+  "connections": {
+    "Line Messaging Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "加買發票",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "加買發票": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet3": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Line Messaging6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Aggregate3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate3": {
+      "main": [
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet4": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Aggregate5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate5": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript4": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate4": {
+      "main": [
+        [
+          {
+            "node": "Line Messaging5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter3": {
+      "main": [
+        [
+          {
+            "node": "Aggregate4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": null,
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "wwjRQxoqf796Rc9v",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2025-12-25T09:49:10.314Z",
+      "updatedAt": "2025-12-25T09:49:10.314Z"
+    }
+  ],
+  "activeVersion": null
+}
