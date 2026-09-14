@@ -1,0 +1,187 @@
+{
+  "id": "yy1iqNrjR3Xo6BKa",
+  "name": "My Sub-workflow",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-08-06T00:33:56.453Z",
+  "updatedAt": "2026-08-06T00:40:07.477Z",
+  "isArchived": true,
+  "versionId": "a668df75-4344-4c58-8d6b-1d3643b31b10",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {
+        "preBuiltAgentsCalloutGoogleSheets": "",
+        "authentication": "serviceAccount",
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1355571546,
+          "mode": "list",
+          "cachedResultName": "Staff_No",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=1355571546"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "USERID",
+              "lookupValue": "={{ $json.body_events[0].source.userId }}"
+            }
+          ]
+        },
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1536,
+        1528
+      ],
+      "id": "94d775e4-ed38-4cc9-866b-bca1fa6ae14e",
+      "name": "比對USERID",
+      "executeOnce": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "preBuiltAgentsCalloutGoogleSheets": "",
+        "authentication": "serviceAccount",
+        "resource": "sheet",
+        "operation": "read",
+        "documentId": {
+          "__rl": true,
+          "value": "1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 821175039,
+          "mode": "list",
+          "cachedResultName": "Bookings",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1fgZ8hybc-PUHkqAyEyI67OPxOlO21lv14QS-juMxqu8/edit#gid=821175039"
+        },
+        "filtersUI": {},
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -1312,
+        1528
+      ],
+      "id": "c56b6697-f5a0-4c2b-b93c-9f9b14a6fb3a",
+      "name": "讀取預約 Bookings2",
+      "executeOnce": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleApi": {
+          "id": "v7XKVwskBioDRndK",
+          "name": "服務帳戶"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// 1. 指定 Webhook 節點名稱\nconst webhookNodeName = 'LINE Webhook';\n\nlet replyToken = \"\";\ntry {\n  const webhookData = $(webhookNodeName).first()?.json;\n  replyToken = webhookData?.body?.events?.[0]?.replyToken || \"\";\n} catch (e) {\n  replyToken = \"\";\n}\n\n// 2. 取得員工資訊\nlet rawCode = \"\";\ntry {\n  rawCode = $('比對USERID').first()?.json?.['編號'] || \"\";\n} catch (e) {\n  rawCode = \"\";\n}\n\nconst numMatch = rawCode.match(/\\d+/);\nconst staffNum = numMatch ? numMatch[0] : '';\nconst targetStaffName = `${staffNum}號師傅`;\n\n// 3. 設定 7 天日期過濾區間 (從今日起算 7 天)\nconst today = new Date();\ntoday.setHours(0, 0, 0, 0);\n\nconst next7Days = new Date(today);\nnext7Days.setDate(today.getDate() + 7);\n\n// 4. 取得預約並過濾 (指定師傅 + 未來 7 天內)\nconst allBookings = $input.all();\nconst matchedBookings = allBookings\n  .map(item => item.json)\n  .filter(b => {\n    const isStaff = (b['指定師傅'] === targetStaffName || b['指定師傅'] === rawCode);\n    if (!isStaff || !b['預約日期']) return false;\n    \n    const bookingDate = new Date(b['預約日期']);\n    bookingDate.setHours(0, 0, 0, 0);\n    \n    return bookingDate >= today && bookingDate < next7Days;\n  })\n  .sort((a, b) => new Date(`${a['預約日期']} ${a['開始時間']}`) - new Date(`${b['預約日期']} ${b['開始時間']}`));\n\n// 5. 製作 Flex Message 泡泡 Body 內容\nconst contents = [];\n\nif (matchedBookings.length === 0) {\n  contents.push({\n    type: \"box\",\n    layout: \"vertical\",\n    margin: \"md\",\n    contents: [\n      {\n        type: \"text\",\n        text: \"未來 7 天內尚無任何預約。\",\n        size: \"md\",\n        color: \"#888888\",\n        align: \"center\"\n      }\n    ]\n  });\n} else {\n  matchedBookings.forEach((b, index) => {\n    // 僅讀取姓名，取消電話\n    const displayName = b['姓名'] || '未填寫';\n\n    contents.push({\n      type: \"box\",\n      layout: \"vertical\",\n      margin: index === 0 ? \"none\" : \"md\",\n      spacing: \"xs\",\n      contents: [\n        {\n          type: \"box\",\n          layout: \"baseline\",\n          contents: [\n            {\n              type: \"text\",\n              text: `📅 ${b['預約日期']}`,\n              weight: \"bold\",\n              size: \"md\",\n              color: \"#1DB446\"\n            }\n          ]\n        },\n        {\n          type: \"box\",\n          layout: \"baseline\",\n          margin: \"xs\",\n          contents: [\n            {\n              type: \"text\",\n              text: `⏰ ${b['開始時間']} ~ ${b['結束時間']}`,\n              size: \"md\",\n              color: \"#333333\",\n              weight: \"bold\"\n            }\n          ]\n        },\n        {\n          type: \"box\",\n          layout: \"baseline\",\n          margin: \"xs\",\n          contents: [\n            {\n              type: \"text\",\n              text: `💆 ${b['服務項目'] || '未指定'} | 👤 ${displayName}`,\n              size: \"md\",\n              color: \"#555555\",\n              weight: \"bold\"\n            }\n          ]\n        }\n      ]\n    });\n\n    if (index < matchedBookings.length - 1) {\n      contents.push({\n        type: \"separator\",\n        margin: \"md\"\n      });\n    }\n  });\n}\n\n// 6. 輸出標準 Flex Bubble 結構 (加入 size: KILO 縮小寬度)\nconst flexMessage = {\n  type: \"flex\",\n  altText: `【${targetStaffName}】近7日班表預約查詢`,\n  contents: {\n    type: \"bubble\",\n    size: \"kilo\",\n    header: {\n      type: \"box\",\n      layout: \"vertical\",\n      backgroundColor: \"#0F2537\",\n      contents: [\n        {\n          type: \"text\",\n          text: `📋 【${targetStaffName}】近 7 日班表`,\n          weight: \"bold\",\n          size: \"md\",\n          color: \"#FFFFFF\"\n        }\n      ]\n    },\n    body: {\n      type: \"box\",\n      layout: \"vertical\",\n      contents: contents\n    }\n  }\n};\n\nreturn [{\n  json: {\n    replyToken: replyToken,\n    messages: [flexMessage]\n  }\n}];",
+        "notice": ""
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        1528
+      ],
+      "id": "05a0e21a-4d61-4502-b861-8fe1674e7b8e",
+      "name": "班表查詢"
+    },
+    {
+      "id": "1df63c23-5089-47da-a319-8955a70a2894",
+      "typeVersion": 1.1,
+      "name": "Start",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -1744,
+        1528
+      ],
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "body_events",
+              "type": "any"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {
+    "比對USERID": {
+      "main": [
+        [
+          {
+            "node": "讀取預約 Bookings2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取預約 Bookings2": {
+      "main": [
+        [
+          {
+            "node": "班表查詢",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "比對USERID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": null,
+  "meta": null,
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "yy1iqNrjR3Xo6BKa",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-08-06T00:33:56.453Z",
+      "updatedAt": "2026-08-06T00:33:56.453Z"
+    }
+  ],
+  "activeVersion": null
+}
