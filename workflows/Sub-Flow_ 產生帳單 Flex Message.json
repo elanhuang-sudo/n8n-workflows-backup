@@ -1,0 +1,32 @@
+{
+  "id": "AZwDZFCTpo4o9XUk",
+  "name": "Sub-Flow: 產生帳單 Flex Message",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-07-14T07:19:11.384Z",
+  "updatedAt": "2026-07-14T08:05:55.258Z",
+  "isArchived": true,
+  "versionId": "daaa82b1-4325-406a-b387-ff62b7025f0c",
+  "triggerCount": 0,
+  "nodes": [],
+  "connections": {},
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": null,
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "AZwDZFCTpo4o9XUk",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-07-14T07:19:11.384Z",
+      "updatedAt": "2026-07-14T07:19:11.384Z"
+    }
+  ],
+  "activeVersion": null
+}
