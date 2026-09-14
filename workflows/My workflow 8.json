@@ -1,0 +1,154 @@
+{
+  "id": "Xfx3QRMnou53xIMx",
+  "name": "My workflow 8",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-14T00:35:42.617Z",
+  "updatedAt": "2026-09-14T00:48:44.656Z",
+  "isArchived": false,
+  "versionId": "339ab47c-d6a4-4aea-ac74-ecc054dd7456",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0a27bc25-34a1-4fc8-854d-43250a9f4a2e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "a74a6549-854e-456c-88c4-548d643b9813",
+      "name": "Get many workflows",
+      "credentials": {
+        "n8nApi": {
+          "id": "sOT9OPTByE4NEmaO",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  const wf = item.json;\n  // 清除檔名中的特殊字元，避免無效路徑\n  const safeName = wf.name.replace(/[/\\\\?%*:|\"<>]/g, '_');\n  \n  return {\n    json: {\n      filePath: `workflows/${safeName}.json`,\n      fileContent: JSON.stringify(wf, null, 2),\n      workflowName: wf.name\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        0
+      ],
+      "id": "edb64cde-ad2d-4568-9cc7-3fd1588241e0",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "=elanhuang-sudo"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-workflows-backup",
+          "mode": "list",
+          "cachedResultName": "n8n-workflows-backup",
+          "cachedResultUrl": "https://github.com/elanhuang-sudo/n8n-workflows-backup"
+        },
+        "filePath": "={{ $json.filePath }}",
+        "fileContent": "={{ $json.fileContent }}",
+        "commitMessage": "={{ 'Auto-backup: ' + $json.workflowName }}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ],
+      "id": "664a2de6-fdf5-4159-924e-8b23cd85ea25",
+      "name": "Create a file",
+      "webhookId": "190c5953-9679-40fe-8409-c44027a566bd",
+      "credentials": {
+        "githubApi": {
+          "id": "hbPqOKLb2YfyHAVj",
+          "name": "GitHub account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many workflows": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Create a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "Xfx3QRMnou53xIMx",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-09-14T00:35:42.617Z",
+      "updatedAt": "2026-09-14T00:35:42.617Z"
+    }
+  ],
+  "activeVersion": null
+}
