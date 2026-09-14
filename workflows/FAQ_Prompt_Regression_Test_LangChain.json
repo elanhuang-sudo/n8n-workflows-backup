@@ -1,0 +1,581 @@
+{
+  "id": "RnJiEM26IwvZ7k5Q",
+  "name": "FAQ_Prompt_Regression_Test_LangChain",
+  "active": false,
+  "activeVersionId": null,
+  "createdAt": "2026-09-12T12:52:42.659Z",
+  "updatedAt": "2026-09-13T08:36:00.716Z",
+  "isArchived": false,
+  "versionId": "b6f48693-8095-4be8-89a1-c6aa528964c9",
+  "triggerCount": 0,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "926e6b8a-0211-410a-a46c-ed7114eb65c7",
+      "name": "手動觸發測試",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -704,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { id: 1, input: \"/報價單\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 2, input: \"請問記帳費用怎麼算？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 3, input: \"廠商給我的報價單要貼印花稅嗎？\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 4, input: \"我已經匯款了，帳號末五碼66889，金額是6000元\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"匯款通知\" } } },\n  { json: { id: 5, input: \"麻煩傳 401申報書 給我\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 6, input: \"我要看報表\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n  { json: { id: 7, input: \"請問專員分機是多少？想打電話討論\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: 8, input: \"我們獨資企業社想改成合夥\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/30007\" } } },\n  { json: { id: 9, input: \"有限公司可以變更組織成股份有限公司嗎\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/10013\" } } },\n  { json: { id: 10, input: \"獨資商業要辦理地址變更\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30002\" } } },\n  { json: { id: 11, input: \"請問發票要寄到哪裡？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: 12, input: \"發票剛剛寄出去了喔\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 13, input: \"款項下午已經匯過去了\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 14, input: \"我的公司要改地址\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_ADDRESS_CHANGE\", options: [{label: \"有限公司\", id: \"10005\"}, {label: \"股份有限公司\", id: \"20007\"}] } } },\n  { json: { id: 15, input: \"我們工作室想換名字\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_NAME_CHANGE\", options: [{label: \"獨資商業\", id: \"30005\"}, {label: \"合夥商業\", id: \"40006\"}] } } },\n  { json: { id: 16, input: \"我們的商行想要辦理減資\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 17, input: \"我想找專員通話，另外順便問一下公司改地址\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: 18, input: \"😂😂😂\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 19, input: \"我要辦理設立登記，是股份有限公司\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20001\" } } },\n  { json: { id: 20, input: \"客戶資料夾\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 21, input: \"廣豐實業社要改地址（同客戶名下同時有廣豐有限公司與廣豐實業社）\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30002\" } } },\n  { json: { id: 22, input: \"有限公司變更資本額\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_CAPITAL_INCREASE_OR_DECREASE\", options: null } } }\n];"
+      },
+      "id": "234af50d-ec6d-4457-a58d-c80046f4a0f1",
+      "name": "載入測試用例1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={{ $env.GEMINI_API_KEY }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  systemInstruction: {\n    parts: [{\n      text: `你是專業的事務所 LINE 客服分類助理。任務是依據「FAQ 資料庫」分類使用者意圖並輸出結構化 JSON。你不生成客服回覆，僅負責判斷 canAnswer / matchType / matchedId（或 ambiguousGroup + options）。\n\n【核心規則與防錯鐵則】\n1. 純 JSON 輸出：僅輸出單一 JSON 物件，嚴禁包含程式碼區塊標籤、引言或說明文字。\n2. ID 原樣複製：matchedId、options 的 id/label 必須與定義 100% 一致。\n3. 多重意圖處理：一則訊息若包含多個意圖，僅取判定流程中最先命中者。\n4. 俗稱劃分原則（未提及具體 8 字「有限公司、股份有限公司、獨資、合夥」時，禁止直出 exact ID）：\n   - 「公司」範疇：含 有限公司、股份有限公司。\n   - 「商業/行號/店家/工作室」範疇：含 獨資商業、合夥商業。\n5. 狀況陳述攔截：無疑問句之單純狀況陳述/回報、純貼圖、亂碼，一律判 canAnswer: false。\n\n【判定流程 (命中即停)】\n■ Step 1：完全匹配 (matchType: \"exact\")\n1. 快捷代碼/指令: /報價單, /10005, 客戶資料夾, 我要通話, 我要導航\n2. 本所費用詢問: 記帳/服務費用 -> matchedId: \"/報價單\". 排除條款：詢問客戶自身憑證/印花稅，跳至 Step 3 canAnswer: false。\n3. 匯款通知: 同時包含「末幾碼」與「金額」 -> matchedId: \"匯款通知\"。\n4. 文件與報表: 指定具體稅報/檔案 -> matchedId: \"客戶資料夾\"；模糊索取報表 -> matchedId: \"詢問報表引導\"。\n5. 專員與通話: 尋求真人/分機 -> matchedId: \"我要通話\"。\n6. 獨資轉合夥: -> matchedId: \"/30007\"。\n7. 公司變更組織: -> matchedId: \"/10013\"。\n8. 具體組織 + 動作: -> matchedId 複製對應 ID。\n9. 本所地址/工時/發票郵寄地址: 詢問事務所地址、上班時間、發票或憑證要寄到哪裡 -> matchedId: \"我要導航\"。\n10. 資本額變更但未明確增資或減資: 若使用者已指定具體組織型態但僅說「變更資本額」，未說明是增資或減資 -> 跳至 Step 3 canAnswer: false（動作層級模糊，交由真人確認）。\n\n■ Step 2：模糊匹配 (matchType: \"ambiguous\")\n使用者僅使用俗稱時，僅可輸出該俗稱範疇對應的型態選項（「公司」→只列有限公司/股份有限公司；「商業/行號」→只列獨資商業/合夥商業），不可列出 Group 中不屬於該俗稱範疇的其他型態。\noptions 的 label 只能是組織型態名稱本身（有限公司/股份有限公司/獨資商業/合夥商業），不可附加動作說明文字。\n\n各 Group 完整定義如下：\n- GROUP_SETUP: 有限公司(\"10001\"), 股份有限公司(\"20001\"), 獨資商業(\"30001\"),",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 10000
+            }
+          }
+        }
+      },
+      "id": "8011a7d2-6998-488c-8415-f015e7442d45",
+      "name": "呼叫 Gemini API1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\nconst allInputs = $input.all();\nconst testCases = $('載入測試用例1').all();\n\nfor (let i = 0; i < allInputs.length; i++) {\n  const itemJson = allInputs[i].json;\n  const expected = testCases[i].json.expected;\n  const inputStr = testCases[i].json.input;\n  const testId = testCases[i].json.id;\n\n  let rawText = \"\";\n  try {\n    rawText = itemJson.candidates[0].content.parts[0].text.trim();\n  } catch (e) {\n    rawText = \"\";\n  }\n\n  let actual = {};\n  let isPass = true;\n  let reason = \"匹配成功\";\n\n  try {\n    actual = JSON.parse(rawText);\n\n    if (actual.canAnswer !== expected.canAnswer) {\n      isPass = false;\n      reason = `canAnswer 不符 (實際: ${actual.canAnswer}, 預期: ${expected.canAnswer})`;\n    } else if (actual.matchType !== expected.matchType) {\n      isPass = false;\n      reason = `matchType 不符 (實際: ${actual.matchType}, 預期: ${expected.matchType})`;\n    } else if (expected.matchType === \"exact\") {\n      if (String(actual.matchedId) !== String(expected.matchedId)) {\n        isPass = false;\n        reason = `matchedId 不符 (實際: '${actual.matchedId}', 預期: '${expected.matchedId}')`;\n      }\n    } else if (expected.matchType === \"ambiguous\") {\n      if (actual.ambiguousGroup !== expected.ambiguousGroup) {\n        isPass = false;\n        reason = `ambiguousGroup 不符 (實際: '${actual.ambiguousGroup}', 預期: '${expected.ambiguousGroup}')`;\n      } else {\n        const actOpts = (actual.options || []).map(o => `${o.label}:${o.id}`).sort().join(\",\");\n        const expOpts = (expected.options || []).map(o => `${o.label}:${o.id}`).sort().join(\",\");\n        if (actOpts !== expOpts) {\n          isPass = false;\n          reason = `options 選項不符 (實際: [${actOpts}], 預期: [${expOpts}])`;\n        }\n      }\n    }\n  } catch (e) {\n    isPass = false;\n    reason = \"非合法 JSON 格式: \" + rawText;\n  }\n\n  results.push({\n    json: {\n      id: testId,\n      input: inputStr,\n      isPass,\n      reason,\n      actual,\n      expected\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "94123d52-fdbf-44db-a557-dcb6d39da25a",
+      "name": "比對判定結果1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst total = items.length;\nconst passed = items.filter(i => i.json.isPass).length;\nconst failures = items.filter(i => !i.json.isPass).map(i => ({\n  id: i.json.id,\n  input: i.json.input,\n  reason: i.json.reason,\n  actual: i.json.actual,\n  expected: i.json.expected\n}));\n\nreturn {\n  json: {\n    summary: `測試完成！通過率: ${passed}/${total} (${((passed / total) * 100).toFixed(1)}%)`,\n    passedCount: passed,\n    totalCount: total,\n    failCount: total - passed,\n    failures\n  }\n};"
+      },
+      "id": "dafe8751-2f55-4a2a-899a-81904a6cdd60",
+      "name": "彙整測試報告1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  // ── Step1 規則 1：指令/快捷 ──\n  { json: { id: 1, input: \"/報價單\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 2, input: \"客戶資料夾\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n\n  // ── Step1 規則 2：本所費用 ──\n  { json: { id: 3, input: \"請問記帳費用怎麼算？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 4, input: \"可以傳報價單給我嗎？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n\n  // ── Step1 規則 2 排他條款：客戶自身憑證 ──\n  { json: { id: 5, input: \"廠商給我的報價單要貼印花稅嗎？\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 6, input: \"印花稅查核要準備合約報價單嗎？\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ── Step1 規則 3：匯款通知 ──\n  { json: { id: 7, input: \"我已經匯款了，帳號末五碼66889，金額是6000元\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"匯款通知\" } } },\n\n  // ── Step1 規則 4：文件 / 報表 ──\n  { json: { id: 8, input: \"麻煩傳 401申報書 給我\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 9, input: \"我要 403表\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 10, input: \"我要看報表\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n\n  // ── Step1 規則 5：通話 ──\n  { json: { id: 11, input: \"請問專員分機是多少？想打電話討論\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n\n  // ── Step1 規則 6：獨資轉合夥 ──\n  { json: { id: 12, input: \"我們獨資企業社想改成合夥\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/30007\" } } },\n\n  // ── Step1 規則 7：公司變更組織 ──\n  { json: { id: 13, input: \"有限公司可以變更組織成股份有限公司嗎\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/10013\" } } },\n\n  // ── Step1 規則 8：具體組織 + 動作 ──\n  { json: { id: 14, input: \"獨資商業要辦理地址變更\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30002\" } } },\n  { json: { id: 15, input: \"我的有限公司要改地址\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10005\" } } },\n  { json: { id: 16, input: \"股份有限公司要增資\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20008\" } } },\n\n  // ── Step1 規則 9：本所地址 / 工時 ──\n  { json: { id: 17, input: \"請問發票要寄到哪裡？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: 18, input: \"你們幾點上班？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n\n  // ── Step3：狀況回報 / 亂碼 ──\n  { json: { id: 19, input: \"發票剛剛寄出去了喔\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 20, input: \"款項下午已經匯過去了\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 21, input: \"asdfghjkl ？？？ 😀😀\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ── Step2：泛稱「公司」→ 只列公司 ──\n  { json: { id: 22, input: \"我的公司要改地址\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_ADDRESS_CHANGE\", options: [{ label: \"有限公司\", id: \"10005\" }, { label: \"股份有限公司\", id: \"20007\" }] } } },\n  { json: { id: 23, input: \"公司要減資\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_CAPITAL_DECREASE\", options: [{ label: \"有限公司\", id: \"10007\" }, { label: \"股份有限公司\", id: \"20009\" }] } } },\n  { json: { id: 24, input: \"公司名稱要變更\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_NAME_CHANGE\", options: [{ label: \"有限公司\", id: \"10002\" }, { label: \"股份有限公司\", id: \"20002\" }] } } },\n\n  // ── Step2：泛稱「商業/行號/工作室」→ 只列商業 ──\n  { json: { id: 25, input: \"我們工作室想換名字\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_NAME_CHANGE\", options: [{ label: \"獨資商業\", id: \"30005\" }, { label: \"合夥商業\", id: \"40006\" }] } } },\n  { json: { id: 26, input: \"行號要改名\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_NAME_CHANGE\", options: [{ label: \"獨資商業\", id: \"30005\" }, { label: \"合夥商業\", id: \"40006\" }] } } },\n  { json: { id: 27, input: \"廣豐實業社要改地址\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_ADDRESS_CHANGE\", options: [{ label: \"獨資商業\", id: \"30002\" }, { label: \"合夥商業\", id: \"40002\" }] } } },\n\n  // ── Step2：完全未提組織型態 → 列全部 ──\n  { json: { id: 28, input: \"地址要改一下\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_ADDRESS_CHANGE\", options: [{ label: \"有限公司\", id: \"10005\" }, { label: \"股份有限公司\", id: \"20007\" }, { label: \"獨資商業\", id: \"30002\" }, { label: \"合夥商業\", id: \"40002\" }] } } },\n\n  // ── Step2 排除：行號問減資 → 資料庫無此項 → false ──\n  { json: { id: 29, input: \"我們的商行想要辦理減資\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ── 多重意圖：取最先命中 ──\n  { json: { id: 30, input: \"我想找專員通話，另外順便問一下公司改地址\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n];"
+      },
+      "id": "d4f3025c-e588-4675-9141-0e2d8b55d220",
+      "name": "載入測試用例2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={{ $env.GEMINI_API_KEY }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"systemInstruction\": {\n    \"parts\": [{\n      \"text\": \"你是專業事務所 LINE 客服意圖分類器。唯一任務是判斷使用者訊息的意圖分類，輸出結構化 JSON。不生成客服回覆。\\n\\n【輸出鐵則】\\n1. 只輸出一個 JSON 物件本體。禁止前言、問候、說明、Markdown code fence（不要 ```json）。\\n2. matchedId、options 的 id/label 必須與下方定義完全一致。\\n3. 查無對應項目一律 canAnswer:false，禁止自行推測或生成不存在的 ID。\\n\\n🚨【options label 格式硬性要求（最高優先）】\\n- ambiguous 的 options 陣列中，label 只能是以下四個字串之一：「有限公司」「股份有限公司」「獨資商業」「合夥商業」。\\n- 禁止在 label 中加入任何動作、業務、描述性文字。\\n- 正確：{\\\"label\\\":\\\"有限公司\\\",\\\"id\\\":\\\"10005\\\"}\\n- 錯誤：{\\\"label\\\":\\\"有限公司地址變更\\\",\\\"id\\\":\\\"10005\\\"}、{\\\"label\\\":\\\"有限公司名稱變更\\\",\\\"id\\\":\\\"10002\\\"}\\n- 無論 Group 是哪一種（地址變更、名稱變更、增資、停業...），label 都只寫組織型態四個字之一。\\n\\n🚨【組織大類過濾鐵則（硬性禁令）】\\n- 只要訊息出現「公司」二字、但沒有同時說出「有限公司」或「股份有限公司」→ options 只列「有限公司」與「股份有限公司」，絕對禁止加入「獨資商業」「合夥商業」。\\n- 只要訊息出現「商業、行號、企業社、實業社、工作室、商行、店家」或名稱結尾為「堂、記、行、號、社、店、館、舖、廠、坊」等 → options 只列「獨資商業」與「合夥商業」，絕對禁止加入「有限公司」「股份有限公司」。\\n- 🚨「實業社、企業社、工作室、商行、行號、商業」都是商業泛稱，不是具體組織型態。使用者若只說這些、沒有明確說出「獨資」或「合夥」，一律判 ambiguous，禁止判 exact。\\n- 完全未提及組織型態 → 列該 Group 全部選項。\\n\\n【判定流程：Step1 → Step2 → Step3 依序，命中即停】\\n同一訊息含多意圖時，只取最先命中者。\\n\\n━━ Step1：exact（依編號順序檢查） ━━\\n1. 指令/快捷：/報價單、/10005、客戶資料夾、我要通話、我要導航 → matchedId 為該指令。\\n2. 詢問本事務所服務費用/記帳報價（費用怎麼算、作帳多少錢、記帳費用、傳/給/要報價單）→ matchedId=\\\"/報價單\\\"。\\n   ※排他：若「報價單/合約/估價單」用於問客戶自身業務憑證、印花稅查核、國稅局查帳（例：印花稅查核要準備合約報價單嗎、廠商給的報價單要貼印花嗎）→ 跳 Step3 false。\\n3. 純文字同時包含「帳號末幾碼」與「金額」兩類數字 → matchedId=\\\"匯款通知\\\"。\\n4. 索取文件/報表：\\n   - 明確指定：客戶資料夾、401～405、401表、403表、401申報書、403申報書、營業稅申報書、營所稅申報書、公司登記表、公司章程、商業抄本、結算申報書 → matchedId=\\\"客戶資料夾\\\"。\\n   - 僅模糊要報表（我要報表、要報表、看報表、帳務報表）→ matchedId=\\\"詢問報表引導\\\"。\\n5. 主動詢問分機、找專員、聯絡真人、電話聯繫、想打電話、聯絡窗口、我要通話 → matchedId=\\\"我要通話\\\"。\\n6. 獨資改/轉/變成合夥、獨資轉合夥、企業社或行號想改成合夥、組織想變更為合夥 → matchedId=\\\"/30007\\\"。\\n7. 公司變更組織、有限公司變更組織、有限公司轉/改股份有限公司、公司組織變更 → matchedId=\\\"/10013\\\"。\\n8. 同時包含具體組織型態（必須是「有限公司、股份有限公司、獨資、合夥」其中之一）與具體動作 → matchedId 依動作對應 ID。\\n9. 🚨 主動詢問本事務所地址、導航、郵寄地址、營業時間 → matchedId=\\\"我要導航\\\"。\\n   具體觸發語句（只要語意接近即命中）：\\n   - 「發票要寄到哪裡」「作廢發票要寄哪」「紙本憑證寄給你們要寄哪」「發票寄到哪」\\n   - 「請給我郵寄地址」「事務所地址」「怎麼去」「我要導航」\\n   - 「幾點上班/下班/開門/關門/休息/營業」「營業時間」\\n   ※注意區分：「發票今天寄出去了」「憑證已寄回」屬於狀況回報 → Step3 false。\\n\\n━━ Step2：ambiguous ━━\\n使用者詢問變更/設立等業務，但未明確說出最底層組織型態時，輸出對應 Group 與 options。\\n（options label 與過濾規則見上方硬性要求）\\n\\nGroup 定義：\\n- GROUP_SETUP: 有限公司 \\\"10001\\\", 股份有限公司 \\\"20001\\\", 獨資商業 \\\"30001\\\", 合夥商業 \\\"40001\\\"\\n- GROUP_NAME_CHANGE: 有限公司 \\\"10002\\\", 股份有限公司 \\\"20002\\\", 獨資商業 \\\"30005\\\", 合夥商業 \\\"40006\\\"\\n- GROUP_BUSINESS_CHANGE: 有限公司 \\\"10003\\\", 股份有限公司 \\\"20003\\\", 獨資商業 \\\"30003\\\", 合夥商業 \\\"40003\\\"\\n- GROUP_ADDRESS_CHANGE: 有限公司 \\\"10005\\\", 股份有限公司 \\\"20007\\\", 獨資商業 \\\"30002\\\", 合夥商業 \\\"40002\\\"\\n- GROUP_CAPITAL_INCREASE: 有限公司 \\\"10006\\\", 股份有限公司 \\\"20008\\\", 獨資商業 \\\"30006\\\", 合夥商業 \\\"40007\\\"\\n- GROUP_CAPITAL_DECREASE: 有限公司 \\\"10007\\\", 股份有限公司 \\\"20009\\\"（獨資、合夥商業無此項，禁止補上）\\n- GROUP_SUSPEND: 有限公司 \\\"10008\\\", 股份有限公司 \\\"20010\\\", 獨資商業 \\\"30008\\\", 合夥商業 \\\"40008\\\"\\n- GROUP_RESUME: 有限公司 \\\"10009\\\", 股份有限公司 \\\"20011\\\", 獨資商業 \\\"30009\\\", 合夥商業 \\\"40009\\\"\\n- GROUP_DISSOLVE: 有限公司 \\\"10010\\\", 股份有限公司 \\\"20012\\\", 獨資商業 \\\"30010\\\", 合夥商業 \\\"40010\\\"\\n- GROUP_COPY: 有限公司 \\\"10012\\\", 股份有限公司 \\\"20014\\\", 獨資商業 \\\"30011\\\", 合夥商業 \\\"40011\\\"\\n- GROUP_OTHER: 有限公司 \\\"10011\\\", 股份有限公司 \\\"20013\\\", 獨資商業 \\\"30012\\\", 合夥商業 \\\"40012\\\"\\n- GROUP_PERSON_CHANGE: 有限公司 \\\"10004\\\", 股份有限公司 \\\"20004\\\", 獨資商業 \\\"30004\\\", 合夥商業 \\\"40004\\\"\\n\\n━━ Step3：canAnswer:false ━━\\n符合任一即輸出 {\\\"canAnswer\\\":false,\\\"matchType\\\":\\\"none\\\",\\\"matchedId\\\":null}：\\n- 狀況回報、進度陳述、無問句之陳述句（已轉帳、款項匯了、發票寄出、寄回去了）。\\n- 非本事務所業務、稅務憑證諮詢、閒聊。\\n- 空白、亂碼、純表情。\\n- 查無對應、資料庫無此選項。\\n\\n【輸出格式】\\nexact：{\\\"canAnswer\\\":true,\\\"matchType\\\":\\\"exact\\\",\\\"matchedId\\\":\\\"...\\\"}\\nambiguous：{\\\"canAnswer\\\":true,\\\"matchType\\\":\\\"ambiguous\\\",\\\"ambiguousGroup\\\":\\\"...\\\",\\\"options\\\":[{\\\"label\\\":\\\"...\\\",\\\"id\\\":\\\"...\\\"}]}\\nfalse：{\\\"canAnswer\\\":false,\\\"matchType\\\":\\\"none\\\",\\\"matchedId\\\":null}\\n\\n🚨 再次強調三件事：\\n(1) options 的 label 只能是「有限公司/股份有限公司/獨資商業/合夥商業」四選一，不加任何後綴。\\n(2) 只出現「公司」→ options 只有有限公司、股份有限公司；只出現「行號/商業/實業社/工作室/企業社」→ options 只有獨資商業、合夥商業。\\n(3) 「發票要寄到哪裡」是問地址 → matchedId=\\\"我要導航\\\"。\\n\\n只輸出 JSON 本體。現在開始分類。\"\n    }]\n  },\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"{{ $json.input }}\"\n    }]\n  }],\n  \"generationConfig\": {\n    \"temperature\": 0,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 10000
+            }
+          }
+        }
+      },
+      "id": "091617f2-c30b-4e20-b3f6-8eff6e3a7fbc",
+      "name": "呼叫 Gemini API2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\nconst allInputs = $input.all();\nconst testCases = $('載入測試用例2').all();\n\nfor (let i = 0; i < allInputs.length; i++) {\n  const itemJson = allInputs[i].json;\n  const expected = testCases[i].json.expected;\n  const inputStr = testCases[i].json.input;\n  const testId = testCases[i].json.id;\n\n  let rawText = \"\";\n  try {\n    rawText = itemJson.candidates[0].content.parts[0].text.trim();\n  } catch (e) {\n    rawText = \"\";\n  }\n\n  let actual = {};\n  let isPass = true;\n  let reason = \"匹配成功\";\n\n  try {\n    actual = JSON.parse(rawText);\n\n    if (actual.canAnswer !== expected.canAnswer) {\n      isPass = false;\n      reason = `canAnswer 不符 (實際: ${actual.canAnswer}, 預期: ${expected.canAnswer})`;\n    } else if (actual.matchType !== expected.matchType) {\n      isPass = false;\n      reason = `matchType 不符 (實際: ${actual.matchType}, 預期: ${expected.matchType})`;\n    } else if (expected.matchType === \"exact\") {\n      if (String(actual.matchedId) !== String(expected.matchedId)) {\n        isPass = false;\n        reason = `matchedId 不符 (實際: '${actual.matchedId}', 預期: '${expected.matchedId}')`;\n      }\n    } else if (expected.matchType === \"ambiguous\") {\n      if (actual.ambiguousGroup !== expected.ambiguousGroup) {\n        isPass = false;\n        reason = `ambiguousGroup 不符 (實際: '${actual.ambiguousGroup}', 預期: '${expected.ambiguousGroup}')`;\n      } else {\n        const actOpts = (actual.options || []).map(o => `${o.label}:${o.id}`).sort().join(\",\");\n        const expOpts = (expected.options || []).map(o => `${o.label}:${o.id}`).sort().join(\",\");\n        if (actOpts !== expOpts) {\n          isPass = false;\n          reason = `options 選項不符 (實際: [${actOpts}], 預期: [${expOpts}])`;\n        }\n      }\n    }\n  } catch (e) {\n    isPass = false;\n    reason = \"非合法 JSON 格式: \" + rawText;\n  }\n\n  results.push({\n    json: {\n      id: testId,\n      input: inputStr,\n      isPass,\n      reason,\n      actual,\n      expected\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "886829cb-570d-4f43-88ac-ad0bc3bbddb1",
+      "name": "比對判定結果2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst total = items.length;\nconst passed = items.filter(i => i.json.isPass).length;\nconst failures = items.filter(i => !i.json.isPass).map(i => ({\n  id: i.json.id,\n  input: i.json.input,\n  reason: i.json.reason,\n  actual: i.json.actual,\n  expected: i.json.expected\n}));\n\nreturn {\n  json: {\n    summary: `測試完成！通過率: ${passed}/${total} (${((passed / total) * 100).toFixed(1)}%)`,\n    passedCount: passed,\n    totalCount: total,\n    failCount: total - passed,\n    failures\n  }\n};"
+      },
+      "id": "7f4c923a-481c-4f6d-8fde-12a1663fa029",
+      "name": "彙整測試報告2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1248,
+        -144
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  { json: { id: 1, input: \"/報價單\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 2, input: \"請問記帳費用怎麼算？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 3, input: \"廠商給我的報價單要貼印花稅嗎？\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 4, input: \"我已經匯款了，帳號末五碼66889，金額是6000元\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"匯款通知\" } } },\n  { json: { id: 5, input: \"麻煩傳 401申報書 給我\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 6, input: \"我要看報表\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n  { json: { id: 7, input: \"請問專員分機是多少？想打電話討論\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: 8, input: \"我們獨資企業社想改成合夥\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/30007\" } } },\n  { json: { id: 9, input: \"有限公司可以變更組織成股份有限公司嗎\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/10013\" } } },\n  { json: { id: 10, input: \"獨資商業要辦理地址變更\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30002\" } } },\n  { json: { id: 11, input: \"請問發票要寄到哪裡？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: 12, input: \"發票剛剛寄出去了喔\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 13, input: \"款項下午已經匯過去了\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 14, input: \"我的公司要改地址\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_ADDRESS_CHANGE\", options: [{label: \"有限公司\", id: \"10005\"}, {label: \"股份有限公司\", id: \"20007\"}] } } },\n  { json: { id: 15, input: \"我們工作室想換名字\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_NAME_CHANGE\", options: [{label: \"獨資商業\", id: \"30005\"}, {label: \"合夥商業\", id: \"40006\"}] } } },\n  { json: { id: 16, input: \"我們的商行想要辦理減資\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 17, input: \"我想找專員通話，另外順便問一下公司改地址\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } }\n];"
+      },
+      "id": "024b83d7-3a57-4d63-9b55-1e3c29fc21a0",
+      "name": "載入測試用例3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key={{ $env.GEMINI_API_KEY }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"systemInstruction\": {\n    \"parts\": [\n      {\n        \"text\": \"你是專業的事務所 LINE 客服助理，任務是「分類」使用者的問題意圖並輸出結構化 JSON，你不負責生成客服回覆文字內容，僅負責判斷 canAnswer / matchType / matchedId（或 ambiguousGroup + options）。\\n\\n【FAQ 與關鍵字資料庫】\\n{{ $json.faqText }}\\n\\n--------------------------------------------------\\n【處理總原則（最優先閱讀）】\\n1. 依照下方「判定流程」由 Step1 → Step2 → Step3 依序檢查，一旦符合任一條件立即停止比對並輸出，不得繼續往下比對其他規則。\\n2. Step1 內的 9 條規則本身也依編號順序（1→9）檢查，符合最前面的規則者優先。\\n3. 【多重意圖訊息】：若使用者一則訊息中包含兩個以上不同類型的意圖（例如同時詢問通話與地址變更），僅處理依上述順序最先命中的那一個意圖，輸出單一 JSON，不可輸出多筆或合併多個 matchedId。\\n4. 【防幻覺鐵則】：matchedId、options 中的 id/label，都必須是資料庫（faqText）或本 Prompt 定義中「實際存在」的項目。禁止在資料庫查無對應項目時自行推測、拼湊或生成任何 ID。若查無對應，一律視為不符合 exact／ambiguous，改判 canAnswer:false。\\n5. 【ambiguous 選項數量與類型過濾】：\\n   - 只能列出該 Group 在定義中實際存在的選項（例如 GROUP_CAPITAL_DECREASE 僅有「有限公司、股份有限公司」2 個選項，無獨資、合夥）。\\n   - 🚨 俗稱類別過濾：\\n     * 若使用者僅提及「公司」類俗稱：options 只能包含「有限公司」、「股份有限公司」2 個選項，嚴禁放入獨資/合夥商業！\\n     * 若使用者提及「商業/行號/店家/工作室/企業社」類俗稱：options 只能包含「獨資商業」、「合夥商業」2 個選項。\\n6. 【文字與 Label 正規化】：\\n   - 比對使用者輸入與資料庫關鍵字時，可忽略前後多餘空白、全形/半形符號差異。\\n   - 輸出 matchedId 時，必須 100% 複製原始字串（含符號、斜線、大小寫），不可增刪修改。\\n   - 🚨 Label 嚴格規範：options 中的 label 只能是「有限公司」、「股份有限公司」、「獨資商業」、「合夥商業」這 4 個字串之一。絕對禁止自行加上「地址變更」、「變更名稱」等動作後綴！\\n7. 【空白/亂碼/純貼圖/狀況回報】：若使用者訊息為空白、無意義亂碼、純表情符號、貼圖描述，或單純進度陳述/狀況回報（例如：「下午有轉帳了」、「發票寄出去了」、「已匯款」），直接判定 canAnswer:false。\\n8. 【上下文輔助判斷與防呆】：\\n   - 若近期對話歷史中，使用者已在同一個事件/請求脈絡下明確提過具體組織型態，應優先依上下文判定為 exact，不需要再重複詢問 ambiguous。\\n   - 🚨 防呆：若無法確認上下文中提到的組織型態，是否與『這次』要處理的事情屬於同一個案件，不得套用上下文，仍依當前這則訊息字面本身判斷。\\n\\n--------------------------------------------------\\n【最高核心原則：關鍵字與 ID 100% 精準原樣輸出】\\n1. 當判定為 matchType: \\\"exact\\\" 時，輸出之 matchedId 必須「100% 嚴格複製」資料庫或定義中的 ID 或關鍵字字串。\\n2. 🚨 嚴禁截斷、縮寫、修改或去頭去尾！\\n   - 正確範例：matchedId: \\\"/報價單\\\"、matchedId: \\\"客戶資料夾\\\"、matchedId: \\\"詢問報表引導\\\"、matchedId: \\\"我要通話\\\"、matchedId: \\\"匯款通知\\\"、matchedId: \\\"我要導航\\\"\\n   - 錯誤範例：matchedId: \\\"/報價\\\" （絕對禁止！）\\n\\n--------------------------------------------------\\n【組織型態俗稱對照與過度推論攔截（最關鍵規則）】\\n俗稱分類範疇：\\n- 「公司」：包含 有限公司、股份有限公司。\\n- 「商業 / 行號」類：包含 堂、記、行、號、社、店、館、舖、廠、坊、工作室、企業社、實業社、商行、店家等泛稱，包含 獨資商業、合夥商業。\\n\\n⚠️ 嚴格禁令（禁止 AI 自動猜測最底層組織）：\\n- 若使用者輸入僅含有俗稱，而【未明確說出】「有限公司」、「股份有限公司」、「獨資」、「合夥」這八個字：\\n  👉 絕對禁止直接輸出 10001~10012、20001~20014、30001~30012、40001~40012 的 exact ID！\\n  👉 必須強制判定為 matchType: \\\"ambiguous\\\"，並回傳對應的 ambiguousGroup 與過濾後的 options 陣列！\\n\\n--------------------------------------------------\\n【判定流程步驟 (Decision Tree)】\\n\\n第一步：檢查是否為「完全匹配 (matchType: \\\"exact\\\")」\\n符合以下任一條件即判定為 exact（依編號順序檢查，命中即停）：\\n1. 使用者傳送指令代碼或點擊快捷選單（例如：「/報價單」、「/10005」、「客戶資料夾」、「我要通話」、「我要導航」）。\\n2. 使用者詢問【本事務所服務費用／記帳報價】相關意圖（例如：「費用怎麼算？」、「作帳多少錢？」、「記帳費用」、「請提供報價單」），matchedId 為 \\\"/報價單\\\"。\\n   🚨 排他排除條款：若使用者提及「報價單」、「合約」是用於詢問【客戶自己公司的業務交易憑證、印花稅查核】（例如：「印花稅查核要準備合約報價單嗎？」），此屬稅務憑證諮詢，絕對禁止誤判為 \\\"/報價單\\\"，請直接跳至第三步判定為 canAnswer: false。\\n3. 使用者在純文字訊息中主動提供【具體對帳資訊】（訊息中【同時包含】「帳號末幾碼」與「金額」兩類數字）時，matchedId 為 \\\"匯款通知\\\"。\\n4. 使用者詢問索取文件、報表或證明資料意圖時：\\n   - 若傳送【明確指令/指定歷史檔案】（包含：「客戶資料夾」、「/客戶資料夾」、「401」～「405」、「401表」、「403表」、「401申報書」、「403申報書」、「營業稅申報書」、「營所稅申報書」、「公司登記表」、「公司章程」、「商業抄本」、「結算申報書」），matchedId 為 \\\"客戶資料夾\\\"。\\n   - 若僅【模糊詢問報表】（如：「我要報表」、「要報表」、「看報表」、「帳務報表」），matchedId 為 \\\"詢問報表引導\\\"。\\n5. 使用者【主動詢問/要求】「分機」、「找哪位小姐」、「尋找專員」、「聯絡真人」、「電話聯繫」、「想打電話」、「聯絡窗口」、「我要通話」等【尋求專員協助、詢問分機或通話】意圖時，matchedId 為 \\\"我要通話\\\"。\\n6. 使用者提及「獨資改／轉／變成合夥」、「獨資轉合夥」、「企業社/行號想改成合夥」等【獨資轉組織為合夥】意圖時，matchedId 為 \\\"/30007\\\"。\\n7. 使用者提及「公司變更組織」、「有限公司變更組織」、「有限公司轉/改股份有限公司」等意圖時，matchedId 為 \\\"/10013\\\"。\\n8. 使用者提問【同時包含】具體組織型態（必須包含「有限公司」、「股份有限公司」、「獨資」、「合夥」八字之一）與具體動作（例如：「獨資企業社改地址」、「有限公司變更資本額」），matchedId 為資料庫對應 ID。\\n9. 使用者【主動詢問/索取】「作廢發票要寄去哪」、「發票要寄到哪裡」、「發票寄哪」、「紙本憑證寄給你們」、「郵寄地址」、「事務所地址/怎麼去」、「地址在哪」、「我要導航」、「幾點上班」、「營業時間」、「幾點開門」等【詢問事務所本身地址、辦公/營業時間或索取郵寄/發票寄送地址】意圖時，matchedId 為 \\\"我要導航\\\"。\\n\\n   🚨 狀況回報攔截規範：若訊息為單純狀況回報或無問句之陳述句（例如：「發票今天才寄回來」、「憑證剛剛寄出去了」、「款項下午匯了」），絕對禁止判定為 \\\"我要導航\\\"、\\\"匯款通知\\\" 或 \\\"我要通話\\\"！直接跳至第三步判定為 canAnswer: false。\\n\\n第二步：檢查是否為「模糊匹配 (matchType: \\\"ambiguous\\\")」\\n當使用者詢問變更/設立業務，但【未完全指定】最底層組織型態時，判定為 ambiguous。\\n註：options 的 label 必須精準原樣輸出為 `有限公司`、`股份有限公司`、`獨資商業`、`合夥商業`，嚴禁加後綴。\\n\\n1. GROUP_SETUP (設立/開公司/開行號):\\n   - 有限公司: \\\"10001\\\", 股份有限公司: \\\"20001\\\", 獨資商業: \\\"30001\\\", 合夥商業: \\\"40001\\\"\\n2. GROUP_NAME_CHANGE (名稱變更/改名):\\n   - 有限公司: \\\"10002\\\", 股份有限公司: \\\"20002\\\", 獨資商業: \\\"30005\\\", 合夥商業: \\\"40006\\\"\\n3. GROUP_BUSINESS_CHANGE (營業項目變更):\\n   - 有限公司: \\\"10003\\\", 股份有限公司: \\\"20003\\\", 獨資商業: \\\"30003\\\", 合夥商業: \\\"40003\\\"\\n4. GROUP_ADDRESS_CHANGE (地址變更/搬遷):\\n   - 有限公司: \\\"10005\\\", 股份有限公司: \\\"20007\\\", 獨資商業: \\\"30002\\\", 合夥商業: \\\"40002\\\"\\n5. GROUP_CAPITAL_INCREASE (增資):\\n   - 有限公司: \\\"10006\\\", 股份有限公司: \\\"20008\\\", 獨資商業: \\\"30006\\\", 合夥商業: \\\"40007\\\"\\n6. GROUP_CAPITAL_DECREASE (減資)：僅有限公司、股份有限公司適用，獨資與合夥商業無此選項:\\n   - 有限公司: \\\"10007\\\", 股份有限公司: \\\"20009\\\"\\n7. GROUP_SUSPEND (停業):\\n   - 有限公司: \\\"10008\\\", 股份有限公司: \\\"20010\\\", 獨資商業: \\\"30008\\\", 合夥商業: \\\"40008\\\"\\n8. GROUP_RESUME (復業):\\n   - 有限公司: \\\"10009\\\", 股份有限公司: \\\"20011\\\", 獨資商業: \\\"30009\\\", 合夥商業: \\\"40009\\\"\\n9. GROUP_DISSOLVE (解散/歇業):\\n   - 有限公司: \\\"10010\\\", 股份有限公司: \\\"20012\\\", 獨資商業: \\\"30010\\\", 合夥商業: \\\"40010\\\"\\n10. GROUP_COPY (抄錄/補發):\\n    - 有限公司: \\\"10012\\\", 股份有限公司: \\\"20014\\\", 獨資商業: \\\"30011\\\", 合夥商業: \\\"40011\\\"\\n11. GROUP_OTHER (其他變更):\\n    - 有限公司: \\\"10011\\\", 股份有限公司: \\\"20013\\\", 獨資商業: \\\"30012\\\", 合夥商業: \\\"40012\\\"\\n12. GROUP_PERSON_CHANGE (人員/負責人/董監事變更):\\n    - 有限公司: \\\"10004\\\", 股份有限公司: \\\"20004\\\", 獨資商業: \\\"30004\\\", 合夥商業: \\\"40004\\\"\\n\\n第三步：檢查是否為「無法回答 (canAnswer: false)」\\n當訊息非事務所業務範圍、狀況回報/模糊陳述句、無意義閒聊、亂碼、空白訊息、或對行號/商業詢問減資（因商業無減資）時，canAnswer 設為 false。\\n\\n--------------------------------------------------\\n【輸出格式規範】\\n- 僅能輸出一個純 JSON 物件本體，不得有任何其他文字。\\n- 嚴禁使用 ```json 或任何 Markdown 程式碼區塊符號包裹輸出。\\n- 嚴禁在 JSON 前後加上說明、問候語、理由或任何前言/結語。\\n\\n1. exact 模式輸出格式：\\n{\\n  \\\"canAnswer\\\": true,\\n  \\\"matchType\\\": \\\"exact\\\",\\n  \\\"matchedId\\\": \\\"我要導航\\\"\\n}\\n\\n2. ambiguous 模式輸出格式：\\n{\\n  \\\"canAnswer\\\": true,\\n  \\\"matchType\\\": \\\"ambiguous\\\",\\n  \\\"ambiguousGroup\\\": \\\"GROUP_ADDRESS_CHANGE\\\",\\n  \\\"options\\\": [\\n    { \\\"label\\\": \\\"有限公司\\\", \\\"id\\\": \\\"10005\\\" },\\n    { \\\"label\\\": \\\"股份有限公司\\\", \\\"id\\\": \\\"20007\\\" }\\n  ]\\n}\\n\\n3. canAnswer: false 輸出格式：\\n{\\n  \\\"canAnswer\\\": false,\\n  \\\"matchType\\\": \\\"none\\\",\\n  \\\"matchedId\\\": null\\n}\\n\\n--------------------------------------------------\\n【邊界案例範例（僅供判斷參考，不得輸出於回覆中）】\\n範例 1（俗稱分類與選項過濾）\\n輸入：「我的公司要改地址」→ 僅有「公司」俗稱 → ambiguous，GROUP_ADDRESS_CHANGE，options 僅包含「有限公司」「股份有限公司」。\\n輸入：「我們工作室想換名字」→ 僅有「工作室」俗稱 → ambiguous，GROUP_NAME_CHANGE，options 僅包含「獨資商業」「合夥商業」。\\n輸入：「我的有限公司要改地址」→ 明確指定「有限公司」 → exact，matchedId: \\\"10005\\\"。\\n\\n範例 2（狀況回報 vs 匯款通知）\\n輸入：「款項已經匯了」→ 無末五碼與金額 → canAnswer:false。\\n輸入：「已匯款，帳號末五碼88888，金額3200」→ exact，matchedId: \\\"匯款通知\\\"。\\n\\n範例 3（無效業務 - 行號減資）\\n輸入：「我想幫行號辦理減資」→ 獨資/合夥商業無減資項目 → canAnswer:false。\\n\\n範例 4（多重意圖）\\n輸入：「我要通話，另外公司地址要改一下」→ 依 Step1 規則5 命中 → 僅輸出 matchedId: \\\"我要通話\\\"。\\n\\n範例 5（模糊報表詢問 vs 具體客戶資料夾文件）\\n輸入：「我要報表」→ 未明確指明歷史檔案或暫結報表 → exact，matchedId: \\\"詢問報表引導\\\"。\\n輸入：「我要401申報書」 → 明確指定歷史檔案 → exact，matchedId: \\\"客戶資料夾\\\"。\\n\\n範例 6（客戶自身憑證 vs 本所服務費用報價）\\n輸入：「印花稅查核要準備合約報價單嗎？」→ 詢問印花稅憑證，屬稅務諮詢 → canAnswer: false。\\n輸入：「請問你們記帳費用怎麼算？」→ 詢問本所服務費用 → exact，matchedId: \\\"/報價單\\\"。\\n\\n範例 7（狀況回報 vs 詢問郵寄地址）\\n輸入：「發票剛剛寄出去了喔」→ 單純狀況回報 → canAnswer: false。\\n輸入：「請問發票要寄到哪裡？」→ 主動詢問郵寄/發票地址 → exact，matchedId: \\\"我要導航\\\"。\"\n      }\n    ]\n  },\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"={{ $json.input }}\"\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"temperature\": 0,\n    \"responseMimeType\": \"application/json\"\n  }\n}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 10000
+            }
+          }
+        }
+      },
+      "id": "461f6bd3-853b-42e4-903f-2cfe2a5efed3",
+      "name": "呼叫 Gemini API3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -384,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const results = [];\nconst allInputs = $input.all();\nconst testCases = $('載入測試用例3').all();\n\nfor (let i = 0; i < allInputs.length; i++) {\n  const itemJson = allInputs[i].json;\n  const expected = testCases[i].json.expected;\n  const inputStr = testCases[i].json.input;\n  const testId = testCases[i].json.id;\n\n  let rawText = \"\";\n  try {\n    rawText = itemJson.candidates[0].content.parts[0].text.trim();\n  } catch (e) {\n    rawText = \"\";\n  }\n\n  let actual = {};\n  let isPass = true;\n  let reason = \"匹配成功\";\n\n  try {\n    actual = JSON.parse(rawText);\n\n    if (actual.canAnswer !== expected.canAnswer) {\n      isPass = false;\n      reason = `canAnswer 不符 (實際: ${actual.canAnswer}, 預期: ${expected.canAnswer})`;\n    } else if (actual.matchType !== expected.matchType) {\n      isPass = false;\n      reason = `matchType 不符 (實際: ${actual.matchType}, 預期: ${expected.matchType})`;\n    } else if (expected.matchType === \"exact\") {\n      if (String(actual.matchedId) !== String(expected.matchedId)) {\n        isPass = false;\n        reason = `matchedId 不符 (實際: '${actual.matchedId}', 預期: '${expected.matchedId}')`;\n      }\n    } else if (expected.matchType === \"ambiguous\") {\n      if (actual.ambiguousGroup !== expected.ambiguousGroup) {\n        isPass = false;\n        reason = `ambiguousGroup 不符 (實際: '${actual.ambiguousGroup}', 預期: '${expected.ambiguousGroup}')`;\n      } else {\n        const actOpts = (actual.options || []).map(o => `${o.label}:${o.id}`).sort().join(\",\");\n        const expOpts = (expected.options || []).map(o => `${o.label}:${o.id}`).sort().join(\",\");\n        if (actOpts !== expOpts) {\n          isPass = false;\n          reason = `options 選項不符 (實際: [${actOpts}], 預期: [${expOpts}])`;\n        }\n      }\n    }\n  } catch (e) {\n    isPass = false;\n    reason = \"非合法 JSON 格式: \" + rawText;\n  }\n\n  results.push({\n    json: {\n      id: testId,\n      input: inputStr,\n      isPass,\n      reason,\n      actual,\n      expected\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "ee1a637b-5385-4235-bccd-8684325e8d6a",
+      "name": "比對判定結果3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst total = items.length;\nconst passed = items.filter(i => i.json.isPass).length;\nconst failures = items.filter(i => !i.json.isPass).map(i => ({\n  id: i.json.id,\n  input: i.json.input,\n  reason: i.json.reason,\n  actual: i.json.actual,\n  expected: i.json.expected\n}));\n\nreturn {\n  json: {\n    summary: `測試完成！通過率: ${passed}/${total} (${((passed / total) * 100).toFixed(1)}%)`,\n    passedCount: passed,\n    totalCount: total,\n    failCount: total - passed,\n    failures\n  }\n};"
+      },
+      "id": "fbde9db0-7a92-4e8e-939b-b6caf2667b7a",
+      "name": "彙整測試報告3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.input }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=你是專業事務所 LINE 客服V3.4.4意圖分類器。只輸出 JSON，不生成客服回覆。\n\n━━━【輸出格式（三選一）】━━━\nexact     : {\"canAnswer\":true,\"matchType\":\"exact\",\"matchedId\":\"...\"}\nambiguous : {\"canAnswer\":true,\"matchType\":\"ambiguous\",\"ambiguousGroup\":\"...\",\"options\":[{\"label\":\"...\",\"id\":\"...\"}]}\nfalse     : {\"canAnswer\":false,\"matchType\":\"none\",\"matchedId\":null}\n\n只輸出一個 JSON 物件。禁止前言、code fence、說明。\n\n━━━【前置掃描：處理任何訊息前必做】━━━\n收到訊息後，依下列順序全文掃描，命中即停，直接輸出，不再往下推理：\n\n第 1 步：掃描 A 類關鍵字\n  → 命中 → 輸出 false\n\n第 2 步：掃描 B 類關鍵字\n  → 命中 → 依下方規則輸出\n\n第 3 步：A、B 都沒命中，才進入 C 類變更/設立判斷\n\n🚨 B 類關鍵字可能出現在句子「任何位置」，不是只在開頭。\n🚨 禁止「先看到 C 類關鍵字（公司、行號、地址變更）就開始 C 類推理」。\n🚨 A 類優先於 B 類，B 類優先於 C 類。\n\n━━━【單一意圖基礎錨定（最高優先，逐字照做）】━━━\n以下詞彙若「單獨出現」（無其他意圖混雜），一律照下表輸出：\n- 「電話聯繫」→ exact / \"我要通話\"\n- 「分機」→ exact / \"我要通話\"\n- 「分機幾號」→ exact / \"我要通話\"\n- 「找專員」→ exact / \"我要通話\"\n- 「聯絡窗口」→ exact / \"我要通話\"\n- 「想打電話」→ exact / \"我要通話\"\n- 「聯絡真人」→ exact / \"我要通話\"\n- 「我要通話」→ exact / \"我要通話\"\n- 「企業社想改合夥」→ exact / \"/30007\"\n- 「行號想改合夥」→ exact / \"/30007\"\n- 「獨資轉合夥」→ exact / \"/30007\"\n- 「有限公司轉股份有限公司」→ exact / \"/10013\"\n- 「有限公司變更組織」→ exact / \"/10013\"\n\n🚨 以上詞彙禁止生成任何組織型態 ID（10001～40012）。\n🚨 B6 通話類詞彙禁止輸出數字 ID；B7/B8 必須輸出含斜線的特殊 ID。\n\n🚨 B7 獨資轉合夥鐵則：\n   只要訊息同時含「企業社/行號/商業/獨資」+「改/轉/變/換」+「合夥」\n   → 一律輸出 matchedId=\"/30007\"\n   → 禁止輸出任何 40001～40012 的 ID（商業類 ID）\n\n   反例（錯誤）：「企業社想改合夥」→ 40007 ❌\n   正例（正確）：「企業社想改合夥」→ /30007 ✅\n\n━━━【B 類多意圖處理（同級衝突 → 一律轉真人）】━━━\n多意圖訊息若「同時命中 2 個以上 B 類關鍵字」（B1 除外）\n→ 一律輸出 exact / matchedId=\"我要通話\"\n\n理由：客戶一次講兩件事，交給真人協調最安全。\n\n🚨 重要：「同級衝突」只計算 B 類關鍵字。\n   C 類關鍵字（公司、行號、改名、停業、解散、變更、地址、增資、減資...）\n   不算 B 類，不列入衝突計算。\n   B + C 組合一律取 B 優先，不觸發本規則。\n\n🚨🚨 特別強調（易錯陷阱）：\n   B8（公司變更組織：/10013）本身就是 B 類，不是 C 類！\n   若訊息同時命中 B8 + 其他任一 B 類（例如 B2 費用詢問），\n   → 一律視為 B 類同級衝突 → matchedId=\"我要通話\"，禁止輸出 /10013 或 /報價單。\n   例：「有限公司要變更組織，另外我想問記帳費用」→ B8 + B2 衝突 → exact / \"我要通話\"（不是 /報價單，也不是 /10013）\n\n正確範例：\n- 「行號要改名，順便傳403表」→ B4 + C → B4 優先 → 客戶資料夾\n- 「公司要解散，另外我要看報表」→ B5 + C → B5 優先 → 詢問報表引導\n- 「公司要改地址，費用怎麼算」→ B2 + C → B2 優先 → /報價單\n\n錯誤範例（禁止）：\n- 「行號要改名，順便傳403表」→ 我要通話 ❌（C 類誤算成 B 類）\n\n例外：\n- B1 快捷指令命中時 → 直接輸出該指令（使用者主動點選，意圖明確）\n- 跨層級衝突（A > B > C）→ 取優先，不觸發本規則\n\n━━━【A. 排除類（命中即輸出 false）】━━━\nA1. 純陳述句/狀況回報\n    關鍵字：已轉帳、款項匯了、匯過去了、發票寄出、今天寄回、寄回去了、處理好了、已收到\n    例：「款項已經匯過去了」「發票今天寄回公司了」「發票昨天寄出去了」\n    ※注意：\n    (1) 若句子同時含「問句」（如「你們地址是？」）→ 不算 A1，改走 B 類\n    (2) 🚨 若句子同時含「帳號末幾碼」與「金額」兩類數字\n        → 不算 A1，改走 B3 → matchedId=\"匯款通知\"\n        例：「匯款完成，帳號末三碼123，金額8800」→ B3 命中，不是 A1\n        例：「我已經匯款了，帳號末五碼12345，金額5000」→ B3 命中\n        反例：「我已經匯款了」→ 無末碼無金額 → A1 → false\n        反例：「匯了6000」→ 只有金額 → A1 → false\n    (3) 🚨 若句子同時含 A1 陳述句與 C 類關鍵字（公司、行號、改名、停業、解散、變更）\n        → A1 優先 → 輸出 false\n        例：「行號要停業，已經轉帳了」→ false（不是 30008）\n        例：「公司要解散，發票昨天寄出去了」→ false（不是我要通話）\n        原因：客戶同時陳述「狀態」+ 提到業務，屬狀況回報，不是主動詢問。\n\nA2. 稅務憑證諮詢\n    關鍵字：印花稅查核、國稅局查帳、廠商報價單、合約要貼印花、客戶自己公司的報價單/合約/估價單\n    例：「印花稅查核要準備合約報價單嗎」「廠商給的報價單要貼印花嗎」\n\nA3. 空白、亂碼、純表情符號\n    例：「😀😀😀」「asdfghjkl」\n\nA4. 非本事務所業務、閒聊\n    例：「今天天氣真好」「你好」\n\nA5. 🚨【新增】資本額變更但動作層級模糊\n    條件：訊息已明確指定組織型態（有限公司/股份有限公司/獨資/合夥），\n    但只說「變更資本額」「資本額要調整」「資本額異動」等，\n    未說明是「增資」還是「減資」時\n    → 輸出 false（動作方向不明，無法判斷屬於 GROUP_CAPITAL_INCREASE 還是 GROUP_CAPITAL_DECREASE，需交由真人確認）\n    例：「有限公司要變更資本額」→ false\n    例：「股份有限公司資本額要調整」→ false\n    例：「獨資商業變更資本額」→ false\n    ※注意：若訊息明確說「增資」或「減資」二字之一，則不算本規則，正常走 C 類判斷。\n    例：「有限公司要增資」→ 不受 A5 影響 → C2 → exact / \"10006\"\n\n━━━【B. 固定指令類（命中即輸出 exact，B 優先於 C）】━━━\nB1. 快捷指令\n    清單：/報價單、/10005、客戶資料夾、我要通話、我要導航\n    → matchedId 為該指令原樣\n\nB2. 本所費用詢問\n    關鍵字：費用怎麼算、作帳多少錢、記帳費用、收費標準、傳/給/要報價單、記帳行情\n    → matchedId=\"/報價單\"\n    ※若問「客戶自己的」報價單/合約/估價單 → 已被 A2 攔截\n\nB3. 匯款通知\n    條件：訊息中「同時」含「帳號末幾碼」與「金額」兩類數字\n    例：「已匯款，帳號末五碼12345，金額5000」\n    → matchedId=\"匯款通知\"\n    ※只有其一（只有金額「匯了6000」、只有帳號「帳號末五碼88888」）→ 落入 A1，false\n\nB4. 明確文件索取（🚨 僅限下方清單內「逐字」出現的詞彙，不可擴大解釋）\n    清單：客戶資料夾、401～405、401表、403表、401申報書、403申報書、\n         營業稅申報書、營所稅申報書、公司登記表、公司章程、\n         商業抄本、商業登記抄本、結算申報書\n    → matchedId=\"客戶資料夾\"\n    🚨「商業抄本」「商業登記抄本」「抄錄公司章程」屬本規則，不是 C 類 GROUP_COPY\n    🚨🚨【新增限制】若訊息只是泛稱「要補發資料」「補發文件」「補發登記表」等，\n       未使用上述清單內的具體文件名稱 → 不算 B4，改走 C3 GROUP_COPY（需確認組織型態）\n       例：「公司要補發資料」→ 不是 B4 → C3 → ambiguous / GROUP_COPY / [有限公司, 股份有限公司]\n       例：「我要商業抄本」→ 是 B4（清單內逐字詞）→ exact / \"客戶資料夾\"\n\nB5. 模糊報表\n    關鍵字：我要報表、要報表、看報表、帳務報表\n    → matchedId=\"詢問報表引導\"\n\nB6. 通話\n    關鍵字：分機、找專員、聯絡真人、電話聯繫、想打電話、聯絡窗口、我要通話\n    → matchedId=\"我要通話\"\n\nB7. 獨資轉合夥\n    關鍵字：獨資改/轉/變成合夥、獨資轉合夥、企業社/行號想改合夥、組織變更為合夥\n    → matchedId=\"/30007\"\n    🚨 特別注意：matchedId 必須是「/30007」，含斜線 /。\n       禁止輸出「30007」（無斜線）、「40001～40012」等其他 ID。\n\nB8. 公司變更組織\n    關鍵字：公司變更組織、有限公司變更組織、有限公司轉/改股份有限公司、公司組織變更\n    → matchedId=\"/10013\"\n    🚨 特別注意：matchedId 必須是「/10013」，含斜線 /。\n       禁止輸出「10013」（無斜線）、多餘空白。\n       這是特殊 override ID，不屬於 C 類動作表。\n    🚨🚨 B8 屬於 B 類指令，若與其他 B 類（尤其 B2）同時命中，適用「B類多意圖處理」規則，輸出我要通話，見上方特別強調段落。\n\nB9. 本所地址/導航/工時\n    關鍵字：\n      - 發票要寄到哪裡、作廢發票要寄哪、紙本憑證寄哪、發票寄到哪\n      - 郵寄地址、事務所地址、怎麼去、我要導航\n      - 幾點上班、幾點下班、幾點開門、幾點關門、幾點休息、幾點營業、營業時間\n    → matchedId=\"我要導航\"\n    ※「發票今天寄出去了」屬 A1 陳述句，不是 B9\n\n━━━【C. 變更/設立類業務（A、B 都不命中時才進入）】━━━\nC1. 判斷組織型態明確度（🚨 此步驟優先於任何動作關鍵字匹配，必須先做）：\n    明確 → 訊息含「有限公司」「股份有限公司」「獨資」「合夥」之一\n    泛稱 → 只說「公司」「行號」「商業」「實業社」「工作室」「商行」\n           「企業社」「店家」或名稱結尾為「堂、記、行、號、社、店、館、舖、廠、坊」\n    未提 → 完全沒提組織型態\n    🚨🚨【新增強調】泛稱詞（尤其「企業社」「實業社」）無論後面接什麼動作（設立/改名/解散/停業...），\n       只要沒有「獨資」或「合夥」兩字，一律屬於泛稱，必須判 ambiguous，\n       不可因為動作詞（如「解散」）看起來很明確就跳過 C1 直接輸出 exact。\n       反例（錯誤）：「企業社要解散」→ exact / 30010 ❌（企業社是泛稱，不能直接假設是獨資商業）\n       正例（正確）：「企業社要解散」→ ambiguous / GROUP_DISSOLVE / [獨資商業, 合夥商業] ✅\n\nC2. 明確 → 對照下方動作表查 ID，輸出 exact\n    例：「有限公司要改地址」→ exact / \"10005\"\n    🚨🚨【新增強制檢查步驟，防止型態抓錯】\n    輸出 matchedId 前，必須執行以下二次確認：\n    (a) 從訊息中逐字擷取「有限公司」「股份有限公司」「獨資」「合夥」四詞中實際出現的那一個。\n    (b) 從訊息中擷取動作詞（設立/名稱變更/地址變更/增資/減資/停業/復業/解散/抄錄補發/其他/負責人變更）。\n    (c) 用 (a) 和 (b) 兩個結果一起去對照表查交叉欄位的 ID，禁止只用動作詞去查、或只憑記憶帶出常見組合。\n    範例（易錯案例，务必看熟）：\n    - 「股份有限公司要減資」→ (a)股份有限公司 (b)減資 → 查表交叉欄 → 20009（不是10007！）\n    - 「有限公司要減資」→ (a)有限公司 (b)減資 → 查表交叉欄 → 10007（不是20009！）\n    - 「合夥商業要增資」→ (a)合夥 (b)增資 → 查表交叉欄 → 40007（不是30006！）\n    🚨 減資與增資、有限公司與股份有限公司，ID 數字外觀相近（10006/10007、20008/20009），極容易誤植，輸出前務必逐字比對表格，不可憑印象作答。\n\nC3. 泛稱/未提 → 輸出 ambiguous\n    🚨 options 過濾鐵則（硬性禁令）：\n    - 泛稱「公司」→ options 只列 有限公司、股份有限公司\n      🚨 絕對禁止加入「獨資商業」「合夥商業」\n    - 泛稱「商業/行號/實業社/工作室/商行/企業社」→ 只列 獨資商業、合夥商業\n      🚨 絕對禁止加入「有限公司」「股份有限公司」\n    - 未提 → 列該 Group 全部選項\n    - 「實業社、企業社、工作室、商行、行號、商業」都是商業泛稱，\n      不是具體組織型態。使用者只說這些、沒明確說「獨資」或「合夥」→ 一律 ambiguous\n\n    🚨【未提組織型態的選項鐵則】\n    C3 的「未提 → 列該 Group 全部選項」是硬性規定。\n    禁止因「動作類型」自行判斷某些選項不存在。\n\n    反例（錯誤）：\n    - 輸入「要增資」→ 只列 [10006, 20008]\n    - 原因：模型自行認為商業沒有增資概念\n\n    正例（正確）：\n    - 輸入「要增資」→ 列 [10006, 20008, 30006, 40007]\n    - 依動作表 GROUP_CAPITAL_INCREASE 對應四個組織型態\n\n    只有在 C4（明確指定商業 + 減資這種無此動作）才可回 false。\n    「未提組織型態」時，一律依動作表列出全部選項。\n\nC4. 若該組織型態在資料庫無此動作（如商業減資）→ false\n\n━━━【動作 → Group → ID 對應表】━━━\n動作              Group                    有限公司 股份    獨資    合夥\n設立              GROUP_SETUP              10001  20001  30001  40001\n名稱變更          GROUP_NAME_CHANGE        10002  20002  30005  40006\n營業項目變更      GROUP_BUSINESS_CHANGE    10003  20003  30003  40003\n地址變更          GROUP_ADDRESS_CHANGE     10005  20007  30002  40002\n增資              GROUP_CAPITAL_INCREASE   10006  20008  30006  40007\n減資              GROUP_CAPITAL_DECREASE   10007  20009   —      —\n停業              GROUP_SUSPEND            10008  20010  30008  40008\n復業              GROUP_RESUME             10009  20011  30009  40009\n解散/歇業         GROUP_DISSOLVE           10010  20012  30010  40010\n抄錄/補發         GROUP_COPY               10012  20014  30011  40011\n其他變更          GROUP_OTHER              10011  20013  30012  40012\n負責人/董監事變更 GROUP_PERSON_CHANGE      10004  20004  30004  40004\n\n━━━【options label 硬性規定】━━━\n- label 只能是這四個字串之一：「有限公司」「股份有限公司」「獨資商業」「合夥商業」\n- 禁止加任何動作、後綴、描述\n  正確：{\"label\":\"有限公司\",\"id\":\"10005\"}\n  錯誤：{\"label\":\"有限公司地址變更\",\"id\":\"10005\"}\n        {\"label\":\"有限公司名稱變更\",\"id\":\"10002\"}\n- 即使 Group 是地址變更，label 也只寫「有限公司」\n\n━━━【上下文使用】━━━\n- 對話歷史同一案件已明確組織型態 → 可依上下文判 exact\n- 無法確認是否同案件（如同客戶有多個不同組織型態實體）→ 依當前訊息字面判斷\n\n━━━【防幻覺】━━━\nmatchedId、options.id/label 必須是上表實際存在的項目。\n查無對應一律 false。禁止推測、拼湊、生成不存在的 ID。\n🚨 特別強調：若訊息只含 B6 通話關鍵字（電話聯繫、分機、找專員...），\n   只能輸出 matchedId=\"我要通話\"，禁止輸出任何數字 ID（如 40006）。\n\n━━━【多意圖句處理範例（必看）】━━━\n單一意圖基礎錨定（最高優先）：\n- 「電話聯繫」→ exact / \"我要通話\"\n- 「分機幾號」→ exact / \"我要通話\"\n- 「想找專員」→ exact / \"我要通話\"\n- 「企業社想改合夥」→ exact / \"/30007\"\n- 「有限公司轉股份有限公司」→ exact / \"/10013\"\n\n跨層級：B > C（取 B 優先，不觸發同級衝突）：\n- 「公司改地址，費用怎麼算」→ B2 命中 → exact / \"/報價單\"\n- 「行號要改名，順便傳403表」→ B4 命中 → exact / \"客戶資料夾\"\n- 「公司要解散，另外我要看報表」→ B5 命中 → exact / \"詢問報表引導\"\n\n跨層級：A > C（取 A 優先，輸出 false）：\n- 「行號要停業，已經轉帳了」→ A1 命中 → false\n- 「公司要解散，發票昨天寄出去了」→ A1 命中 → false\n\n跨層級：A > B（取 A 優先，輸出 false）：\n- 「公司要停業，另外印花稅怎麼算」→ A2 命中 → false\n\nB 類同級衝突（2 個以上 B 類 → 一律轉真人）：\n- 「傳報價單給我，順便找專員」→ B2 + B6 → exact / \"我要通話\"\n- 「分機幾號，順便傳401」→ B4 + B6 → exact / \"我要通話\"\n- 「幾點開門，順便傳公司章程」→ B4 + B9 → exact / \"我要通話\"\n- 「有限公司要變更組織，另外我想問記帳費用」→ B8 + B2 → exact / \"我要通話\"（🚨新增：注意B8也是B類，不是C類）\n\nA1 有問句（例外，走 B）：\n- 「發票寄回去了，你們地址是？」→ B9 命中 → exact / \"我要導航\"\n\n單一意圖：\n- 「公司要改地址」→ A、B 都沒中，進 C 類 → ambiguous / GROUP_ADDRESS_CHANGE / [10005, 20007]\n- 「要增資」→ C3 未提組織 → 列全部 [10006, 20008, 30006, 40007]\n- 「企業社要解散」→ C1判定為泛稱（企業社無獨資/合夥二字）→ ambiguous / GROUP_DISSOLVE / [獨資商業, 合夥商業]（🚨新增：不可因動作詞明確就跳過C1）\n- 「有限公司要變更資本額」（未說增資或減資）→ A5 命中 → false（🚨新增規則）\n- 「公司要補發資料」（未用B4清單內具體文件名）→ 不算B4 → C3 → ambiguous / GROUP_COPY / [有限公司, 股份有限公司]（🚨新增：B4限定逐字清單）\n\n🚨 最後再強調十二件事：\n(1) options 的 label 只能是「有限公司/股份有限公司/獨資商業/合夥商業」四選一。\n(2) 只出現「公司」→ options 只有公司兩個；只出現「行號/商業/實業社/工作室/企業社」→ options 只有商業兩個。\n(3) B 類關鍵字（費用、401、分機、發票寄哪...）可能出現在句子任何位置，處理任何含「變更/設立」的句子前，先全文掃過一次 A、B 類關鍵字。\n(4) 🚨 B 類同級衝突（同時命中 2 個以上 B 類，含 B8）→ 一律 matchedId=\"我要通話\"。\n    C 類關鍵字不算 B 類；B + C 一律取 B 優先。\n(5) 「匯款完成/已匯款/轉帳了」若同時含「帳號末幾碼」與「金額」→ B3 匯款通知，不是 A1 陳述句。\n(6) 🚨 A1 陳述句與 C 類同時出現 → A1 優先 → false。\n(7) 🚨 單一意圖基礎錨定：「電話聯繫」「分機」「找專員」「聯絡窗口」「想打電話」「聯絡真人」等純通話詞彙，\n    單獨出現時一律輸出 matchedId=\"我要通話\"，禁止生成任何數字 ID。\n(8) 🚨 B7 獨資轉合夥：「企業社/行號/商業/獨資」+「改/轉/變/換」+「合夥」\n    → matchedId=\"/30007\"（含斜線），禁止輸出 40001～40012。\n(9) 🚨 B8 公司變更組織：「公司變更組織」「有限公司變更組織」「有限公司轉/改股份有限公司」\n    → matchedId=\"/10013\"（含斜線），禁止輸出「10013」（無斜線）；但若與其他B類衝突，優先套用B類衝突規則輸出我要通話。\n(10) 🚨 C2 查表前必須先逐字擷取「組織型態」與「動作」兩個關鍵字，再一起查交叉欄位，禁止只憑動作詞或印象猜測ID，尤其增資/減資、有限/股份 這類外觀相近的ID組合要特別小心核對。\n(11) 🚨 C1 組織型態判斷必須優先於任何動作詞匹配：泛稱詞（企業社、實業社、商行等）不因接了明確動作（解散、停業等）就被誤判成具體型態。\n(12) 🚨 B4 明確文件索取僅限清單內「逐字」詞彙；泛稱「補發資料/補發文件」不算B4，需先確認組織型態，走C3 GROUP_COPY。\n\n只輸出 JSON 本體。現在開始分類。"
+            }
+          ]
+        }
+      },
+      "id": "8714f96d-5000-48fc-8b85-5e76432e9c79",
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        192,
+        288
+      ],
+      "retryOnFail": true
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"canAnswer\": true,\n  \"matchType\": \"exact\",\n  \"matchedId\": \"/報價單\",\n  \"ambiguousGroup\": null,\n  \"options\": null\n}"
+      },
+      "id": "261a89f4-382f-49a5-9bfb-d03caa7041d1",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -128,
+        1248
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  // ══════ A. Step1規則1：指令/快捷 (5題) ══════\n  { json: { id: \"T001\", input: \"/報價單\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: \"T002\", input: \"客戶資料夾\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: \"T003\", input: \"我要通話\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: \"T004\", input: \"我要導航\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: \"T005\", input: \"/10005\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10005\" } } },\n\n  // ══════ B. Step1規則2：本所費用詢問+排他 (5題) ══════\n  { json: { id: \"T006\", input: \"作帳多少錢？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: \"T007\", input: \"請提供報價單\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: \"T008\", input: \"貴事務所記帳費用如何計算？\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: \"T009\", input: \"客戶要求開立的估價單要貼印花稅嗎？\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T010\", input: \"國稅局查帳需要我們公司自己的合約嗎？\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ══════ C. Step1規則3：匯款通知 (4題) ══════\n  { json: { id: \"T011\", input: \"已匯款，末五碼12345，金額8800\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"匯款通知\" } } },\n  { json: { id: \"T012\", input: \"轉帳末四碼6789，金額15000元\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"匯款通知\" } } },\n  { json: { id: \"T013\", input: \"我匯了3000元\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T014\", input: \"帳戶末五碼88888\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ══════ D. Step1規則4：文件/報表 (6題) ══════\n  { json: { id: \"T015\", input: \"麻煩給我401表\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: \"T016\", input: \"我要營業稅申報書\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: \"T017\", input: \"公司章程可以給我嗎\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: \"T018\", input: \"我要看報表\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n  { json: { id: \"T019\", input: \"帳務報表麻煩提供\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n  { json: { id: \"T020\", input: \"商業抄本要怎麼申請\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n\n  // ══════ E. Step1規則5：通話/專員 (4題) ══════\n  { json: { id: \"T021\", input: \"請問分機幾號\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: \"T022\", input: \"我想找專員聊聊\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: \"T023\", input: \"可以留電話給我，我想討論帳務問題\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: \"T024\", input: \"聯絡窗口是哪位\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n\n  // ══════ F. Step1規則6：獨資轉合夥 (2題) ══════\n  { json: { id: \"T025\", input: \"獨資想轉合夥可以嗎\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/30007\" } } },\n  { json: { id: \"T026\", input: \"我們企業社想改成合夥型態\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/30007\" } } },\n\n  // ══════ G. Step1規則7：公司變更組織 (2題) ══════\n  { json: { id: \"T027\", input: \"有限公司想變更組織為股份有限公司\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/10013\" } } },\n  { json: { id: \"T028\", input: \"有限公司轉股份有限公司要怎麼辦\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/10013\" } } },\n\n  // ══════ H. Step1規則8：具體組織+動作，12個Group各2種型態 (24題) ══════\n  { json: { id: \"T029\", input: \"我要設立一間有限公司\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10001\" } } },\n  { json: { id: \"T030\", input: \"我想開一家獨資商業\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30001\" } } },\n  { json: { id: \"T031\", input: \"股份有限公司要改名稱\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20002\" } } },\n  { json: { id: \"T032\", input: \"合夥商業要改名字\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"40006\" } } },\n  { json: { id: \"T033\", input: \"有限公司要變更營業項目\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10003\" } } },\n  { json: { id: \"T034\", input: \"獨資商業要變更營業項目\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30003\" } } },\n  { json: { id: \"T035\", input: \"股份有限公司要搬遷地址\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20007\" } } },\n  { json: { id: \"T036\", input: \"合夥商業要改地址\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"40002\" } } },\n  { json: { id: \"T037\", input: \"有限公司要增資\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10006\" } } },\n  { json: { id: \"T038\", input: \"合夥商業要增資\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"40007\" } } },\n  { json: { id: \"T039\", input: \"股份有限公司要減資\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20009\" } } },\n  { json: { id: \"T040\", input: \"有限公司要減資五十萬\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10007\" } } },\n  { json: { id: \"T041\", input: \"有限公司要停業\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10008\" } } },\n  { json: { id: \"T042\", input: \"獨資商業要停業\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30008\" } } },\n  { json: { id: \"T043\", input: \"股份有限公司要復業\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20011\" } } },\n  { json: { id: \"T044\", input: \"合夥商業要復業\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"40009\" } } },\n  { json: { id: \"T045\", input: \"有限公司要解散\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10010\" } } },\n  { json: { id: \"T046\", input: \"獨資商業要歇業\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30010\" } } },\n  { json: { id: \"T047\", input: \"股份有限公司要補發登記表\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20014\" } } },\n  { json: { id: \"T048\", input: \"合夥商業要抄錄資料\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"40011\" } } },\n  { json: { id: \"T049\", input: \"有限公司有其他變更需求\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10011\" } } },\n  { json: { id: \"T050\", input: \"獨資商業有其他變更\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30012\" } } },\n  { json: { id: \"T051\", input: \"股份有限公司要變更董事\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20004\" } } },\n  { json: { id: \"T052\", input: \"合夥商業要變更負責人\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"40004\" } } },\n\n  // ══════ I. Step1規則9：導航/地址/工時 + 狀況回報排除 (6題) ══════\n  { json: { id: \"T053\", input: \"事務所地址在哪裡\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: \"T054\", input: \"你們幾點上班\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: \"T055\", input: \"發票要寄去哪裡\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: \"T056\", input: \"怎麼去你們事務所\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: \"T057\", input: \"發票今天寄出去了\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T058\", input: \"款項下午已經處理好了\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ══════ J. Step1規則10：資本額模糊 (2題) ══════\n  { json: { id: \"T059\", input: \"有限公司要變更資本額\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T060\", input: \"股份有限公司資本額要調整\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ══════ K. Step2「公司」泛稱，12個Group全覆蓋 (12題) ══════\n  { json: { id: \"T061\", input: \"我想開公司\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SETUP\", options: [{label:\"有限公司\",id:\"10001\"},{label:\"股份有限公司\",id:\"20001\"}] } } },\n  { json: { id: \"T062\", input: \"公司要改名稱\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_NAME_CHANGE\", options: [{label:\"有限公司\",id:\"10002\"},{label:\"股份有限公司\",id:\"20002\"}] } } },\n  { json: { id: \"T063\", input: \"公司要變更營業項目\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_BUSINESS_CHANGE\", options: [{label:\"有限公司\",id:\"10003\"},{label:\"股份有限公司\",id:\"20003\"}] } } },\n  { json: { id: \"T064\", input: \"公司要搬家\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_ADDRESS_CHANGE\", options: [{label:\"有限公司\",id:\"10005\"},{label:\"股份有限公司\",id:\"20007\"}] } } },\n  { json: { id: \"T065\", input: \"公司要增資\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_CAPITAL_INCREASE\", options: [{label:\"有限公司\",id:\"10006\"},{label:\"股份有限公司\",id:\"20008\"}] } } },\n  { json: { id: \"T066\", input: \"公司要減資\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_CAPITAL_DECREASE\", options: [{label:\"有限公司\",id:\"10007\"},{label:\"股份有限公司\",id:\"20009\"}] } } },\n  { json: { id: \"T067\", input: \"公司要停業\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SUSPEND\", options: [{label:\"有限公司\",id:\"10008\"},{label:\"股份有限公司\",id:\"20010\"}] } } },\n  { json: { id: \"T068\", input: \"公司要復業\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_RESUME\", options: [{label:\"有限公司\",id:\"10009\"},{label:\"股份有限公司\",id:\"20011\"}] } } },\n  { json: { id: \"T069\", input: \"公司要解散\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_DISSOLVE\", options: [{label:\"有限公司\",id:\"10010\"},{label:\"股份有限公司\",id:\"20012\"}] } } },\n  { json: { id: \"T070\", input: \"公司要補發資料\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_COPY\", options: [{label:\"有限公司\",id:\"10012\"},{label:\"股份有限公司\",id:\"20014\"}] } } },\n  { json: { id: \"T071\", input: \"公司有其他變更需求\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_OTHER\", options: [{label:\"有限公司\",id:\"10011\"},{label:\"股份有限公司\",id:\"20013\"}] } } },\n  { json: { id: \"T072\", input: \"公司要換負責人\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_PERSON_CHANGE\", options: [{label:\"有限公司\",id:\"10004\"},{label:\"股份有限公司\",id:\"20004\"}] } } },\n\n  // ══════ L. Step2「商業/行號」泛稱，12個Group全覆蓋 (12題，注意T078減資應為false) ══════\n  { json: { id: \"T073\", input: \"我想開間行號\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SETUP\", options: [{label:\"獨資商業\",id:\"30001\"},{label:\"合夥商業\",id:\"40001\"}] } } },\n  { json: { id: \"T074\", input: \"商行要改名字\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_NAME_CHANGE\", options: [{label:\"獨資商業\",id:\"30005\"},{label:\"合夥商業\",id:\"40006\"}] } } },\n  { json: { id: \"T075\", input: \"企業社要變更營業項目\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_BUSINESS_CHANGE\", options: [{label:\"獨資商業\",id:\"30003\"},{label:\"合夥商業\",id:\"40003\"}] } } },\n  { json: { id: \"T076\", input: \"實業社要搬家\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_ADDRESS_CHANGE\", options: [{label:\"獨資商業\",id:\"30002\"},{label:\"合夥商業\",id:\"40002\"}] } } },\n  { json: { id: \"T077\", input: \"工作室要增資\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_CAPITAL_INCREASE\", options: [{label:\"獨資商業\",id:\"30006\"},{label:\"合夥商業\",id:\"40007\"}] } } },\n  { json: { id: \"T078\", input: \"商行要減資\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T079\", input: \"行號要停業\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SUSPEND\", options: [{label:\"獨資商業\",id:\"30008\"},{label:\"合夥商業\",id:\"40008\"}] } } },\n  { json: { id: \"T080\", input: \"商業要復業\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_RESUME\", options: [{label:\"獨資商業\",id:\"30009\"},{label:\"合夥商業\",id:\"40009\"}] } } },\n  { json: { id: \"T081\", input: \"企業社要解散\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_DISSOLVE\", options: [{label:\"獨資商業\",id:\"30010\"},{label:\"合夥商業\",id:\"40010\"}] } } },\n  { json: { id: \"T082\", input: \"商行要補發資料\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_COPY\", options: [{label:\"獨資商業\",id:\"30011\"},{label:\"合夥商業\",id:\"40011\"}] } } },\n  { json: { id: \"T083\", input: \"實業社有其他變更需求\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_OTHER\", options: [{label:\"獨資商業\",id:\"30012\"},{label:\"合夥商業\",id:\"40012\"}] } } },\n  { json: { id: \"T084\", input: \"行號要換負責人\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_PERSON_CHANGE\", options: [{label:\"獨資商業\",id:\"30004\"},{label:\"合夥商業\",id:\"40004\"}] } } },\n\n  // ══════ M. Step2完全未提組織型態，列全部4種 (3題) ══════\n  { json: { id: \"T085\", input: \"地址要改一下\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_ADDRESS_CHANGE\", options: [{label:\"有限公司\",id:\"10005\"},{label:\"股份有限公司\",id:\"20007\"},{label:\"獨資商業\",id:\"30002\"},{label:\"合夥商業\",id:\"40002\"}] } } },\n  { json: { id: \"T086\", input: \"想要辦理設立\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SETUP\", options: [{label:\"有限公司\",id:\"10001\"},{label:\"股份有限公司\",id:\"20001\"},{label:\"獨資商業\",id:\"30001\"},{label:\"合夥商業\",id:\"40001\"}] } } },\n  { json: { id: \"T087\", input: \"要辦理解散\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_DISSOLVE\", options: [{label:\"有限公司\",id:\"10010\"},{label:\"股份有限公司\",id:\"20012\"},{label:\"獨資商業\",id:\"30010\"},{label:\"合夥商業\",id:\"40010\"}] } } },\n\n  // ══════ N. Step3：無法回答 (6題) ══════\n  { json: { id: \"T088\", input: \"款項已經匯了\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T089\", input: \"發票寄出去了\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T090\", input: \"今天天氣真好\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T091\", input: \"😀😀😀\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T092\", input: \"　\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: \"T093\", input: \"亂碼asdkfjaskdf123\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ══════ O. 多重意圖，測優先順序 (3題) ══════\n  { json: { id: \"T094\", input: \"我要通話，另外請問報價單怎麼算\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: \"T095\", input: \"我要報表，另外公司要改地址\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n  { json: { id: \"T096\", input: \"有限公司要變更組織，另外我想問記帳費用\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n\n  // ══════ P. 正規化測試 (2題) ══════\n  { json: { id: \"T097\", input: \"／報價單\", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: \"T098\", input: \"   我要看報表   \", expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n\n  // ══════ Q. 補充邊界案例 (2題) ══════\n  { json: { id: \"T099\", input: \"我的商行想變更董監事\", expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_PERSON_CHANGE\", options: [{label:\"獨資商業\",id:\"30004\"},{label:\"合夥商業\",id:\"40004\"}] } } },\n  { json: { id: \"T100\", input: \"獨資商業變更資本額\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n];"
+      },
+      "id": "9a01ad07-7c85-4a6e-949d-4731d70048d2",
+      "name": "載入測試用例4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash-lite",
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        264,
+        504
+      ],
+      "id": "0298295c-5cfc-49d7-a8d1-8050a95e6bd4",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "lKLBDs2wR4pbmIVu",
+          "name": "Google Gemini Api Tier1"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  // ═══════════════ A. 排除類（15 條，預期 false）═══════════════\n  // A1 狀況回報（5）\n  { json: { id: 1,  input: \"我已經匯款了\",                 expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 2,  input: \"憑證今天寄回去了\",             expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 3,  input: \"上午已經把資料送過去了\",        expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 4,  input: \"剛剛已經處理好了\",             expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 5,  input: \"錢已經轉出去了\",               expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  // A2 稅務憑證諮詢（5）\n  { json: { id: 6,  input: \"國稅局來查帳要準備什麼\",        expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 7,  input: \"我們公司自己簽的合約要貼印花嗎\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 8,  input: \"這估價單要貼印花稅嗎\",          expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 9,  input: \"客戶開給我的發票要貼印花嗎\",    expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 10, input: \"查帳要提供什麼憑證\",            expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  // A3 亂碼/表情（2）\n  { json: { id: 11, input: \"🤔🤔🤔\",                        expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 12, input: \"1234!@#$\",                     expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  // A4 閒聊（3）\n  { json: { id: 13, input: \"你好\",                         expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 14, input: \"請問你叫什麼名字\",              expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 15, input: \"今天好熱喔\",                   expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ═══════════════ B. 固定指令類（30 條，預期 exact）═══════════════\n  // B1 快捷指令（3）\n  { json: { id: 16, input: \"/10005\",                       expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/10005\" } } },\n  { json: { id: 17, input: \"我要通話\",                     expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: 18, input: \"/報價單\",                       expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  // B2 本所費用（4）\n  { json: { id: 19, input: \"作帳一個月多少錢\",              expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 20, input: \"你們怎麼收費\",                  expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 21, input: \"可以給我報價單嗎\",              expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 22, input: \"記帳行情大概多少\",              expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  // B3 匯款通知（4）\n  { json: { id: 23, input: \"匯款完成，帳號末三碼123，金額8800\",    expected: { canAnswer: true, matchType: \"exact\", matchedId: \"匯款通知\" } } },\n  { json: { id: 24, input: \"轉帳了，後五碼56789，共12500元\",       expected: { canAnswer: true, matchType: \"exact\", matchedId: \"匯款通知\" } } },\n  { json: { id: 25, input: \"帳號末五碼11111，金額是3000\",          expected: { canAnswer: true, matchType: \"exact\", matchedId: \"匯款通知\" } } },\n  { json: { id: 26, input: \"匯款帳號末四碼9999，金額20000元\",      expected: { canAnswer: true, matchType: \"exact\", matchedId: \"匯款通知\" } } },\n  // B4 明確文件索取（6）\n  { json: { id: 27, input: \"我要405表\",                    expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 28, input: \"請傳公司章程給我\",              expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 29, input: \"幫我調結算申報書\",              expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 30, input: \"營所稅申報書\",                  expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 31, input: \"商業登記抄本\",                  expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 32, input: \"公司登記表\",                    expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  // B5 模糊報表（3）\n  { json: { id: 33, input: \"帳務報表\",                      expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n  { json: { id: 34, input: \"要報表\",                        expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n  { json: { id: 35, input: \"看報表\",                        expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n  // B6 通話（3）\n  { json: { id: 36, input: \"聯絡窗口是誰\",                  expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: 37, input: \"想打給你們\",                    expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: 38, input: \"電話聯繫\",                      expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  // B7 獨資轉合夥（2）\n  { json: { id: 39, input: \"我們企業社想改合夥\",             expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/30007\" } } },\n  { json: { id: 40, input: \"獨資轉合夥\",                    expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/30007\" } } },\n  // B8 公司變更組織（1）\n  { json: { id: 41, input: \"有限公司轉股份有限公司\",         expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/10013\" } } },\n  // B9 地址/工時（4）\n  { json: { id: 42, input: \"幾點開門\",                      expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: 43, input: \"事務所地址\",                    expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: 44, input: \"紙本憑證要寄哪\",                expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: 45, input: \"作廢發票要寄哪\",                expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n\n  // ═══════════════ C. 變更/設立類（25 條）═══════════════\n  // C2 具體組織 → exact（5）\n  { json: { id: 46, input: \"股份有限公司要改地址\",           expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20007\" } } },\n  { json: { id: 47, input: \"獨資商業要停業\",                 expected: { canAnswer: true, matchType: \"exact\", matchedId: \"30008\" } } },\n  { json: { id: 48, input: \"合夥商業要增資\",                 expected: { canAnswer: true, matchType: \"exact\", matchedId: \"40007\" } } },\n  { json: { id: 49, input: \"有限公司要解散\",                 expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10010\" } } },\n  { json: { id: 50, input: \"股份有限公司變更負責人\",         expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20004\" } } },\n  // C3 泛稱「公司」→ 只列公司（5）\n  { json: { id: 51, input: \"公司要停業\",                     expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SUSPEND\",          options: [ { label: \"有限公司\", id: \"10008\" }, { label: \"股份有限公司\", id: \"20010\" } ] } } },\n  { json: { id: 52, input: \"公司要復業\",                     expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_RESUME\",           options: [ { label: \"有限公司\", id: \"10009\" }, { label: \"股份有限公司\", id: \"20011\" } ] } } },\n  { json: { id: 53, input: \"公司要增資\",                     expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_CAPITAL_INCREASE\", options: [ { label: \"有限公司\", id: \"10006\" }, { label: \"股份有限公司\", id: \"20008\" } ] } } },\n  { json: { id: 54, input: \"公司要變更負責人\",               expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_PERSON_CHANGE\",    options: [ { label: \"有限公司\", id: \"10004\" }, { label: \"股份有限公司\", id: \"20004\" } ] } } },\n  { json: { id: 55, input: \"公司要變更營業項目\",             expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_BUSINESS_CHANGE\",  options: [ { label: \"有限公司\", id: \"10003\" }, { label: \"股份有限公司\", id: \"20003\" } ] } } },\n  // C3 泛稱「商業/行號」→ 只列商業（5）\n  { json: { id: 56, input: \"商行要改地址\",                   expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_ADDRESS_CHANGE\",   options: [ { label: \"獨資商業\", id: \"30002\" }, { label: \"合夥商業\", id: \"40002\" } ] } } },\n  { json: { id: 57, input: \"企業社要變更名稱\",               expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_NAME_CHANGE\",      options: [ { label: \"獨資商業\", id: \"30005\" }, { label: \"合夥商業\", id: \"40006\" } ] } } },\n  { json: { id: 58, input: \"店家要停業\",                     expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SUSPEND\",          options: [ { label: \"獨資商業\", id: \"30008\" }, { label: \"合夥商業\", id: \"40008\" } ] } } },\n  { json: { id: 59, input: \"工作室要增資\",                   expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_CAPITAL_INCREASE\", options: [ { label: \"獨資商業\", id: \"30006\" }, { label: \"合夥商業\", id: \"40007\" } ] } } },\n  { json: { id: 60, input: \"行號要變更營業項目\",             expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_BUSINESS_CHANGE\",  options: [ { label: \"獨資商業\", id: \"30003\" }, { label: \"合夥商業\", id: \"40003\" } ] } } },\n  // C3 未提組織 → 列全部（5）\n  { json: { id: 61, input: \"要設立\",                         expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SETUP\",            options: [ { label: \"有限公司\", id: \"10001\" }, { label: \"股份有限公司\", id: \"20001\" }, { label: \"獨資商業\", id: \"30001\" }, { label: \"合夥商業\", id: \"40001\" } ] } } },\n  { json: { id: 62, input: \"要變更名稱\",                     expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_NAME_CHANGE\",      options: [ { label: \"有限公司\", id: \"10002\" }, { label: \"股份有限公司\", id: \"20002\" }, { label: \"獨資商業\", id: \"30005\" }, { label: \"合夥商業\", id: \"40006\" } ] } } },\n  { json: { id: 63, input: \"要變更營業項目\",                 expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_BUSINESS_CHANGE\",  options: [ { label: \"有限公司\", id: \"10003\" }, { label: \"股份有限公司\", id: \"20003\" }, { label: \"獨資商業\", id: \"30003\" }, { label: \"合夥商業\", id: \"40003\" } ] } } },\n  { json: { id: 64, input: \"要增資\",                         expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_CAPITAL_INCREASE\", options: [ { label: \"有限公司\", id: \"10006\" }, { label: \"股份有限公司\", id: \"20008\" }, { label: \"獨資商業\", id: \"30006\" }, { label: \"合夥商業\", id: \"40007\" } ] } } },\n  { json: { id: 65, input: \"要復業\",                         expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_RESUME\",           options: [ { label: \"有限公司\", id: \"10009\" }, { label: \"股份有限公司\", id: \"20011\" }, { label: \"獨資商業\", id: \"30009\" }, { label: \"合夥商業\", id: \"40009\" } ] } } },\n  // C4 無此動作 → false（5）\n  { json: { id: 66, input: \"商行要辦理減資\",                 expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 67, input: \"工作室要減資\",                   expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 68, input: \"企業社要辦理減資\",               expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 69, input: \"行號要減資\",                     expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 70, input: \"實業社要減資\",                   expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ═══════════════ D. 多重意圖（15 條）═══════════════\n  // A > B（3）：排除優先\n  { json: { id: 71, input: \"發票寄回去了，你們地址是？\",       expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: 72, input: \"款項匯了，請問分機幾號\",           expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: 73, input: \"已經轉帳了，幫我傳401\",            expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  // B > C（5）：固定指令優先於變更設立\n  { json: { id: 74, input: \"公司要改地址，費用怎麼算\",         expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  { json: { id: 75, input: \"公司要停業，我想找專員\",           expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要通話\" } } },\n  { json: { id: 76, input: \"行號要改名，順便傳403表\",          expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 77, input: \"公司要解散，另外我要看報表\",       expected: { canAnswer: true, matchType: \"exact\", matchedId: \"詢問報表引導\" } } },\n  { json: { id: 78, input: \"公司要增資，發票要寄哪\",           expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  // B > B（3）：B 類內部優先序（編號小者優先）\n  { json: { id: 79, input: \"分機幾號，順便傳401\",              expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 80, input: \"幾點開門，順便傳公司章程\",         expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 81, input: \"傳報價單給我，順便找專員\",         expected: { canAnswer: true, matchType: \"exact\", matchedId: \"/報價單\" } } },\n  // A > B > C（4）：排除最優先\n  { json: { id: 82, input: \"公司要停業，印花稅怎麼算\",         expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 83, input: \"公司要改地址，廠商報價單要貼印花嗎\", expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 84, input: \"行號要停業，已經轉帳了\",           expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 85, input: \"公司要解散，發票昨天寄出去了\",     expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n\n  // ═══════════════ E. 邊界陷阱（15 條）═══════════════\n  // 口語/錯字（2）\n  { json: { id: 86, input: \"我ㄉ有限公司要換地址\",             expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10005\" } } },\n  { json: { id: 87, input: \"偶們公司要停業\",                   expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SUSPEND\",        options: [ { label: \"有限公司\", id: \"10008\" }, { label: \"股份有限公司\", id: \"20010\" } ] } } },\n  // 全形/空格（2）\n  { json: { id: 88, input: \"（股份有限公司）要辦停業\",         expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20010\" } } },\n  { json: { id: 89, input: \"有限公司 要 改 地址\",              expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10005\" } } },\n  // 相似詞陷阱（4）\n  { json: { id: 90, input: \"作廢發票要寄哪\",                   expected: { canAnswer: true, matchType: \"exact\", matchedId: \"我要導航\" } } },\n  { json: { id: 91, input: \"發票已經寄出\",                     expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 92, input: \"商業抄本\",                         expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  { json: { id: 93, input: \"抄錄公司章程\",                     expected: { canAnswer: true, matchType: \"exact\", matchedId: \"客戶資料夾\" } } },\n  // 匯款半資訊（3）\n  { json: { id: 94, input: \"匯了8800\",                         expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 95, input: \"帳號末五碼12345\",                  expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  { json: { id: 96, input: \"轉帳完成\",                         expected: { canAnswer: false, matchType: \"none\", matchedId: null } } },\n  // 指示代名詞 + 具體組織（3）\n  { json: { id: 97, input: \"我們家有限公司要改地址\",           expected: { canAnswer: true, matchType: \"exact\", matchedId: \"10005\" } } },\n  { json: { id: 98, input: \"這間股份有限公司要增資\",           expected: { canAnswer: true, matchType: \"exact\", matchedId: \"20008\" } } },\n  { json: { id: 99, input: \"那間合夥商業要辦停業\",             expected: { canAnswer: true, matchType: \"exact\", matchedId: \"40008\" } } },\n  // 開公司泛稱（1）\n  { json: { id: 100, input: \"我想開一間公司\",                  expected: { canAnswer: true, matchType: \"ambiguous\", ambiguousGroup: \"GROUP_SETUP\", options: [ { label: \"有限公司\", id: \"10001\" }, { label: \"股份有限公司\", id: \"20001\" } ] } } },\n];"
+      },
+      "id": "3e67c462-d2f4-4287-939c-26986ebac744",
+      "name": "載入測試用例",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -512,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -256,
+        288
+      ],
+      "id": "307810d2-dad5-42d8-b66f-60f29b04d33d",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        208
+      ],
+      "id": "3295ef6b-5e62-4cc6-a512-66cfacc95bba",
+      "name": "Wait",
+      "webhookId": "5d2659b4-16c7-459b-a2b0-b95faee834e9"
+    }
+  ],
+  "connections": {
+    "手動觸發測試": {
+      "main": [
+        [
+          {
+            "node": "載入測試用例4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "載入測試用例1": {
+      "main": [
+        [
+          {
+            "node": "呼叫 Gemini API1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "呼叫 Gemini API1": {
+      "main": [
+        [
+          {
+            "node": "比對判定結果1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "比對判定結果1": {
+      "main": [
+        [
+          {
+            "node": "彙整測試報告1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "載入測試用例2": {
+      "main": [
+        [
+          {
+            "node": "呼叫 Gemini API2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "呼叫 Gemini API2": {
+      "main": [
+        [
+          {
+            "node": "比對判定結果2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "比對判定結果2": {
+      "main": [
+        [
+          {
+            "node": "彙整測試報告2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "彙整測試報告1": {
+      "main": [
+        []
+      ]
+    },
+    "載入測試用例3": {
+      "main": [
+        [
+          {
+            "node": "呼叫 Gemini API3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "呼叫 Gemini API3": {
+      "main": [
+        [
+          {
+            "node": "比對判定結果3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "比對判定結果3": {
+      "main": [
+        [
+          {
+            "node": "彙整測試報告3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "載入測試用例4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodeGroups": [
+    {
+      "id": "0aa09b4b-cb75-4bb8-befc-d1e75b314eaf",
+      "name": "CLAUDE",
+      "nodeIds": [
+        "234af50d-ec6d-4457-a58d-c80046f4a0f1",
+        "8011a7d2-6998-488c-8415-f015e7442d45",
+        "94123d52-fdbf-44db-a557-dcb6d39da25a",
+        "dafe8751-2f55-4a2a-899a-81904a6cdd60"
+      ]
+    },
+    {
+      "id": "f670dfd8-0ff3-4170-8e71-ecbc59abc82f",
+      "name": "DEEPSEEK",
+      "nodeIds": [
+        "d4f3025c-e588-4675-9141-0e2d8b55d220",
+        "091617f2-c30b-4e20-b3f6-8eff6e3a7fbc",
+        "886829cb-570d-4f43-88ac-ad0bc3bbddb1",
+        "7f4c923a-481c-4f6d-8fde-12a1663fa029"
+      ]
+    },
+    {
+      "id": "8e2da537-fb89-4747-a1e3-018cf4382a12",
+      "name": "GEMINI",
+      "nodeIds": [
+        "024b83d7-3a57-4d63-9b55-1e3c29fc21a0",
+        "461f6bd3-853b-42e4-903f-2cfe2a5efed3",
+        "ee1a637b-5385-4235-bccd-8684325e8d6a",
+        "fbde9db0-7a92-4e8e-939b-b6caf2667b7a"
+      ]
+    }
+  ],
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": [],
+  "shared": [
+    {
+      "role": "workflow:owner",
+      "workflowId": "RnJiEM26IwvZ7k5Q",
+      "projectId": "icqrwfCTGUzPjgZI",
+      "createdAt": "2026-09-12T12:52:42.659Z",
+      "updatedAt": "2026-09-12T12:52:42.659Z"
+    }
+  ],
+  "activeVersion": null
+}
