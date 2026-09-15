@@ -4,9 +4,9 @@
   "active": true,
   "activeVersionId": "16c9a138-36f9-4f43-b132-72191bc9cc84",
   "createdAt": "2026-06-07T11:42:20.979Z",
-  "updatedAt": "2026-09-14T12:12:58.520Z",
+  "updatedAt": "2026-09-15T10:43:40.402Z",
   "isArchived": false,
-  "versionId": "08681cf9-3a58-45c8-ad95-58f9948d2942",
+  "versionId": "d0d9698c-d184-4727-9e18-c12f6fc9e353",
   "triggerCount": 8,
   "nodes": [
     {
@@ -94,26 +94,6 @@
         }
       },
       "disabled": true
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "cronExpression",
-              "expression": "1,16,31,46 * * * *"
-            }
-          ]
-        }
-      },
-      "id": "0011a6e2-bd21-4ef8-9eb3-e21aec4e1da7",
-      "name": "導入客戶資料夾",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.1,
-      "position": [
-        768,
-        176
-      ]
     },
     {
       "parameters": {
@@ -1209,26 +1189,6 @@
     },
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "cronExpression",
-              "expression": "2,17,32,47 * * * *"
-            }
-          ]
-        }
-      },
-      "id": "fe9535ef-5363-4907-b2df-7236cf7300bb",
-      "name": "導入客戶資料夾1",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.1,
-      "position": [
-        768,
-        400
-      ]
-    },
-    {
-      "parameters": {
         "conditions": {
           "options": {
             "caseSensitive": true,
@@ -1268,26 +1228,6 @@
       ],
       "id": "882a7b5a-4484-4d47-89b5-230ae8db075b",
       "name": "If"
-    },
-    {
-      "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "cronExpression",
-              "expression": "3,18,33,48 * * * *"
-            }
-          ]
-        }
-      },
-      "id": "2d1fb9cf-74e8-4cd9-ad85-5f87a26a6dec",
-      "name": "導入客戶資料夾2",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.1,
-      "position": [
-        768,
-        624
-      ]
     },
     {
       "parameters": {
@@ -1580,6 +1520,66 @@
         }
       },
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "1,16,31,46 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "0011a6e2-bd21-4ef8-9eb3-e21aec4e1da7",
+      "name": "導入自動回覆帳單",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        176
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "2,17,32,47 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "fe9535ef-5363-4907-b2df-7236cf7300bb",
+      "name": "導入客戶資料夾",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "3,18,33,48 * * * *"
+            }
+          ]
+        }
+      },
+      "id": "2d1fb9cf-74e8-4cd9-ad85-5f87a26a6dec",
+      "name": "導入LINE ID",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        624
+      ]
     }
   ],
   "connections": {
@@ -1621,17 +1621,6 @@
         ]
       ]
     },
-    "導入客戶資料夾": {
-      "main": [
-        [
-          {
-            "node": "If15",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "If15": {
       "main": [
         [
@@ -1641,7 +1630,13 @@
             "index": 0
           }
         ],
-        []
+        [
+          {
+            "node": "讀取自動回傳帳單",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "If16": {
@@ -1750,17 +1745,6 @@
         ]
       ]
     },
-    "導入客戶資料夾1": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "If": {
       "main": [
         [
@@ -1770,14 +1754,9 @@
             "index": 0
           }
         ],
-        []
-      ]
-    },
-    "導入客戶資料夾2": {
-      "main": [
         [
           {
-            "node": "If4",
+            "node": "讀取客戶資料表",
             "type": "main",
             "index": 0
           }
@@ -1793,7 +1772,13 @@
             "index": 0
           }
         ],
-        []
+        [
+          {
+            "node": "讀取LINE ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Code in JavaScript15": {
@@ -1872,6 +1857,39 @@
         [
           {
             "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "導入自動回覆帳單": {
+      "main": [
+        [
+          {
+            "node": "If15",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "導入客戶資料夾": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "導入LINE ID": {
+      "main": [
+        [
+          {
+            "node": "If4",
             "type": "main",
             "index": 0
           }
