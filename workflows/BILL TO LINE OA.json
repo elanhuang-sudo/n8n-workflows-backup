@@ -2,12 +2,12 @@
   "id": "vJfpJObAAGrofTha",
   "name": "BILL TO LINE OA",
   "active": true,
-  "activeVersionId": "4529f686-3f80-4b68-97df-5fcd82b65089",
+  "activeVersionId": "78baf2ad-fd82-49ec-9e95-f31f239cec56",
   "createdAt": "2026-04-10T06:00:59.023Z",
-  "updatedAt": "2026-09-14T07:01:46.292Z",
+  "updatedAt": "2026-09-15T14:18:16.739Z",
   "isArchived": false,
-  "versionId": "4529f686-3f80-4b68-97df-5fcd82b65089",
-  "triggerCount": 8,
+  "versionId": "78baf2ad-fd82-49ec-9e95-f31f239cec56",
+  "triggerCount": 7,
   "nodes": [
     {
       "parameters": {
@@ -1086,8 +1086,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -4384,
-        560
+        -4400,
+        640
       ],
       "credentials": {
         "httpHeaderAuth": {
@@ -1101,7 +1101,10 @@
       "parameters": {
         "rule": {
           "interval": [
-            {}
+            {
+              "triggerAtHour": 16,
+              "triggerAtMinute": 15
+            }
           ]
         }
       },
@@ -1110,9 +1113,10 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.1,
       "position": [
-        -5728,
-        544
-      ]
+        -5744,
+        592
+      ],
+      "disabled": true
     },
     {
       "parameters": {
@@ -1152,8 +1156,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.3,
       "position": [
-        -5280,
-        592
+        -5296,
+        640
       ],
       "credentials": {
         "googleApi": {
@@ -1186,7 +1190,7 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.3,
       "position": [
-        -5280,
+        -5296,
         832
       ],
       "credentials": {
@@ -1212,7 +1216,7 @@
       "type": "n8n-nodes-base.googleDrive",
       "typeVersion": 3,
       "position": [
-        -5056,
+        -4976,
         512
       ],
       "credentials": {
@@ -1224,15 +1228,15 @@
     },
     {
       "parameters": {
-        "jsCode": "// ==========================================================\n// 🎯 防呆相容版 Compare & Match Data\n// ==========================================================\n\nlet allFiles = [];\ntry {\n  allFiles = $('List Drive Files').all();\n} catch (e) {\n  allFiles = $input.all().filter(item => item.json && item.json.id && item.json.name);\n}\n\nlet customerMap = [];\ntry {\n  customerMap = $('Filter').all();\n} catch (e) {\n  customerMap = [];\n}\n\nlet folderList = [];\ntry {\n  folderList = $('Get Folders Sheet').all();\n} catch (e) {\n  folderList = [];\n}\n\n// 建立資料夾清單與 F 欄檔名白名單字典\nconst folderMap = {};\nfor (const folder of folderList) {\n  const fId = folder.json['資料夾ID'];\n  const fName = folder.json['資料夾名稱'];\n  \n  const sentFilesString = folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表'] ? String(folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表']).trim() : '';\n  const targetFileNamesArray = sentFilesString ? sentFilesString.split(',').map(s => s.trim()) : [];\n\n  if (fId && fName) {\n    const prefix = String(fName).trim().substring(0, 3);\n    \n    let companyName = String(fName).trim();\n    const parts = companyName.split('-');\n    if (parts.length >= 3) {\n      companyName = parts[1].trim();\n    } else if (parts.length === 2) {\n      companyName = parts[1].trim();\n    }\n\n    folderMap[fId] = {\n      prefix: prefix,\n      companyName: companyName,\n      targetFileNames: targetFileNamesArray\n    };\n  }\n}\n\nconst userGroupedMatches = {};\n\nfor (const fileItem of allFiles) {\n  if (!fileItem || !fileItem.json || !fileItem.json.name || !fileItem.json.id) {\n    continue;\n  }\n\n  const fileName = fileItem.json.name.trim();\n  const fileId = fileItem.json.id;\n  \n  const forceDownloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}&openExternalBrowser=1`;\n  const parents = fileItem.json.parents;\n  const parentFolderId = (Array.isArray(parents) && parents.length > 0) ? parents[0] : null;\n\n  const folderData = parentFolderId ? folderMap[parentFolderId] : null;\n  if (!folderData) {\n    continue;\n  }\n\n  // 白名單比對：必須存在於 F 欄紀錄\n  if (folderData.targetFileNames.length === 0 || !folderData.targetFileNames.includes(fileName)) {\n    continue;\n  }\n\n  const folderPrefix = folderData.prefix;\n  const companyName = folderData.companyName;\n\n  for (const row of customerMap) {\n    const userId = row.json['B:userId'];\n    if (!userId) continue;\n\n    const clientCodes = [];\n    const colNames = ['編號1', '編號2', '編號3', '編號4', '編號5', '編號6', '編號7', '編號8', '編號9', '編號10'];\n    \n    for (const col of colNames) {\n      const val = row.json[col];\n      if (val !== undefined && val !== null && val !== '') {\n        clientCodes.push(String(val).trim());\n      }\n    }\n\n    const isMatch = clientCodes.some(code => code !== '' && folderPrefix === code);\n\n    if (isMatch) {\n      if (!userGroupedMatches[userId]) {\n        userGroupedMatches[userId] = { lineUserId: userId, companies: {} };\n      }\n\n      if (!userGroupedMatches[userId].companies[parentFolderId]) {\n        userGroupedMatches[userId].companies[parentFolderId] = { companyName: companyName, files: [] };\n      }\n\n      const targetCompany = userGroupedMatches[userId].companies[parentFolderId];\n      const isFileAlreadyAdded = targetCompany.files.some(f => f.fileId === fileId);\n      \n      if (!isFileAlreadyAdded) {\n        targetCompany.files.push({\n          fileId: fileId,\n          fileName: fileName,\n          fileUrl: forceDownloadUrl\n        });\n      }\n    }\n  }\n}\n\nconst outputData = Object.values(userGroupedMatches).map(user => ({\n  json: {\n    lineUserId: user.lineUserId,\n    companies: Object.values(user.companies)\n  }\n}));\n\nreturn outputData.length > 0 ? outputData : [];"
+        "jsCode": "// ==========================================================\n// 🛠️ 測試設定區\n// ==========================================================\nconst LINK_MODE = 'view'; // 可選：'preview' (推薦) | 'view' | 'download'（僅影響預覽與 Google Docs/Sheets）\nconst USE_EXTERNAL_BROWSER = true; // true = 跳出外部瀏覽器 | false = 留在 LINE 內建瀏覽器\n\n// 🎯 你的 Cloudflare Worker 網址\nconst CLOUDFLARE_WORKER_URL = 'https://long-bonus-c10a.elanhuang.workers.dev/';\n\n// 🎯 動態組合 URL（自動判斷要加 ? 還是 &）\nfunction buildUrl(baseUrl) {\n  if (!USE_EXTERNAL_BROWSER) return baseUrl;\n  return baseUrl.includes('?') \n    ? `${baseUrl}&openExternalBrowser=1` \n    : `${baseUrl}?openExternalBrowser=1`;\n}\n\n// ==========================================================\n// 🎯 防呆相容版 Compare & Match Data\n// ==========================================================\n\nlet allFiles = [];\ntry {\n  allFiles = $('List Drive Files').all();\n} catch (e) {\n  allFiles = $input.all().filter(item => item.json && item.json.id && item.json.name);\n}\n\nlet customerMap = [];\ntry {\n  customerMap = $('Filter').all();\n} catch (e) {\n  customerMap = [];\n}\n\nlet folderList = [];\ntry {\n  folderList = $('Get Folders Sheet').all();\n} catch (e) {\n  folderList = [];\n}\n\n// 建立資料夾清單與 F 欄檔名白名單字典\nconst folderMap = {};\nfor (const folder of folderList) {\n  const fId = folder.json['資料夾ID'];\n  const fName = folder.json['資料夾名稱'];\n  \n  const sentFilesString = folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表'] ? String(folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表']).trim() : '';\n  const targetFileNamesArray = sentFilesString ? sentFilesString.split(',').map(s => s.trim()) : [];\n\n  if (fId && fName) {\n    const prefix = String(fName).trim().substring(0, 3);\n    \n    let companyName = String(fName).trim();\n    const parts = companyName.split('-');\n    if (parts.length >= 3) {\n      companyName = parts[1].trim();\n    } else if (parts.length === 2) {\n      companyName = parts[1].trim();\n    }\n\n    folderMap[fId] = {\n      prefix: prefix,\n      companyName: companyName,\n      targetFileNames: targetFileNamesArray\n    };\n  }\n}\n\nconst userGroupedMatches = {};\n\nfor (const fileItem of allFiles) {\n  if (!fileItem || !fileItem.json || !fileItem.json.name || !fileItem.json.id) {\n    continue;\n  }\n\n  const fileName = fileItem.json.name.trim();\n  const fileId = fileItem.json.id;\n  const mimeType = fileItem.json.mimeType || '';\n  \n  // 🎯 判斷檔案類型\n  const isGoogleDoc = mimeType.includes('google-apps.document');\n  const isGoogleSheet = mimeType.includes('google-apps.spreadsheet');\n  \n  // 🎯 預覽連結（留在 LINE 內建瀏覽器）\n  let previewUrl = '';\n  if (isGoogleDoc) {\n    previewUrl = `https://docs.google.com/document/d/${fileId}/preview`;\n  } else if (isGoogleSheet) {\n    previewUrl = `https://docs.google.com/spreadsheets/d/${fileId}/preview`;\n  } else {\n    previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;\n  }\n  \n  // 🎯 下載連結（跳出外部瀏覽器，直接下載）\n  let downloadUrl = '';\n  if (isGoogleDoc) {\n    downloadUrl = buildUrl(`https://docs.google.com/document/d/${fileId}/export?format=pdf`);\n  } else if (isGoogleSheet) {\n    downloadUrl = buildUrl(`https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`);\n  } else {\n    // 一般 PDF 檔案：走 Cloudflare Worker 代理，強制 iOS 下載並保留原始中文檔名\n    const rawName = encodeURIComponent(fileName);\n    downloadUrl = buildUrl(`${CLOUDFLARE_WORKER_URL}?id=${fileId}&name=${rawName}`);\n  }\n\n  const parents = fileItem.json.parents;\n  const parentFolderId = (Array.isArray(parents) && parents.length > 0) ? parents[0] : null;\n\n  const folderData = parentFolderId ? folderMap[parentFolderId] : null;\n  if (!folderData) {\n    continue;\n  }\n\n  // 白名單比對：必須存在於 F 欄紀錄\n  if (folderData.targetFileNames.length === 0 || !folderData.targetFileNames.includes(fileName)) {\n    continue;\n  }\n\n  const folderPrefix = folderData.prefix;\n  const companyName = folderData.companyName;\n\n  for (const row of customerMap) {\n    const userId = row.json['B:userId'];\n    if (!userId) continue;\n\n    const clientCodes = [];\n    const colNames = ['編號1', '編號2', '編號3', '編號4', '編號5', '編號6', '編號7', '編號8', '編號9', '編號10'];\n    \n    for (const col of colNames) {\n      const val = row.json[col];\n      if (val !== undefined && val !== null && val !== '') {\n        clientCodes.push(String(val).trim());\n      }\n    }\n\n    const isMatch = clientCodes.some(code => code !== '' && folderPrefix === code);\n\n    if (isMatch) {\n      if (!userGroupedMatches[userId]) {\n        userGroupedMatches[userId] = { lineUserId: userId, companies: {} };\n      }\n\n      if (!userGroupedMatches[userId].companies[parentFolderId]) {\n        userGroupedMatches[userId].companies[parentFolderId] = { companyName: companyName, files: [] };\n      }\n\n      const targetCompany = userGroupedMatches[userId].companies[parentFolderId];\n      const isFileAlreadyAdded = targetCompany.files.some(f => f.fileId === fileId);\n      \n      if (!isFileAlreadyAdded) {\n        targetCompany.files.push({\n          fileId: fileId,\n          fileName: fileName,\n          previewUrl: previewUrl,   // 🎯 新增：預覽連結\n          downloadUrl: downloadUrl   // 🎯 新增：下載連結（走 Cloudflare Worker）\n        });\n      }\n    }\n  }\n}\n\nconst outputData = Object.values(userGroupedMatches).map(user => ({\n  json: {\n    lineUserId: user.lineUserId,\n    companies: Object.values(user.companies)\n  }\n}));\n\nreturn outputData.length > 0 ? outputData : [];"
       },
       "id": "a21b57b9-3dba-4729-8f32-3aa77ff941d0",
       "name": "Compare & Match Data",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -4608,
-        560
+        -4624,
+        640
       ],
       "executeOnce": true,
       "onError": "continueRegularOutput"
@@ -1244,8 +1248,8 @@
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3.2,
       "position": [
-        -4832,
-        640
+        -4848,
+        720
       ],
       "id": "8256e0bb-8fa1-45ce-9ade-98c60a7898e0",
       "name": "Merge"
@@ -1260,7 +1264,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2.1,
       "position": [
-        -5504,
+        -5520,
         880
       ],
       "id": "c1db163e-67bc-4594-b5c8-38ac75a2517e",
@@ -1379,8 +1383,8 @@
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.7,
       "position": [
-        -4608,
-        752
+        -4624,
+        832
       ],
       "id": "ecb92dc7-3a5c-440e-91f5-fcee0e2efa23",
       "name": "將資料夾狀態改為已發送",
@@ -1443,7 +1447,7 @@
       "type": "n8n-nodes-base.filter",
       "typeVersion": 2.3,
       "position": [
-        -5056,
+        -5072,
         832
       ],
       "id": "65530529-64fa-4566-b0f7-66bd27170004",
@@ -1627,8 +1631,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.3,
       "position": [
-        -5504,
-        544
+        -5520,
+        592
       ],
       "id": "b04a2770-ff61-41a9-9d1e-6420328d6ff6",
       "name": "If21"
@@ -1991,6 +1995,21 @@
       "id": "a90c3f32-ef76-4100-937b-038e3c6fbedb",
       "name": "資料比對與彙整",
       "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "// ==========================================================\n// 🛠️ 測試設定區\n// ==========================================================\nconst LINK_MODE = 'view'; // 可選：'preview' (推薦) | 'view' | 'download'\nconst USE_EXTERNAL_BROWSER = true; // true = 跳出外部瀏覽器 | false = 留在 LINE 內建瀏覽器\n\n// ==========================================================\n// 🎯 防呆相容版 Compare & Match Data\n// ==========================================================\n\n// 🎯 動態組合 URL（自動判斷要加 ? 還是 &）\nfunction buildUrl(baseUrl) {\n  if (!USE_EXTERNAL_BROWSER) return baseUrl;\n  return baseUrl.includes('?') \n    ? `${baseUrl}&openExternalBrowser=1` \n    : `${baseUrl}?openExternalBrowser=1`;\n}\n\nlet allFiles = [];\ntry {\n  allFiles = $('List Drive Files').all();\n} catch (e) {\n  allFiles = $input.all().filter(item => item.json && item.json.id && item.json.name);\n}\n\nlet customerMap = [];\ntry {\n  customerMap = $('Filter').all();\n} catch (e) {\n  customerMap = [];\n}\n\nlet folderList = [];\ntry {\n  folderList = $('Get Folders Sheet').all();\n} catch (e) {\n  folderList = [];\n}\n\n// 建立資料夾清單與 F 欄檔名白名單字典\nconst folderMap = {};\nfor (const folder of folderList) {\n  const fId = folder.json['資料夾ID'];\n  const fName = folder.json['資料夾名稱'];\n  \n  const sentFilesString = folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表'] ? String(folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表']).trim() : '';\n  const targetFileNamesArray = sentFilesString ? sentFilesString.split(',').map(s => s.trim()) : [];\n\n  if (fId && fName) {\n    const prefix = String(fName).trim().substring(0, 3);\n    \n    let companyName = String(fName).trim();\n    const parts = companyName.split('-');\n    if (parts.length >= 3) {\n      companyName = parts[1].trim();\n    } else if (parts.length === 2) {\n      companyName = parts[1].trim();\n    }\n\n    folderMap[fId] = {\n      prefix: prefix,\n      companyName: companyName,\n      targetFileNames: targetFileNamesArray\n    };\n  }\n}\n\nconst userGroupedMatches = {};\n\nfor (const fileItem of allFiles) {\n  if (!fileItem || !fileItem.json || !fileItem.json.name || !fileItem.json.id) {\n    continue;\n  }\n\n  const fileName = fileItem.json.name.trim();\n  const fileId = fileItem.json.id;\n  \n  // 🎯 根據 LINK_MODE 與 USE_EXTERNAL_BROWSER 產生連結\n  let fileUrl = '';\n  if (LINK_MODE === 'view') {\n    fileUrl = buildUrl(`https://drive.google.com/file/d/${fileId}/view`);\n  } else if (LINK_MODE === 'preview') {\n    fileUrl = buildUrl(`https://drive.google.com/file/d/${fileId}/preview`);\n  } else {\n    fileUrl = buildUrl(`https://drive.google.com/uc?export=download&id=${fileId}`);\n  }\n\n  const parents = fileItem.json.parents;\n  const parentFolderId = (Array.isArray(parents) && parents.length > 0) ? parents[0] : null;\n\n  const folderData = parentFolderId ? folderMap[parentFolderId] : null;\n  if (!folderData) {\n    continue;\n  }\n\n  // 白名單比對：必須存在於 F 欄紀錄\n  if (folderData.targetFileNames.length === 0 || !folderData.targetFileNames.includes(fileName)) {\n    continue;\n  }\n\n  const folderPrefix = folderData.prefix;\n  const companyName = folderData.companyName;\n\n  for (const row of customerMap) {\n    const userId = row.json['B:userId'];\n    if (!userId) continue;\n\n    const clientCodes = [];\n    const colNames = ['編號1', '編號2', '編號3', '編號4', '編號5', '編號6', '編號7', '編號8', '編號9', '編號10'];\n    \n    for (const col of colNames) {\n      const val = row.json[col];\n      if (val !== undefined && val !== null && val !== '') {\n        clientCodes.push(String(val).trim());\n      }\n    }\n\n    const isMatch = clientCodes.some(code => code !== '' && folderPrefix === code);\n\n    if (isMatch) {\n      if (!userGroupedMatches[userId]) {\n        userGroupedMatches[userId] = { lineUserId: userId, companies: {} };\n      }\n\n      if (!userGroupedMatches[userId].companies[parentFolderId]) {\n        userGroupedMatches[userId].companies[parentFolderId] = { companyName: companyName, files: [] };\n      }\n\n      const targetCompany = userGroupedMatches[userId].companies[parentFolderId];\n      const isFileAlreadyAdded = targetCompany.files.some(f => f.fileId === fileId);\n      \n      if (!isFileAlreadyAdded) {\n        targetCompany.files.push({\n          fileId: fileId,\n          fileName: fileName,\n          fileUrl: fileUrl // 使用動態產生的連結\n        });\n      }\n    }\n  }\n}\n\nconst outputData = Object.values(userGroupedMatches).map(user => ({\n  json: {\n    lineUserId: user.lineUserId,\n    companies: Object.values(user.companies)\n  }\n}));\n\nreturn outputData.length > 0 ? outputData : [];"
+      },
+      "id": "75269157-6667-4ec3-a8b0-6ab32e5ab241",
+      "name": "Compare & Match Data1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4368,
+        800
+      ],
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
     }
   ],
   "connections": {
@@ -2273,6 +2292,11 @@
             "node": "LINE Push Message1",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Compare & Match Data1",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -2521,7 +2545,7 @@
       "recurrenceRules": []
     },
     "node:Google Drive Trigger": {
-      "lastTimeChecked": "2026-09-14T15:59:19Z"
+      "lastTimeChecked": "2026-09-15T15:59:37Z"
     },
     "node:Google Drive Trigger1": {
       "lastTimeChecked": "2026-07-08T22:00:28Z"
@@ -2557,7 +2581,7 @@
       "lastTimeChecked": "2026-07-23T06:08:11Z"
     },
     "node:結果資料夾": {
-      "lastTimeChecked": "2026-09-14T15:59:39Z"
+      "lastTimeChecked": "2026-09-15T15:59:52Z"
     },
     "node:只發送到帳訊息": {
       "recurrenceRules": [
@@ -2615,253 +2639,6 @@
           },
           "webhookUrl": "https://kscpbtokyo.zeabur.app/webhook/line-ai-booking",
           "executionMode": "production"
-        },
-        "pairedItem": {
-          "item": 0
-        }
-      }
-    ],
-    "Google Drive Trigger": [
-      {
-        "json": {
-          "kind": "drive#file",
-          "fileExtension": "pdf",
-          "copyRequiresWriterPermission": false,
-          "md5Checksum": "06d59a6e7b9bf6bbfd16534becdb0ce3",
-          "writersCanShare": true,
-          "viewedByMe": false,
-          "mimeType": "application/pdf",
-          "parents": [
-            "1WbZ48mHDF7AK6iSlaHoJk49g6JRtuo1H"
-          ],
-          "thumbnailLink": "https://lh3.googleusercontent.com/drive-storage/AJQWtBMTBkvewMnNj9vOPWqzQYrgTLR6yOZ5eSVRqbIps7ESrnhMR3sBUAg2sqmO5FQDa87VQcbhB4P9k6epgBeR6w_PyBsX9WYuBecPGN1s8XhmZcKvtqk=s220",
-          "iconLink": "https://drive-thirdparty.googleusercontent.com/16/type/application/pdf",
-          "shared": true,
-          "lastModifyingUser": {
-            "displayName": "kscpb87802029",
-            "kind": "drive#user",
-            "me": false,
-            "permissionId": "18356903302455707575",
-            "emailAddress": "kscpb87802029@gmail.com",
-            "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjUmy4hPSQMKB3nlFTYwSYMcJCYYfyL179TLYNHZTKOFN0Ckjw=s64"
-          },
-          "owners": [
-            {
-              "displayName": "kscpb87802029",
-              "kind": "drive#user",
-              "me": false,
-              "permissionId": "18356903302455707575",
-              "emailAddress": "kscpb87802029@gmail.com",
-              "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjUmy4hPSQMKB3nlFTYwSYMcJCYYfyL179TLYNHZTKOFN0Ckjw=s64"
-            }
-          ],
-          "headRevisionId": "0B-kx66P-erJCK0JQa2VwakwyU01sSkxXWUU4VWYrS2NsQStNPQ",
-          "webViewLink": "https://drive.google.com/file/d/1aeQlVyhEUp7gXFZWUn5HeUDnQMtOJ4jh/view?usp=drivesdk",
-          "webContentLink": "https://drive.google.com/uc?id=1aeQlVyhEUp7gXFZWUn5HeUDnQMtOJ4jh&export=download",
-          "size": "84941",
-          "viewersCanCopyContent": true,
-          "permissions": [
-            {
-              "id": "anyoneWithLink",
-              "type": "anyone",
-              "kind": "drive#permission",
-              "role": "reader",
-              "allowFileDiscovery": false
-            },
-            {
-              "id": "14647897523106089934",
-              "displayName": "elanhuang",
-              "type": "user",
-              "kind": "drive#permission",
-              "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjUqTCHaaBmL6GcgNzy-EMlIIVtH8ToHAKCPW3gzvsnxDVbScRQw=s64",
-              "emailAddress": "elanhuang@gmail.com",
-              "role": "writer",
-              "deleted": false,
-              "pendingOwner": false
-            },
-            {
-              "id": "01145688620362352815",
-              "displayName": "ks13",
-              "type": "user",
-              "kind": "drive#permission",
-              "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjVIwB3stoizcBwizOaoquNE7mMKqnS7_TCR_HRqsq_R9n70Rg=s64",
-              "emailAddress": "ks13@kscpb.com",
-              "role": "writer",
-              "deleted": false,
-              "pendingOwner": false
-            },
-            {
-              "id": "16441558950279091921",
-              "displayName": "ks12",
-              "type": "user",
-              "kind": "drive#permission",
-              "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjW6KYvEl9-EYBSCzHwtFI500e229EnVqD_yDeL5a3fgvGFuVg=s64",
-              "emailAddress": "ks12@kscpb.com",
-              "role": "writer",
-              "deleted": false,
-              "pendingOwner": false
-            },
-            {
-              "id": "01411004278671607857",
-              "displayName": "ks17",
-              "type": "user",
-              "kind": "drive#permission",
-              "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjXndfqER-dsTixSnffEXnUoz8TWbZxt7HZpbUXJK_OLAfsifw=s64",
-              "emailAddress": "ks17@kscpb.com",
-              "role": "writer",
-              "deleted": false,
-              "pendingOwner": false
-            },
-            {
-              "id": "17706938818996173019",
-              "displayName": "ks16",
-              "type": "user",
-              "kind": "drive#permission",
-              "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjWDQrNUKgKazoma3Ggii9kg6zzh_5daInhAbBB4J0jZMsTwsA=s64",
-              "emailAddress": "ks16@kscpb.com",
-              "role": "writer",
-              "deleted": false,
-              "pendingOwner": false
-            },
-            {
-              "id": "01382773666594732688",
-              "displayName": "ks15",
-              "type": "user",
-              "kind": "drive#permission",
-              "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjU8MYBvIy1ZmFc131XFeHNQKS_gVHVR43K3vhHIyyKMFuaFTA=s64",
-              "emailAddress": "ks15@kscpb.com",
-              "role": "writer",
-              "deleted": false,
-              "pendingOwner": false
-            },
-            {
-              "id": "18356903302455707575",
-              "displayName": "kscpb87802029",
-              "type": "user",
-              "kind": "drive#permission",
-              "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjUmy4hPSQMKB3nlFTYwSYMcJCYYfyL179TLYNHZTKOFN0Ckjw=s64",
-              "emailAddress": "kscpb87802029@gmail.com",
-              "role": "owner",
-              "deleted": false,
-              "pendingOwner": false
-            },
-            {
-              "id": "06628298629534640301",
-              "displayName": "ks11",
-              "type": "user",
-              "kind": "drive#permission",
-              "photoLink": "https://lh3.googleusercontent.com/a-/ALV-UjWP0I8nnOopBTdH6KlCWWvjyjWtNTsV_mTCKXPAIqXVK2q50Q=s64",
-              "emailAddress": "ks11@kscpb.com",
-              "role": "writer",
-              "deleted": false,
-              "pendingOwner": false
-            },
-            {
-              "id": "06276466757710680888",
-              "displayName": "id-828@n8n-kscpb.iam.gserviceaccount.com",
-              "type": "user",
-              "kind": "drive#permission",
-              "photoLink": "https://lh3.googleusercontent.com/a/ACg8ocJHZHU5xsI590AsccX3MBqN6nuCuBFmEWmYJtzNj_LaXicUwr8=s64",
-              "emailAddress": "id-828@n8n-kscpb.iam.gserviceaccount.com",
-              "role": "writer",
-              "deleted": false,
-              "pendingOwner": false
-            }
-          ],
-          "hasThumbnail": true,
-          "spaces": [
-            "drive"
-          ],
-          "id": "1aeQlVyhEUp7gXFZWUn5HeUDnQMtOJ4jh",
-          "name": "E26_11508_光穎科技有限公司_27510054_20260910_1006_.pdf",
-          "starred": false,
-          "trashed": false,
-          "explicitlyTrashed": false,
-          "createdTime": "2026-09-10T02:06:39.520Z",
-          "modifiedTime": "2026-09-10T02:06:40.401Z",
-          "quotaBytesUsed": "84941",
-          "version": "4",
-          "originalFilename": "export.pdf",
-          "ownedByMe": false,
-          "fullFileExtension": "pdf",
-          "isAppAuthorized": false,
-          "capabilities": {
-            "canChangeViewersCanCopyContent": false,
-            "canEdit": true,
-            "canCopy": true,
-            "canComment": true,
-            "canAddChildren": false,
-            "canDelete": false,
-            "canDownload": true,
-            "canListChildren": false,
-            "canRemoveChildren": false,
-            "canRename": true,
-            "canTrash": false,
-            "canReadRevisions": true,
-            "canChangeCopyRequiresWriterPermission": false,
-            "canMoveItemIntoTeamDrive": false,
-            "canUntrash": false,
-            "canModifyContent": true,
-            "canMoveItemOutOfDrive": false,
-            "canAddMyDriveParent": false,
-            "canRemoveMyDriveParent": true,
-            "canMoveItemWithinDrive": true,
-            "canShare": true,
-            "canMoveChildrenWithinDrive": false,
-            "canModifyContentRestriction": true,
-            "canChangeSecurityUpdateEnabled": false,
-            "canAcceptOwnership": false,
-            "canReadLabels": false,
-            "canModifyLabels": false,
-            "canModifyEditorContentRestriction": true,
-            "canModifyOwnerContentRestriction": false,
-            "canRemoveContentRestriction": false,
-            "canDisableInheritedPermissions": false,
-            "canEnableInheritedPermissions": true,
-            "canChangeItemDownloadRestriction": false,
-            "canStartApproval": false,
-            "canAccessViaGenAi": true
-          },
-          "thumbnailVersion": "1",
-          "modifiedByMe": false,
-          "permissionIds": [
-            "anyoneWithLink",
-            "14647897523106089934",
-            "01145688620362352815",
-            "16441558950279091921",
-            "01411004278671607857",
-            "17706938818996173019",
-            "01382773666594732688",
-            "18356903302455707575",
-            "06628298629534640301",
-            "06276466757710680888"
-          ],
-          "linkShareMetadata": {
-            "securityUpdateEligible": false,
-            "securityUpdateEnabled": true
-          },
-          "sha1Checksum": "6b7d1ad4e0a1c69672adeac11c847f33ee5c54e5",
-          "sha256Checksum": "cd18e9501f255963ee1766d986b7498aea812f627e490ef1939b47028e8da225",
-          "inheritedPermissionsDisabled": false,
-          "downloadRestrictions": {
-            "itemDownloadRestriction": {
-              "restrictedForReaders": false,
-              "restrictedForWriters": false
-            },
-            "effectiveDownloadRestrictionWithContext": {
-              "restrictedForReaders": false,
-              "restrictedForWriters": false
-            }
-          },
-          "clientEncryptionDetails": {
-            "decryptionMetadata": {
-              "wrappedKey": "",
-              "kaclsId": "0",
-              "aes256GcmChunkSize": "unset",
-              "keyFormat": "unsetKeyFormat",
-              "encryptionResourceKeyHash": ""
-            }
-          }
         },
         "pairedItem": {
           "item": 0
@@ -2936,7 +2713,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "4529f686-3f80-4b68-97df-5fcd82b65089",
+    "versionId": "78baf2ad-fd82-49ec-9e95-f31f239cec56",
     "workflowId": "vJfpJObAAGrofTha",
     "nodes": [
       {
@@ -4016,8 +3793,8 @@
         "type": "n8n-nodes-base.httpRequest",
         "typeVersion": 4.2,
         "position": [
-          -4384,
-          560
+          -4400,
+          640
         ],
         "credentials": {
           "httpHeaderAuth": {
@@ -4031,7 +3808,10 @@
         "parameters": {
           "rule": {
             "interval": [
-              {}
+              {
+                "triggerAtHour": 16,
+                "triggerAtMinute": 15
+              }
             ]
           }
         },
@@ -4040,9 +3820,10 @@
         "type": "n8n-nodes-base.scheduleTrigger",
         "typeVersion": 1.1,
         "position": [
-          -5728,
-          544
-        ]
+          -5744,
+          592
+        ],
+        "disabled": true
       },
       {
         "parameters": {
@@ -4082,8 +3863,8 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.3,
         "position": [
-          -5280,
-          592
+          -5296,
+          640
         ],
         "credentials": {
           "googleApi": {
@@ -4116,7 +3897,7 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.3,
         "position": [
-          -5280,
+          -5296,
           832
         ],
         "credentials": {
@@ -4142,7 +3923,7 @@
         "type": "n8n-nodes-base.googleDrive",
         "typeVersion": 3,
         "position": [
-          -5056,
+          -4976,
           512
         ],
         "credentials": {
@@ -4154,15 +3935,15 @@
       },
       {
         "parameters": {
-          "jsCode": "// ==========================================================\n// 🎯 防呆相容版 Compare & Match Data\n// ==========================================================\n\nlet allFiles = [];\ntry {\n  allFiles = $('List Drive Files').all();\n} catch (e) {\n  allFiles = $input.all().filter(item => item.json && item.json.id && item.json.name);\n}\n\nlet customerMap = [];\ntry {\n  customerMap = $('Filter').all();\n} catch (e) {\n  customerMap = [];\n}\n\nlet folderList = [];\ntry {\n  folderList = $('Get Folders Sheet').all();\n} catch (e) {\n  folderList = [];\n}\n\n// 建立資料夾清單與 F 欄檔名白名單字典\nconst folderMap = {};\nfor (const folder of folderList) {\n  const fId = folder.json['資料夾ID'];\n  const fName = folder.json['資料夾名稱'];\n  \n  const sentFilesString = folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表'] ? String(folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表']).trim() : '';\n  const targetFileNamesArray = sentFilesString ? sentFilesString.split(',').map(s => s.trim()) : [];\n\n  if (fId && fName) {\n    const prefix = String(fName).trim().substring(0, 3);\n    \n    let companyName = String(fName).trim();\n    const parts = companyName.split('-');\n    if (parts.length >= 3) {\n      companyName = parts[1].trim();\n    } else if (parts.length === 2) {\n      companyName = parts[1].trim();\n    }\n\n    folderMap[fId] = {\n      prefix: prefix,\n      companyName: companyName,\n      targetFileNames: targetFileNamesArray\n    };\n  }\n}\n\nconst userGroupedMatches = {};\n\nfor (const fileItem of allFiles) {\n  if (!fileItem || !fileItem.json || !fileItem.json.name || !fileItem.json.id) {\n    continue;\n  }\n\n  const fileName = fileItem.json.name.trim();\n  const fileId = fileItem.json.id;\n  \n  const forceDownloadUrl = `https://drive.google.com/uc?export=download&id=${fileId}&openExternalBrowser=1`;\n  const parents = fileItem.json.parents;\n  const parentFolderId = (Array.isArray(parents) && parents.length > 0) ? parents[0] : null;\n\n  const folderData = parentFolderId ? folderMap[parentFolderId] : null;\n  if (!folderData) {\n    continue;\n  }\n\n  // 白名單比對：必須存在於 F 欄紀錄\n  if (folderData.targetFileNames.length === 0 || !folderData.targetFileNames.includes(fileName)) {\n    continue;\n  }\n\n  const folderPrefix = folderData.prefix;\n  const companyName = folderData.companyName;\n\n  for (const row of customerMap) {\n    const userId = row.json['B:userId'];\n    if (!userId) continue;\n\n    const clientCodes = [];\n    const colNames = ['編號1', '編號2', '編號3', '編號4', '編號5', '編號6', '編號7', '編號8', '編號9', '編號10'];\n    \n    for (const col of colNames) {\n      const val = row.json[col];\n      if (val !== undefined && val !== null && val !== '') {\n        clientCodes.push(String(val).trim());\n      }\n    }\n\n    const isMatch = clientCodes.some(code => code !== '' && folderPrefix === code);\n\n    if (isMatch) {\n      if (!userGroupedMatches[userId]) {\n        userGroupedMatches[userId] = { lineUserId: userId, companies: {} };\n      }\n\n      if (!userGroupedMatches[userId].companies[parentFolderId]) {\n        userGroupedMatches[userId].companies[parentFolderId] = { companyName: companyName, files: [] };\n      }\n\n      const targetCompany = userGroupedMatches[userId].companies[parentFolderId];\n      const isFileAlreadyAdded = targetCompany.files.some(f => f.fileId === fileId);\n      \n      if (!isFileAlreadyAdded) {\n        targetCompany.files.push({\n          fileId: fileId,\n          fileName: fileName,\n          fileUrl: forceDownloadUrl\n        });\n      }\n    }\n  }\n}\n\nconst outputData = Object.values(userGroupedMatches).map(user => ({\n  json: {\n    lineUserId: user.lineUserId,\n    companies: Object.values(user.companies)\n  }\n}));\n\nreturn outputData.length > 0 ? outputData : [];"
+          "jsCode": "// ==========================================================\n// 🛠️ 測試設定區\n// ==========================================================\nconst LINK_MODE = 'view'; // 可選：'preview' (推薦) | 'view' | 'download'（僅影響預覽與 Google Docs/Sheets）\nconst USE_EXTERNAL_BROWSER = true; // true = 跳出外部瀏覽器 | false = 留在 LINE 內建瀏覽器\n\n// 🎯 你的 Cloudflare Worker 網址\nconst CLOUDFLARE_WORKER_URL = 'https://long-bonus-c10a.elanhuang.workers.dev/';\n\n// 🎯 動態組合 URL（自動判斷要加 ? 還是 &）\nfunction buildUrl(baseUrl) {\n  if (!USE_EXTERNAL_BROWSER) return baseUrl;\n  return baseUrl.includes('?') \n    ? `${baseUrl}&openExternalBrowser=1` \n    : `${baseUrl}?openExternalBrowser=1`;\n}\n\n// ==========================================================\n// 🎯 防呆相容版 Compare & Match Data\n// ==========================================================\n\nlet allFiles = [];\ntry {\n  allFiles = $('List Drive Files').all();\n} catch (e) {\n  allFiles = $input.all().filter(item => item.json && item.json.id && item.json.name);\n}\n\nlet customerMap = [];\ntry {\n  customerMap = $('Filter').all();\n} catch (e) {\n  customerMap = [];\n}\n\nlet folderList = [];\ntry {\n  folderList = $('Get Folders Sheet').all();\n} catch (e) {\n  folderList = [];\n}\n\n// 建立資料夾清單與 F 欄檔名白名單字典\nconst folderMap = {};\nfor (const folder of folderList) {\n  const fId = folder.json['資料夾ID'];\n  const fName = folder.json['資料夾名稱'];\n  \n  const sentFilesString = folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表'] ? String(folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表']).trim() : '';\n  const targetFileNamesArray = sentFilesString ? sentFilesString.split(',').map(s => s.trim()) : [];\n\n  if (fId && fName) {\n    const prefix = String(fName).trim().substring(0, 3);\n    \n    let companyName = String(fName).trim();\n    const parts = companyName.split('-');\n    if (parts.length >= 3) {\n      companyName = parts[1].trim();\n    } else if (parts.length === 2) {\n      companyName = parts[1].trim();\n    }\n\n    folderMap[fId] = {\n      prefix: prefix,\n      companyName: companyName,\n      targetFileNames: targetFileNamesArray\n    };\n  }\n}\n\nconst userGroupedMatches = {};\n\nfor (const fileItem of allFiles) {\n  if (!fileItem || !fileItem.json || !fileItem.json.name || !fileItem.json.id) {\n    continue;\n  }\n\n  const fileName = fileItem.json.name.trim();\n  const fileId = fileItem.json.id;\n  const mimeType = fileItem.json.mimeType || '';\n  \n  // 🎯 判斷檔案類型\n  const isGoogleDoc = mimeType.includes('google-apps.document');\n  const isGoogleSheet = mimeType.includes('google-apps.spreadsheet');\n  \n  // 🎯 預覽連結（留在 LINE 內建瀏覽器）\n  let previewUrl = '';\n  if (isGoogleDoc) {\n    previewUrl = `https://docs.google.com/document/d/${fileId}/preview`;\n  } else if (isGoogleSheet) {\n    previewUrl = `https://docs.google.com/spreadsheets/d/${fileId}/preview`;\n  } else {\n    previewUrl = `https://drive.google.com/file/d/${fileId}/preview`;\n  }\n  \n  // 🎯 下載連結（跳出外部瀏覽器，直接下載）\n  let downloadUrl = '';\n  if (isGoogleDoc) {\n    downloadUrl = buildUrl(`https://docs.google.com/document/d/${fileId}/export?format=pdf`);\n  } else if (isGoogleSheet) {\n    downloadUrl = buildUrl(`https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`);\n  } else {\n    // 一般 PDF 檔案：走 Cloudflare Worker 代理，強制 iOS 下載並保留原始中文檔名\n    const rawName = encodeURIComponent(fileName);\n    downloadUrl = buildUrl(`${CLOUDFLARE_WORKER_URL}?id=${fileId}&name=${rawName}`);\n  }\n\n  const parents = fileItem.json.parents;\n  const parentFolderId = (Array.isArray(parents) && parents.length > 0) ? parents[0] : null;\n\n  const folderData = parentFolderId ? folderMap[parentFolderId] : null;\n  if (!folderData) {\n    continue;\n  }\n\n  // 白名單比對：必須存在於 F 欄紀錄\n  if (folderData.targetFileNames.length === 0 || !folderData.targetFileNames.includes(fileName)) {\n    continue;\n  }\n\n  const folderPrefix = folderData.prefix;\n  const companyName = folderData.companyName;\n\n  for (const row of customerMap) {\n    const userId = row.json['B:userId'];\n    if (!userId) continue;\n\n    const clientCodes = [];\n    const colNames = ['編號1', '編號2', '編號3', '編號4', '編號5', '編號6', '編號7', '編號8', '編號9', '編號10'];\n    \n    for (const col of colNames) {\n      const val = row.json[col];\n      if (val !== undefined && val !== null && val !== '') {\n        clientCodes.push(String(val).trim());\n      }\n    }\n\n    const isMatch = clientCodes.some(code => code !== '' && folderPrefix === code);\n\n    if (isMatch) {\n      if (!userGroupedMatches[userId]) {\n        userGroupedMatches[userId] = { lineUserId: userId, companies: {} };\n      }\n\n      if (!userGroupedMatches[userId].companies[parentFolderId]) {\n        userGroupedMatches[userId].companies[parentFolderId] = { companyName: companyName, files: [] };\n      }\n\n      const targetCompany = userGroupedMatches[userId].companies[parentFolderId];\n      const isFileAlreadyAdded = targetCompany.files.some(f => f.fileId === fileId);\n      \n      if (!isFileAlreadyAdded) {\n        targetCompany.files.push({\n          fileId: fileId,\n          fileName: fileName,\n          previewUrl: previewUrl,   // 🎯 新增：預覽連結\n          downloadUrl: downloadUrl   // 🎯 新增：下載連結（走 Cloudflare Worker）\n        });\n      }\n    }\n  }\n}\n\nconst outputData = Object.values(userGroupedMatches).map(user => ({\n  json: {\n    lineUserId: user.lineUserId,\n    companies: Object.values(user.companies)\n  }\n}));\n\nreturn outputData.length > 0 ? outputData : [];"
         },
         "id": "a21b57b9-3dba-4729-8f32-3aa77ff941d0",
         "name": "Compare & Match Data",
         "type": "n8n-nodes-base.code",
         "typeVersion": 2,
         "position": [
-          -4608,
-          560
+          -4624,
+          640
         ],
         "executeOnce": true,
         "onError": "continueRegularOutput"
@@ -4174,8 +3955,8 @@
         "type": "n8n-nodes-base.merge",
         "typeVersion": 3.2,
         "position": [
-          -4832,
-          640
+          -4848,
+          720
         ],
         "id": "8256e0bb-8fa1-45ce-9ade-98c60a7898e0",
         "name": "Merge"
@@ -4190,7 +3971,7 @@
         "type": "n8n-nodes-base.webhook",
         "typeVersion": 2.1,
         "position": [
-          -5504,
+          -5520,
           880
         ],
         "id": "c1db163e-67bc-4594-b5c8-38ac75a2517e",
@@ -4309,8 +4090,8 @@
         "type": "n8n-nodes-base.googleSheets",
         "typeVersion": 4.7,
         "position": [
-          -4608,
-          752
+          -4624,
+          832
         ],
         "id": "ecb92dc7-3a5c-440e-91f5-fcee0e2efa23",
         "name": "將資料夾狀態改為已發送",
@@ -4373,7 +4154,7 @@
         "type": "n8n-nodes-base.filter",
         "typeVersion": 2.3,
         "position": [
-          -5056,
+          -5072,
           832
         ],
         "id": "65530529-64fa-4566-b0f7-66bd27170004",
@@ -4557,8 +4338,8 @@
         "type": "n8n-nodes-base.if",
         "typeVersion": 2.3,
         "position": [
-          -5504,
-          544
+          -5520,
+          592
         ],
         "id": "b04a2770-ff61-41a9-9d1e-6420328d6ff6",
         "name": "If21"
@@ -4921,6 +4702,21 @@
         "id": "a90c3f32-ef76-4100-937b-038e3c6fbedb",
         "name": "資料比對與彙整",
         "executeOnce": false
+      },
+      {
+        "parameters": {
+          "jsCode": "// ==========================================================\n// 🛠️ 測試設定區\n// ==========================================================\nconst LINK_MODE = 'view'; // 可選：'preview' (推薦) | 'view' | 'download'\nconst USE_EXTERNAL_BROWSER = true; // true = 跳出外部瀏覽器 | false = 留在 LINE 內建瀏覽器\n\n// ==========================================================\n// 🎯 防呆相容版 Compare & Match Data\n// ==========================================================\n\n// 🎯 動態組合 URL（自動判斷要加 ? 還是 &）\nfunction buildUrl(baseUrl) {\n  if (!USE_EXTERNAL_BROWSER) return baseUrl;\n  return baseUrl.includes('?') \n    ? `${baseUrl}&openExternalBrowser=1` \n    : `${baseUrl}?openExternalBrowser=1`;\n}\n\nlet allFiles = [];\ntry {\n  allFiles = $('List Drive Files').all();\n} catch (e) {\n  allFiles = $input.all().filter(item => item.json && item.json.id && item.json.name);\n}\n\nlet customerMap = [];\ntry {\n  customerMap = $('Filter').all();\n} catch (e) {\n  customerMap = [];\n}\n\nlet folderList = [];\ntry {\n  folderList = $('Get Folders Sheet').all();\n} catch (e) {\n  folderList = [];\n}\n\n// 建立資料夾清單與 F 欄檔名白名單字典\nconst folderMap = {};\nfor (const folder of folderList) {\n  const fId = folder.json['資料夾ID'];\n  const fName = folder.json['資料夾名稱'];\n  \n  const sentFilesString = folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表'] ? String(folder.json['已發送檔案清單'] || folder.json['已發送檔案'] || folder.json['今日檔案列表']).trim() : '';\n  const targetFileNamesArray = sentFilesString ? sentFilesString.split(',').map(s => s.trim()) : [];\n\n  if (fId && fName) {\n    const prefix = String(fName).trim().substring(0, 3);\n    \n    let companyName = String(fName).trim();\n    const parts = companyName.split('-');\n    if (parts.length >= 3) {\n      companyName = parts[1].trim();\n    } else if (parts.length === 2) {\n      companyName = parts[1].trim();\n    }\n\n    folderMap[fId] = {\n      prefix: prefix,\n      companyName: companyName,\n      targetFileNames: targetFileNamesArray\n    };\n  }\n}\n\nconst userGroupedMatches = {};\n\nfor (const fileItem of allFiles) {\n  if (!fileItem || !fileItem.json || !fileItem.json.name || !fileItem.json.id) {\n    continue;\n  }\n\n  const fileName = fileItem.json.name.trim();\n  const fileId = fileItem.json.id;\n  \n  // 🎯 根據 LINK_MODE 與 USE_EXTERNAL_BROWSER 產生連結\n  let fileUrl = '';\n  if (LINK_MODE === 'view') {\n    fileUrl = buildUrl(`https://drive.google.com/file/d/${fileId}/view`);\n  } else if (LINK_MODE === 'preview') {\n    fileUrl = buildUrl(`https://drive.google.com/file/d/${fileId}/preview`);\n  } else {\n    fileUrl = buildUrl(`https://drive.google.com/uc?export=download&id=${fileId}`);\n  }\n\n  const parents = fileItem.json.parents;\n  const parentFolderId = (Array.isArray(parents) && parents.length > 0) ? parents[0] : null;\n\n  const folderData = parentFolderId ? folderMap[parentFolderId] : null;\n  if (!folderData) {\n    continue;\n  }\n\n  // 白名單比對：必須存在於 F 欄紀錄\n  if (folderData.targetFileNames.length === 0 || !folderData.targetFileNames.includes(fileName)) {\n    continue;\n  }\n\n  const folderPrefix = folderData.prefix;\n  const companyName = folderData.companyName;\n\n  for (const row of customerMap) {\n    const userId = row.json['B:userId'];\n    if (!userId) continue;\n\n    const clientCodes = [];\n    const colNames = ['編號1', '編號2', '編號3', '編號4', '編號5', '編號6', '編號7', '編號8', '編號9', '編號10'];\n    \n    for (const col of colNames) {\n      const val = row.json[col];\n      if (val !== undefined && val !== null && val !== '') {\n        clientCodes.push(String(val).trim());\n      }\n    }\n\n    const isMatch = clientCodes.some(code => code !== '' && folderPrefix === code);\n\n    if (isMatch) {\n      if (!userGroupedMatches[userId]) {\n        userGroupedMatches[userId] = { lineUserId: userId, companies: {} };\n      }\n\n      if (!userGroupedMatches[userId].companies[parentFolderId]) {\n        userGroupedMatches[userId].companies[parentFolderId] = { companyName: companyName, files: [] };\n      }\n\n      const targetCompany = userGroupedMatches[userId].companies[parentFolderId];\n      const isFileAlreadyAdded = targetCompany.files.some(f => f.fileId === fileId);\n      \n      if (!isFileAlreadyAdded) {\n        targetCompany.files.push({\n          fileId: fileId,\n          fileName: fileName,\n          fileUrl: fileUrl // 使用動態產生的連結\n        });\n      }\n    }\n  }\n}\n\nconst outputData = Object.values(userGroupedMatches).map(user => ({\n  json: {\n    lineUserId: user.lineUserId,\n    companies: Object.values(user.companies)\n  }\n}));\n\nreturn outputData.length > 0 ? outputData : [];"
+        },
+        "id": "75269157-6667-4ec3-a8b0-6ab32e5ab241",
+        "name": "Compare & Match Data1",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -4368,
+          800
+        ],
+        "executeOnce": true,
+        "onError": "continueRegularOutput"
       }
     ],
     "connections": {
@@ -5203,6 +4999,11 @@
               "node": "LINE Push Message1",
               "type": "main",
               "index": 0
+            },
+            {
+              "node": "Compare & Match Data1",
+              "type": "main",
+              "index": 0
             }
           ]
         ]
@@ -5439,10 +5240,10 @@
     },
     "nodeGroups": [],
     "authors": "鈞煜 黃",
-    "name": "Version 4529f686",
+    "name": "Version 78baf2ad",
     "description": "",
     "autosaved": true,
-    "createdAt": "2026-09-14T07:01:46.296Z",
-    "updatedAt": "2026-09-14T07:01:51.573Z"
+    "createdAt": "2026-09-15T14:18:16.744Z",
+    "updatedAt": "2026-09-15T14:18:18.908Z"
   }
 }
