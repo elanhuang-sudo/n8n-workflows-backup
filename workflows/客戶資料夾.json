@@ -2,11 +2,11 @@
   "id": "kHquq02ZiEsGj8rG",
   "name": "客戶資料夾",
   "active": true,
-  "activeVersionId": "45b2c682-b7ca-4a0e-9960-9396f8238657",
+  "activeVersionId": "13e342d6-bc3e-4cc5-8847-629f31382a59",
   "createdAt": "2026-09-09T01:16:53.978Z",
-  "updatedAt": "2026-09-09T02:04:25.403Z",
+  "updatedAt": "2026-09-15T10:13:27.766Z",
   "isArchived": false,
-  "versionId": "45b2c682-b7ca-4a0e-9960-9396f8238657",
+  "versionId": "13e342d6-bc3e-4cc5-8847-629f31382a59",
   "triggerCount": 0,
   "nodes": [
     {
@@ -836,27 +836,27 @@
     "Start": [
       {
         "json": {
-          "replyToken": "b9068c2080084bab8e341cd6bb42170b",
-          "source_userId": "U6af8a125b5867f793cfceef8d292a100",
+          "replyToken": "79cdc7c72b604df1b4cc978e5064c270",
+          "source_userId": "Ub5c6dc1b90971cd47b54303d2d2b80a4",
           "_firstItem": {
             "type": "message",
             "message": {
               "type": "text",
-              "id": "630970877651189884",
-              "quoteToken": "cI_HsGm1MlTD_hqude5iuAFrI99vbiAU-OLRUMmz-wjjw2GxzW9goUR9fGt8wCbwJxXgxC5VHMTtNWj1tj_PXHH2QdcNe0e6JZS25xi_IJp-7HQee5QlH6j0mI1Htxhgb--AZoHrsyoLdGxDJteygQ",
-              "markAsReadToken": "jI6KAYTG8zAdANq3oIrFJNFWyMRCgh0fkG3Q65H0Sb-HxC4tuC1PYZdJ4i-ZGOTClAcjUUMkZCpK39BSIdcF6JrfYHiUlMs1L5k5sIVpkSloIvv30gCdkdZebUzFi0dxXJ34GYvl-3P4ndbhAvqe-vr1jvJjehGd-QL8RX_krH8siywv7qBZc6_uF4v4a-_STA4P6m_meoUAoaY2jKerEQ",
+              "id": "631889474838069984",
+              "quoteToken": "W7gLx7x7TJAJrA8Bo2SxOnQgFipR9aoCezkDN3SpUDcKKaexIih-P76UrZ-DXQcRKujZ5K-PGer-1f4jYXPBa2AYnArnaNAorg1baC1OrcHqXtYIO42Zu48kkCqc4UDCkBZQ0ryVJ62VTvOxKGF4Qg",
+              "markAsReadToken": "Fy8f1UHUAMpael_mD80VGzpcPo5CZb_cYiGhfZpd091nedyHuqytKOUREllR07szF-Ayz3ihGpqJdMxw1r0QPn6Ywwge792vu8ZVjl3FwvLXn6z14vKYzH-vcE1b5xy8Ly0KeEIOmo8cvqoH3uzjjIhjpy-cgzAqf3zFukj5RRRzYYVgYexBmM47UwI46k7V0ONwGZPWRUE_sUiDq03r-Q",
               "text": "客戶資料夾"
             },
-            "webhookEventId": "01M21YB3JBFDRGFF7H26TWAT85",
+            "webhookEventId": "01M2J8G9RC8FA2QS2W56Y85TK4",
             "deliveryContext": {
               "isRedelivery": false
             },
-            "timestamp": 1788919254269,
+            "timestamp": 1789466780942,
             "source": {
               "type": "user",
-              "userId": "U6af8a125b5867f793cfceef8d292a100"
+              "userId": "Ub5c6dc1b90971cd47b54303d2d2b80a4"
             },
-            "replyToken": "b9068c2080084bab8e341cd6bb42170b",
+            "replyToken": "79cdc7c72b604df1b4cc978e5064c270",
             "mode": "active",
             "destination": "U34843875432eadd7b105344fef1e376e"
           }
@@ -879,7 +879,7 @@
     }
   ],
   "activeVersion": {
-    "versionId": "45b2c682-b7ca-4a0e-9960-9396f8238657",
+    "versionId": "13e342d6-bc3e-4cc5-8847-629f31382a59",
     "workflowId": "kHquq02ZiEsGj8rG",
     "nodes": [
       {
@@ -1701,10 +1701,10 @@
     },
     "nodeGroups": [],
     "authors": "鈞煜 黃",
-    "name": "Version 45b2c682",
+    "name": "Version 13e342d6",
     "description": "",
-    "autosaved": false,
-    "createdAt": "2026-09-09T02:04:25.405Z",
-    "updatedAt": "2026-09-09T02:04:47.096Z"
+    "autosaved": true,
+    "createdAt": "2026-09-15T04:11:39.487Z",
+    "updatedAt": "2026-09-15T04:11:45.821Z"
   }
 }
